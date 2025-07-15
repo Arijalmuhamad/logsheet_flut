@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Android Emulator",
+      "type": "android",
+      "request": "launch",
+      "target": "emulator",
+      "deviceId": "Pixel 4"
+    }
+  ]
+}
