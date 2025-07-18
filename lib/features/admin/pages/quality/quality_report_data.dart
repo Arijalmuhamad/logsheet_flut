@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_edit.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_filter_dropdown_chip.dart';
+import 'package:logsheet_app/features/admin/widgets/quality_report_item_card.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../data/dao/quality_report_refinery_dao.dart';
 
@@ -18,6 +20,7 @@ class _QualityListPageState extends State<QualityListPage> {
   late final QualityReportRefineryDao qualityReportRefDao;
 
   final TextEditingController dateController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
 
   DateTime? _selectedDate;
   String? _selectedHour;
@@ -219,441 +222,13 @@ class _QualityListPageState extends State<QualityListPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: dateController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          hintText: 'Pilih tanggal',
-                          filled: true,
-                          fillColor: const Color(0xFFF0ECE9),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(Icons.calendar_today),
-                        ),
-                        onTap: () => _pickDate(context),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
+                // Filter Chips
+                _filterChips(),
+                // const SizedBox(height: 8),
 
-                    // Dropdown Jam
-                    Expanded(
-                      child: DropdownButtonFormField<String?>(
-                        isExpanded: true,
-                        value: _tempSelectedHour,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF0ECE9),
-                          hintText: "Pilih jam",
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(Icons.access_time),
-                        ),
-                        items: [
-                          const DropdownMenuItem<String?>(
-                            value: 'all',
-                            child: Text('Semua'),
-                          ),
-                          ..._hours.map(
-                            (hour) => DropdownMenuItem<String?>(
-                              value: hour,
-                              child: Text(hour),
-                            ),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _tempSelectedHour = value;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
+                //Build Report Content
+                _buildReportContent(),
 
-                    // Tombol cari Data
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _selectedHour = _tempSelectedHour;
-                          _filterData();
-                        });
-                      },
-                      icon: const Icon(Icons.search),
-                      label: const Text('Cari'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(
-                          0xFFAB2F2B,
-                        ), // tombol utama
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child:
-                      isInitialLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            elevation: 4,
-                            shadowColor: Colors.black26,
-                            margin: const EdgeInsets.only(top: 16),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 6,
-                                    offset: Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(16),
-                              child:
-                                  filteredData.isEmpty
-                                      ? const Center(
-                                        child: Text(
-                                          'Tidak ada data',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color: Color(
-                                              0xFF655F5B,
-                                            ), // Neutral Gray
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      )
-                                      : SingleChildScrollView(
-                                        scrollDirection: Axis.vertical,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: DataTable(
-                                            columnSpacing: 32,
-                                            headingRowColor:
-                                                WidgetStateProperty.all(
-                                                  Color(0xFFF0ECE9), // Tan
-                                                ),
-                                            headingTextStyle: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: Color(
-                                                0xFF655F5B,
-                                              ), // Neutral Gray
-                                            ),
-                                            dataTextStyle: const TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.black87,
-                                            ),
-                                            columns: const [
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('No'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Tanggal'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Jam'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Shift'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Flowrate'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('FFA'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('IV'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('PV'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('DOBI'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Carotene'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Color R'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Color Y'),
-                                                ),
-                                              ),
-                                              // Flag
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Status'),
-                                                ),
-                                              ),
-                                              DataColumn(
-                                                label: Center(
-                                                  child: Text('Aksi'),
-                                                ),
-                                              ),
-                                            ],
-                                            rows: List.generate(paginatedData.length, (
-                                              index,
-                                            ) {
-                                              final item = paginatedData[index];
-                                              final isEven = index % 2 == 0;
-                                              return DataRow(
-                                                color: WidgetStateProperty.all(
-                                                  isEven
-                                                      ? Colors.grey.shade100
-                                                      : Colors.white,
-                                                ),
-                                                cells: [
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        '${_currentPage * _rowsPerPage + index + 1}',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(item.tanggal),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.time?.substring(
-                                                              0,
-                                                              5,
-                                                            ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(item.shift),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_flowrate
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_ffa
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_iv
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_pv
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_dobi
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.p_carotene
-                                                                ?.toStringAsFixed(
-                                                                  2,
-                                                                ) ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.b_color_r
-                                                                ?.toString() ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.b_color_y
-                                                                ?.toString() ??
-                                                            '-',
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Text(
-                                                        item.flag == 'T'
-                                                            ? 'Not Uploaded'
-                                                            : 'Uploaded',
-                                                        style: TextStyle(
-                                                          color:
-                                                              item.flag == 'T'
-                                                                  ? Color(
-                                                                    0xFFAB2F2B,
-                                                                  ) // Brick Red
-                                                                  : Color(
-                                                                    0xFF655F5B,
-                                                                  ), // Neutral Gray
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataCell(
-                                                    Center(
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Tooltip(
-                                                            message: 'Edit',
-                                                            child: IconButton(
-                                                              icon: const Icon(
-                                                                Icons.edit,
-                                                                color: Color(
-                                                                  0xFF6B7280,
-                                                                ),
-                                                              ),
-                                                              onPressed: () {
-                                                                _editData(item);
-                                                              },
-                                                            ),
-                                                          ),
-                                                          Tooltip(
-                                                            message: 'Hapus',
-                                                            child: IconButton(
-                                                              icon: const Icon(
-                                                                Icons.delete,
-                                                                color: Color(
-                                                                  0xFFB91C1C,
-                                                                ),
-                                                              ),
-                                                              onPressed: () {
-                                                                _deleteData(
-                                                                  item.id,
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                          Tooltip(
-                                                            message: 'Detail',
-                                                            child: IconButton(
-                                                              icon: const Icon(
-                                                                Icons
-                                                                    .info_outline,
-                                                                color: Color(
-                                                                  0xFF655F5B,
-                                                                ), // Neutral Gray
-                                                              ),
-                                                              onPressed:
-                                                                  () =>
-                                                                      _onTapRow(
-                                                                        item,
-                                                                      ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                          ),
-                                        ),
-                                      ),
-                            ),
-                          ),
-                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
@@ -728,6 +303,119 @@ class _QualityListPageState extends State<QualityListPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => QualityDetailPage(item: item)),
+    );
+  }
+
+  Widget _filterChips() {
+    return Row(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CustomFilterDropdownChip(
+                  label: 'Filter',
+                  options: ['List 1', 'List 2', 'List 3'],
+                  chipIcon: Icons.calendar_today,
+                  controller: dateController,
+                  isCalendar: true,
+                  onSelected: (value) {},
+                ),
+                const SizedBox(width: 8),
+                CustomFilterDropdownChip(
+                  label: 'Pilih Tanggal',
+                  options: const [],
+                  chipIcon: Icons.calendar_today,
+                  controller: dateController,
+                  isCalendar: true,
+                  selectedOption:
+                      _selectedDate != null
+                          ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+                          : null,
+                  onSelected: (_) {
+                    _pickDate(context);
+                  },
+                ),
+                const SizedBox(width: 8),
+                CustomFilterDropdownChip(
+                  label: 'Pilih Waktu',
+                  options: _hours,
+                  chipIcon: Icons.alarm,
+                  controller: timeController,
+                  isCalendar: false,
+                  selectedOption: _selectedHour,
+                  onSelected: (selectedValue) {
+                    setState(() {
+                      (_selectedHour == 'All')
+                          ? null
+                          : _selectedHour = selectedValue;
+                      // _selectedHour = selectedValue;
+                      _filterData();
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReportContent() {
+    return Expanded(
+      child:
+          isInitialLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 4,
+                shadowColor: Colors.black26,
+                margin: const EdgeInsets.only(top: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child:
+                      filteredData.isEmpty
+                          ? const Center(
+                            child: Text(
+                              'Tidak ada data',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF655F5B), // Neutral Gray
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                          : ListView.builder(
+                            itemCount: allData.length,
+                            itemBuilder: (context, index) {
+                              final report = allData[index];
+                              return QualityReportItemCard(
+                                report: report,
+                                index: index,
+                                onTap: () => _onTapRow(report),
+                                onEdit: () => _editData(report),
+                                onDelete: () => _deleteData(allData[index].id),
+                              );
+                            },
+                          ),
+                ),
+              ),
     );
   }
 }

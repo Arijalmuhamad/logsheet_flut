@@ -1,6 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/admin/widgets/master/master_add_user_card.dart';
+import 'package:logsheet_app/features/admin/widgets/master/user_item_list_card.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/features/admin/admin_page.dart';
@@ -266,126 +269,17 @@ class _UserPageState extends State<MstUserPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 8,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Text(
-                          editingUser == null ? 'Tambah User' : 'Edit User',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF655F5B),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: nameController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter your name',
-                            prefixIcon: const Icon(Icons.person),
-                            filled: true,
-                            fillColor: const Color(0xFFF0ECE9),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: passwordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            hintText: 'Enter your password',
-                            prefixIcon: const Icon(Icons.lock),
-                            filled: true,
-                            fillColor: const Color(0xFFF0ECE9),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          value: selectedIsActive,
-                          decoration: InputDecoration(
-                            hintText: 'Select active status',
-                            prefixIcon: const Icon(Icons.check_circle_outline),
-                            filled: true,
-                            fillColor: const Color(0xFFF0ECE9),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 'T', child: Text('Aktif')),
-                            DropdownMenuItem(
-                              value: 'F',
-                              child: Text('Tidak Aktif'),
-                            ),
-                          ],
-                          onChanged:
-                              (value) =>
-                                  setState(() => selectedIsActive = value),
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          value: selectedIsRoles,
-                          decoration: InputDecoration(
-                            hintText: 'Select role',
-                            prefixIcon: const Icon(Icons.verified_user),
-                            filled: true,
-                            fillColor: const Color(0xFFF0ECE9),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'admin',
-                              child: Text('Admin'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'user',
-                              child: Text('User'),
-                            ),
-                          ],
-                          onChanged:
-                              (value) =>
-                                  setState(() => selectedIsRoles = value),
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFAB2F2B),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: _saveUser,
-                            child: Text(
-                              editingUser == null ? 'Add User' : 'Update User',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                MasterAddUserCard(
+                  nameController: nameController,
+                  passwordController: passwordController,
+                  selectedIsActive: selectedIsActive,
+                  selectedIsRoles: selectedIsRoles,
+                  onSave: _saveUser,
+                  onActiveChanged:
+                      (value) => setState(() => selectedIsActive = value),
+                  onRoleChanged:
+                      (value) => setState(() => selectedIsRoles = value),
+                  isEdit: editingUser != null,
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -403,56 +297,11 @@ class _UserPageState extends State<MstUserPage> {
                   itemCount: users.length,
                   itemBuilder: (_, i) {
                     final user = users[i];
-                    return Card(
-                      elevation: 4,
-                      color: Colors.white,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        leading: const Icon(
-                          Icons.person,
-                          color: Color(0xFF6B7280),
-                          size: 40,
-                        ),
-                        title: Text(
-                          user.username,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Color(0xFF655F5B),
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Active: ${user.isactive == 'T' ? 'Aktif' : 'Tidak Aktif'} | Role: ${user.role}',
-                          style: const TextStyle(color: Colors.black54),
-                        ),
-                        trailing: Wrap(
-                          spacing: 12,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Color(0xFF6B7280),
-                              ),
-                              onPressed: () => _editUser(user),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                // color: Color(0xFFAB2F2B),
-                                color: Color(0xFFB91C1C),
-                              ),
-                              onPressed: () => _deleteUser(user.userid),
-                            ),
-                          ],
-                        ),
-                      ),
+                    log(users.length.toString());
+                    return UserListCard(
+                      user: user,
+                      onEdit: _editUser,
+                      onDelete: _deleteUser,
                     );
                   },
                 ),
