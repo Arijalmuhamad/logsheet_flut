@@ -45,7 +45,6 @@ class _MaintenanceDryFracPageState extends State<MaintenanceDryFracPage> {
 
   @override
   Widget build(BuildContext context) {
-    final deviceWidth = MediaQuery.sizeOf(context).width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
