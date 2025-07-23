@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/features/admin/admin_page.dart';
 import 'package:provider/provider.dart';
 
 import 'core/database/app_database.dart';
@@ -43,7 +44,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginPage(),
+      // home: const LoginPage(),
+      home: AdminHomePage(userName: 'admin'),
     );
   }
 }
