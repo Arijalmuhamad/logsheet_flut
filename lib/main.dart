@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/repositories/business_unit_repository.dart';
+import 'package:logsheet_app/data/repositories/user_repository.dart';
+import 'package:logsheet_app/data/services/business_unit_mysql_service.dart';
+import 'package:logsheet_app/data/services/user_mysql_service.dart';
 import 'package:logsheet_app/features/admin/admin_page.dart';
+import 'package:logsheet_app/providers/business_unit_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'core/database/app_database.dart';
@@ -15,7 +20,40 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        // Provide UserMySQL Service
+        Provider<UserMySQLService>(create: (context) => UserMySQLService()),
+
+        // Provide BusinessUnitMySQL Service
+        Provider<BusinessUnitMySQLService>(
+          create: (context) => BusinessUnitMySQLService(),
+        ),
+
+        // Provide User Repository
+        Provider<UserRepository>(
+          create: (context) => UserRepository(context.read<UserMySQLService>()),
+        ),
+
+        // Provide Business Unit Repository
+        Provider<BusinessUnitRepository>(
+          create:
+              (context) => BusinessUnitRepository(
+                context.read<BusinessUnitMySQLService>(),
+              ),
+        ),
+
+        // Provide The User Provider
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(context.read<UserRepository>()),
+        ),
+
+        // Provide the Business Unit Repository
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  BusinessUnitProvider(context.read<BusinessUnitRepository>()),
+        ),
+
+        //Provide Business Unit DAO
         Provider<BusinessUnitDao>(create: (_) => BusinessUnitDao(db)),
       ],
       child: const MyApp(),

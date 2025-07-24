@@ -4,6 +4,7 @@ import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 
 class UserMySQLService {
   Future<bool> registerUser(
+    String userid,
     String username,
     String password,
     String isActive,
@@ -11,20 +12,23 @@ class UserMySQLService {
   ) async {
     final conn = await getMySQLConnection();
     if (conn == null) {
-      log('Failed to get MySQL connection for registration.');
+      log('Failed to get MySQL connection for user registration.');
       return false;
     }
     try {
       final result = await conn.execute(
-        "INSET INTO m_users (userid, username, password, roles, isactive) VALUES (:username, :password, :isactive, :role)",
+        "INSERT INTO m_user (userid, username, password, roles, isactive) VALUES (:userid, :username, :password, :role, :isactive)",
         {
+          "userid": userid,
           "username": username,
           "password": password,
-          "isactive": isActive,
           "role": role,
+          "isactive": isActive,
         },
       );
-      log("User registered: ${result.affectedRows} row(s) affected.");
+      log(
+        "User $username teregistrasi: ${result.affectedRows} row(s) affected.",
+      );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error registering user: $e');
@@ -71,7 +75,7 @@ class UserMySQLService {
 
     try {
       final result = await conn.execute(
-        "SELECT userid, username, roles, isactive FROM m_users",
+        "SELECT userid, username, roles, isactive FROM m_user",
       );
       log('Fetched ${result.rows.length} users');
       return result.rows.map((row) => row.assoc()).toList();
@@ -114,7 +118,7 @@ class UserMySQLService {
     }
   }
 
-  Future<bool> deletedUser(String userid) async {
+  Future<bool> deleteUser(String userid) async {
     final conn = await getMySQLConnection();
 
     if (conn == null) {
@@ -127,7 +131,7 @@ class UserMySQLService {
         "DELETE FROM  m_user WHERE userid = :userid",
         {"userid": userid},
       );
-      log('User Deleted: ${result.affectedRows} row(s) affected');
+      log('User terhapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error deleting user: $e');

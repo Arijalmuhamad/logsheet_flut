@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/fer_daily_production_page.dart';
@@ -14,9 +12,11 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_filter/
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamp_glass_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_schedule/maintenance_schedule_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup/maintenance_startup_page.dart';
-import 'package:logsheet_app/features/admin/pages/master/business_unit/business_unit_view.dart';
+import 'package:logsheet_app/features/admin/pages/master/business_unit/business_unit_page.dart';
+import 'package:logsheet_app/features/admin/pages/master/user/user_page.dart';
 import 'package:logsheet_app/features/upload/upload_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/master_mastervalue.dart';
+import 'package:logsheet_app/features/user/user_page.dart';
 import '../auth/login_page.dart';
 import 'pages/master/user/master_user.dart';
 import 'pages/master/master_business_unit.dart';
@@ -197,11 +197,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ListTile(
                 contentPadding: const EdgeInsets.only(left: 40.0),
                 leading: const Icon(Icons.business, color: Color(0xFF655F5B)),
-                title: const Text('Company'),
+                title: const Text('Business Units'),
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MasterCompany()),
+                    MaterialPageRoute(builder: (context) => BusinessUnitPage()),
                   );
                 },
               ),
@@ -225,7 +225,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MstUserPage(userName: widget.userName),
+                      // builder: (_) => MstUserPage(userName: widget.userName),
+                      builder: (_) => UserPage(),
                       settings: const RouteSettings(name: 'Users'),
                     ),
                   );

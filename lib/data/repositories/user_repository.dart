@@ -10,6 +10,7 @@ class UserRepository {
   // REGISTER
   Future<bool> registerUser(UserEntity user) async {
     return await _userMySQLService.registerUser(
+      user.userid,
       user.username,
       user.password,
       user.isActive,
@@ -52,6 +53,6 @@ class UserRepository {
 
   // DELETE A USER
   Future<bool> deleteUser(String userid) async {
-    return await _userMySQLService.deletedUser(userid);
+    return await _userMySQLService.deleteUser(userid);
   }
 }

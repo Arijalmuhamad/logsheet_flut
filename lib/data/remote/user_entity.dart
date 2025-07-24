@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class UserEntity {
   final String userid;
   final String username;

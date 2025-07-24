@@ -32,7 +32,7 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void _fetchAllUsers() async {
+  void fetchAllUsers() async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
@@ -45,7 +45,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> _loginUser(String username, String password) async {
+  Future<bool> loginUser(String username, String password) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -69,8 +69,49 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<bool?> registerUser(UserEntity user) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final response = await _userRepository.registerUser(user);
+      _setLoading(false);
+      _setErrorMessage(null);
+
+      _listUsers.add(user);
+      notifyListeners();
+
+      return response;
+    } catch (e) {
+      _setLoading(false);
+      _setErrorMessage('Failed to register user: $e');
+      return null;
+    }
+  }
+
   void setUserName(String name) {
     _userName = name;
     notifyListeners();
+  }
+
+  Future<bool> deleteUser(String userid) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final response = await _userRepository.deleteUser(userid);
+      _setLoading(false);
+      _setErrorMessage(null);
+
+      _listUsers.removeWhere((element) => element.userid == userid);
+      notifyListeners();
+
+      return response;
+    } catch (e) {
+      _setLoading(false);
+      _setErrorMessage('Failed to delete user: $e');
+
+      return false;
+    }
   }
 }
