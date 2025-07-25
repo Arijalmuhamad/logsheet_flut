@@ -52,7 +52,7 @@ class UserRepository {
   }
 
   // DELETE A USER
-  Future<bool> deleteUser(String userid) async {
-    return await _userMySQLService.deleteUser(userid);
+  Future<bool> deleteUser(String userId) async {
+    return await _userMySQLService.deleteUser(userId);
   }
 }

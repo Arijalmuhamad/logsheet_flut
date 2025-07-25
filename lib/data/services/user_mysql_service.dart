@@ -128,14 +128,14 @@ class UserMySQLService {
 
     try {
       final result = await conn.execute(
-        "DELETE FROM  m_user WHERE userid = :userid",
+        "DELETE FROM m_user WHERE userid = :userid",
         {"userid": userid},
       );
       log('User terhapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error deleting user: $e');
+      return false;
     }
-    return true;
   }
 }

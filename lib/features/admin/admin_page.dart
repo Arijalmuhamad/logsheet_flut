@@ -13,6 +13,7 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_gl
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_schedule/maintenance_schedule_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup/maintenance_startup_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/business_unit/business_unit_page.dart';
+import 'package:logsheet_app/features/admin/pages/master/plant/plant_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/user/user_page.dart';
 import 'package:logsheet_app/features/upload/upload_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/master_mastervalue.dart';
@@ -210,10 +211,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 leading: const Icon(Icons.forest, color: Color(0xFF655F5B)),
                 title: const Text('Plant'),
                 onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PlantPage()),
+                  );
                 },
               ),
               ListTile(
