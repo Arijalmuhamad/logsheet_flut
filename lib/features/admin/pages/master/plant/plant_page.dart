@@ -38,7 +38,7 @@ class _PlantPageState extends State<PlantPage> {
         },
         label: const Text("Tambah Plant"),
         icon: Icon(Icons.add),
-        backgroundColor: Colors.red,
+        backgroundColor: Color(0xFFB91C1C),
         foregroundColor: Colors.white,
       ),
     );

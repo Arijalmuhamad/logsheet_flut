@@ -34,16 +34,19 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
       body: buildBody(context),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol tambah Company diklik");
+          log("Tombol tambah Business Unit diklik");
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MasterAddCompany()),
+            MaterialPageRoute(builder: (context) => AddBusinessUnit()),
           );
         },
-        label: const Text("Tambah Company"),
+        label: const Text(
+          "Tambah Business Unit",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         icon: Icon(Icons.add),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
     );
   }
@@ -52,7 +55,7 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
     return Consumer<BusinessUnitProvider>(
       builder: (context, businessUnitProvider, child) {
         if (businessUnitProvider.isLoading) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: const CircularProgressIndicator());
         }
 
         if (businessUnitProvider.errorMessage != null) {
@@ -81,48 +84,136 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           itemCount: businessUnitProvider.listBusinessUnits.length,
           itemBuilder: (context, index) {
             final businessUnit = businessUnitProvider.listBusinessUnits[index];
             return Card(
               elevation: 4,
-              color: Colors.white,
-              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              color: Theme.of(context).cardTheme.color,
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: 20,
+                  vertical: 12,
                 ),
-                leading: const Icon(
-                  Icons.business,
-                  color: Color(0xFF6B7280),
-                  size: 40,
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withAlpha(25),
+                  radius: 24,
+                  child: Icon(
+                    Icons.business,
+                    color: Theme.of(context).colorScheme.primary.withAlpha(200),
+                    size: 36,
+                  ),
                 ),
                 title: Text(
                   businessUnit.buName,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                     color: Color(0xFF655F5B),
                   ),
                 ),
-                subtitle: Text(
-                  'Active: ${businessUnit.isActive == 'T' ? 'Aktif' : 'Tidak Aktif'}',
-                  style: const TextStyle(color: Colors.black54),
+                subtitle: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child:
+                          businessUnit.isActive == 'T'
+                              ? Icon(
+                                Icons.check_circle_rounded,
+                                size: 17,
+                                color: Colors.green,
+                              )
+                              : Icon(
+                                Icons.cancel_rounded,
+                                size: 17,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                    ),
+                    Text(
+                      businessUnit.isActive == 'T' ? 'Aktif' : 'Tidak Aktif',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ],
                 ),
                 trailing: Wrap(
                   spacing: 12,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit, color: Color(0xFF6B7280)),
-                      onPressed: () => _editBusinessUnit(businessUnit),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => AddBusinessUnit(
+                                  editingBusinessUnit: businessUnit,
+                                ),
+                          ),
+                        );
+                      },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Color(0xFFB91C1C)),
-                      onPressed: () => _deleteBusinessUnit(businessUnit.buCode),
+                      icon: Icon(
+                        Icons.delete,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      onPressed: () async {
+                        log('Icon delete diklik');
+
+                        bool? confirmDelete = await showDialog(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text('Hapus ${businessUnit.buName}?'),
+                                content: Text(
+                                  'Apakah anda yakin ingin menghapus ${businessUnit.buName}?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.pop(context, true),
+                                    child: const Text("Ya"),
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.pop(context, false),
+                                    child: const Text(
+                                      "Tidak",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                        );
+                        if (confirmDelete == true) {
+                          bool success = await businessUnitProvider
+                              .deleteBusinessUnit(businessUnit.buCode);
+                          if (success) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'User ${businessUnit.buName} berhasil dihapus.',
+                                ),
+                              ),
+                            );
+                          } else {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Gagal menghapus user ${businessUnit.buName}: ${businessUnitProvider.errorMessage}',
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -134,13 +225,7 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
     );
   }
 
-  AppBar buildAppBar() => AppBar(title: Text("Company List"));
+  AppBar buildAppBar() => AppBar(title: Text("Business Units"));
 
-  void _editBusinessUnit(BusinessUnitEntity businessUnit) {
-    //TODO: use the provider to edit
-  }
-
-  void _deleteBusinessUnit(String buCode) {
-    //TODO: use the provider to delete
-  }
+  void _deleteBusinessUnit(String buCode) {}
 }

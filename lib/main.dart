@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/data/repositories/business_unit_repository.dart';
 import 'package:logsheet_app/data/repositories/plant_repository.dart';
 import 'package:logsheet_app/data/repositories/user_repository.dart';
@@ -86,19 +87,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Logsheet App',
-      theme: ThemeData(
-        primaryColor: Color(0xFFAB2F2B),
-        scaffoldBackgroundColor: Color(0xFFEFF3F9),
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(color: Color(0xFF655F5B)),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFFAB2F2B),
-            foregroundColor: Colors.white,
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       // home: const LoginPage(),
       home: AdminHomePage(userName: 'admin'),
     );

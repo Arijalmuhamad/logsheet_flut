@@ -3,16 +3,16 @@ import 'package:logsheet_app/data/remote/business_unit_entity.dart';
 import 'package:logsheet_app/providers/business_unit_provider.dart';
 import 'package:provider/provider.dart';
 
-class MasterAddCompany extends StatefulWidget {
+class AddBusinessUnit extends StatefulWidget {
   final BusinessUnitEntity? editingBusinessUnit;
 
-  const MasterAddCompany({super.key, this.editingBusinessUnit});
+  const AddBusinessUnit({super.key, this.editingBusinessUnit});
 
   @override
-  State<MasterAddCompany> createState() => _MasterAddCompanyState();
+  State<AddBusinessUnit> createState() => _AddBusinessUnitState();
 }
 
-class _MasterAddCompanyState extends State<MasterAddCompany> {
+class _AddBusinessUnitState extends State<AddBusinessUnit> {
   final businessUnitNameController = TextEditingController();
   final businessUnitCodeController = TextEditingController();
 

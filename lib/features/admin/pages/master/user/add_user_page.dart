@@ -16,9 +16,10 @@ class AddUserPage extends StatefulWidget {
 class _AddUserPageState extends State<AddUserPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController roleController = TextEditingController();
 
   String? selectedIsActive;
-  String? selectedIsRoles;
+  // String? selectedIsRoles;
 
   final Uuid uuid = Uuid();
 
@@ -30,10 +31,11 @@ class _AddUserPageState extends State<AddUserPage> {
       nameController.text = widget.editingUser!.username;
       passwordController.text = widget.editingUser!.password;
       selectedIsActive = widget.editingUser!.isActive;
-      selectedIsRoles = widget.editingUser!.role;
+      roleController.text = widget.editingUser!.role;
+      // selectedIsRoles = widget.editingUser!.role;
     } else {
       selectedIsActive = 'T';
-      selectedIsRoles = 'user';
+      // selectedIsRoles = 'user';
     }
   }
 
@@ -57,112 +59,108 @@ class _AddUserPageState extends State<AddUserPage> {
   }
 
   Widget buildBody() {
-    return Center(
-      child: Card(
-        color: Colors.white,
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 8,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Text(
-                widget.editingUser == null ? 'Tambah User' : 'Edit User',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF655F5B),
+    return Card(
+      color: Colors.white,
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 8,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Text(
+              widget.editingUser == null ? 'Tambah User' : 'Edit User',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF655F5B),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                hintText: 'Enter your name',
+                prefixIcon: const Icon(Icons.person),
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  hintText: 'Enter your name',
-                  prefixIcon: const Icon(Icons.person),
-                  filled: true,
-                  fillColor: const Color(0xFFF0ECE9),
-                  border: OutlineInputBorder(
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Enter your password',
+                prefixIcon: const Icon(Icons.lock),
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: roleController,
+              decoration: InputDecoration(
+                hintText: 'Role',
+                prefixIcon: const Icon(Icons.person_rounded),
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: selectedIsActive,
+              decoration: InputDecoration(
+                hintText: 'Select active status',
+                prefixIcon: const Icon(Icons.check_circle_outline),
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'T', child: Text('Aktif')),
+                DropdownMenuItem(value: 'F', child: Text('Tidak Aktif')),
+              ],
+              onChanged: (value) => setState(() => selectedIsActive = value),
+            ),
+
+            const SizedBox(height: 20),
+            Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFAB2F2B),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Enter your password',
-                  prefixIcon: const Icon(Icons.lock),
-                  filled: true,
-                  fillColor: const Color(0xFFF0ECE9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                onPressed: _registerUser,
+                child: Text(
+                  widget.editingUser == null ? 'Add User' : 'Edit User',
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedIsActive,
-                decoration: InputDecoration(
-                  hintText: 'Select active status',
-                  prefixIcon: const Icon(Icons.check_circle_outline),
-                  filled: true,
-                  fillColor: const Color(0xFFF0ECE9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'T', child: Text('Aktif')),
-                  DropdownMenuItem(value: 'F', child: Text('Tidak Aktif')),
-                ],
-                onChanged: (value) => setState(() => selectedIsActive = value),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedIsRoles,
-                decoration: InputDecoration(
-                  hintText: 'Select role',
-                  prefixIcon: const Icon(Icons.verified_user),
-                  filled: true,
-                  fillColor: const Color(0xFFF0ECE9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                  DropdownMenuItem(value: 'user', child: Text('User')),
-                ],
-                onChanged: (value) => setState(() => selectedIsRoles = value),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB2F2B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: _registerUser,
-                  child: Text(
-                    widget.editingUser == null ? 'Add User' : 'Edit User',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -173,11 +171,12 @@ class _AddUserPageState extends State<AddUserPage> {
   void _registerUser() async {
     final username = nameController.text.trim();
     final password = passwordController.text.trim();
+    final role = roleController.text.trim();
 
     if (username.isEmpty ||
         password.isEmpty ||
-        selectedIsActive == null ||
-        selectedIsRoles == null) {
+        role.isEmpty ||
+        selectedIsActive == null) {
       _showSnackBar('Mohon isi semua fields.');
       return;
     }
@@ -188,7 +187,7 @@ class _AddUserPageState extends State<AddUserPage> {
       userid: widget.editingUser?.userid ?? uuid.v4(),
       username: username,
       password: password,
-      role: selectedIsRoles!,
+      role: role,
       isActive: selectedIsActive!,
     );
 

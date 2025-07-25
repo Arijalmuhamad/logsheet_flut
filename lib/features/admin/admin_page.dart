@@ -129,19 +129,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   AppBar buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 1,
-      iconTheme: const IconThemeData(color: Color(0xFF655F5B)), // Neutral Gray
-      title: const Text(
-        'Admin Panel',
-        style: TextStyle(
-          color: Color(0xFF655F5B),
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-    );
+    return AppBar(title: const Text('Admin Panel'));
   }
 
   // Function to build drawer
@@ -152,8 +140,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Color(0xFFAB2F2B), // Brick Red
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary, // Brick Red
             ),
             child: Row(
               children: const [
