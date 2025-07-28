@@ -210,16 +210,16 @@ class _UserPageState extends State<UserPage> {
                                   actions: [
                                     TextButton(
                                       onPressed:
-                                          () => Navigator.pop(context, true),
-                                      child: const Text("Ya"),
-                                    ),
-                                    TextButton(
-                                      onPressed:
                                           () => Navigator.pop(context, false),
                                       child: const Text(
                                         "Tidak",
                                         style: TextStyle(color: Colors.grey),
                                       ),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.pop(context, true),
+                                      child: const Text("Ya"),
                                     ),
                                   ],
                                 ),

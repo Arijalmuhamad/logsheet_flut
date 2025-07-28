@@ -67,6 +67,33 @@ class BusinessUnitProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateBusinessUnit(BusinessUnitEntity businessUnit) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final response = await _businessUnitRepository.updateBusinessUnit(
+        businessUnit,
+      );
+      _setLoading(false);
+      _setErrorMessage(null);
+
+      if (response) {
+        _setLoading(false);
+        _setErrorMessage(null);
+        return true;
+      } else {
+        _setLoading(false);
+        _setErrorMessage('Failed to edit business unit.');
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('Failed to edit business unit: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
   Future<bool> deleteBusinessUnit(String buCode) async {
     _setLoading(true);
     _setErrorMessage(null);

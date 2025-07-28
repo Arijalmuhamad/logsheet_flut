@@ -66,6 +66,31 @@ class PlantProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> editPlant(PlantEntity plant) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final response = await _plantRepository.updatePlant(plant);
+      _setLoading(false);
+      _setErrorMessage(null);
+
+      if (response) {
+        _setLoading(false);
+        _setErrorMessage(null);
+        return true;
+      } else {
+        _setLoading(false);
+        _setErrorMessage('Failed to edit plant.');
+        return false;
+      }
+    } catch (e) {
+      _setLoading(false);
+      _setErrorMessage('Failed to edit plant: $e');
+      return false;
+    }
+  }
+
   Future<bool> deletePlant(String plantCode) async {
     _setLoading(true);
     _setErrorMessage(null);
@@ -75,7 +100,7 @@ class PlantProvider with ChangeNotifier {
       _setLoading(false);
       _setErrorMessage(null);
 
-      _plantList.removeWhere((element) => element.plantCode == plantCode);
+      _plantList.removeWhere((element) => element.code == plantCode);
       notifyListeners();
 
       return response;

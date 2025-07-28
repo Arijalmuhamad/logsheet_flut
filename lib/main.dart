@@ -88,8 +88,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Logsheet App',
       theme: AppTheme.lightTheme,
-      // home: const LoginPage(),
-      home: AdminHomePage(userName: 'admin'),
+      home: const LoginPage(),
+      // home: AdminHomePage(userName: 'admin'),
     );
   }
 }

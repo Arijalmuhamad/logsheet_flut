@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/role_entity.dart';
 import 'package:logsheet_app/data/remote/user_entity.dart';
 import 'package:logsheet_app/data/repositories/user_repository.dart';
 
@@ -15,6 +16,9 @@ class UserProvider with ChangeNotifier {
 
   List<UserEntity> _listUsers = [];
   List<UserEntity> get listUser => _listUsers;
+
+  List<RoleEntity> _listRoles = [];
+  List<RoleEntity> get listRoles => _listRoles;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -45,7 +49,43 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> loginUser(String username, String password) async {
+  void fetchAllRoles() async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      _listRoles = await _userRepository.getAllRoles();
+      _setLoading(false);
+    } catch (e) {
+      _setErrorMessage('Failed to fetch roles: $e');
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> updateUser(UserEntity user) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final result = await _userRepository.updateUser(user);
+
+      if (result) {
+        _setLoading(false);
+        _setErrorMessage(null);
+        return true;
+      } else {
+        _setLoading(false);
+        _setErrorMessage('Failed to edit user.');
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('Failed to edit user: $e');
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<UserEntity?> loginUser(String username, String password) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -55,17 +95,17 @@ class UserProvider with ChangeNotifier {
       if (result == null) {
         _setErrorMessage('Invalid username or password.');
         _setLoading(false);
-        return false;
+        return null;
       } else {
         _setErrorMessage(null);
         _setLoading(false);
         _currentUser = result;
-        return true;
+        return result;
       }
     } catch (e) {
       _setErrorMessage('Failed to fetch users: $e');
       _setLoading(false);
-      return false;
+      return null;
     }
   }
 

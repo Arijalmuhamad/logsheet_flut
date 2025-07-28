@@ -23,7 +23,7 @@ class PlantRepository {
   }
 
   // UPDATE PLANT
-  Future<bool> updatePLant(PlantEntity plant) async {
+  Future<bool> updatePlant(PlantEntity plant) async {
     return await _plantMySQLService.updatePlant(plant);
   }
 

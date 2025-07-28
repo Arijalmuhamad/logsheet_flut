@@ -226,6 +226,4 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
   }
 
   AppBar buildAppBar() => AppBar(title: Text("Business Units"));
-
-  void _deleteBusinessUnit(String buCode) {}
 }

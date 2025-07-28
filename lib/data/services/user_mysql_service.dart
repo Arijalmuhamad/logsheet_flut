@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/data/remote/role_entity.dart';
+import 'package:logsheet_app/data/remote/user_entity.dart';
 
 class UserMySQLService {
   Future<bool> registerUser(
@@ -69,13 +71,13 @@ class UserMySQLService {
   Future<List<Map<String, dynamic>>> getAllUsers() async {
     final conn = await getMySQLConnection();
     if (conn == null) {
-      log('Failed to get MySQL connection for login.');
+      log('Failed to get MySQL connection for get all users.');
       return [];
     }
 
     try {
       final result = await conn.execute(
-        "SELECT userid, username, roles, isactive FROM m_user",
+        "SELECT userid, username, password, roles, isactive FROM m_user",
       );
       log('Fetched ${result.rows.length} users');
       return result.rows.map((row) => row.assoc()).toList();
@@ -85,13 +87,7 @@ class UserMySQLService {
     }
   }
 
-  Future<bool> updateUser(
-    String userid,
-    String username,
-    String newPassword,
-    String newisActive,
-    String newRole,
-  ) async {
+  Future<bool> updateUser(UserEntity user) async {
     final conn = await getMySQLConnection();
     if (conn == null) {
       log('Failed to get MySQL connection for updating user.');
@@ -100,13 +96,11 @@ class UserMySQLService {
 
     try {
       final result = await conn.execute(
-        "UPDATE m_user SET username = :username, password = :newPassword, isactive = :newIsActive, roles = :newRole WHERE userid = :userid",
+        "UPDATE m_user SET isactive = :newIsActive, roles = :newRole WHERE userid = :userid",
         {
-          "username": username,
-          "password": newPassword,
-          "isactive": newisActive,
-          "roles": newRole,
-          "userid": userid,
+          "newIsActive": user.isActive,
+          "newRole": user.role,
+          "userid": user.userid,
         },
       );
 
@@ -115,6 +109,24 @@ class UserMySQLService {
     } catch (e) {
       log('Error updating user: $e');
       return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllRoles() async {
+    final conn = await getMySQLConnection();
+    if (conn == null) {
+      log('Failed to get MySQL connection for get all roles.');
+      return [];
+    }
+
+    try {
+      final result = await conn.execute("SELECT * FROM m_role;");
+
+      log('Fetched ${result.rows.length} users');
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all users: $e');
+      return [];
     }
   }
 

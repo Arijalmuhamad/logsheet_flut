@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/role_entity.dart';
 import 'package:logsheet_app/data/remote/user_entity.dart';
 import 'package:logsheet_app/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -16,10 +17,11 @@ class AddUserPage extends StatefulWidget {
 class _AddUserPageState extends State<AddUserPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController roleController = TextEditingController();
+  // final TextEditingController roleController = TextEditingController();
 
   String? selectedIsActive;
-  // String? selectedIsRoles;
+  bool _isEditing = false;
+  String? selectedRole;
 
   final Uuid uuid = Uuid();
 
@@ -27,15 +29,21 @@ class _AddUserPageState extends State<AddUserPage> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => Provider.of<UserProvider>(context, listen: false).fetchAllRoles(),
+    );
+
     if (widget.editingUser != null) {
       nameController.text = widget.editingUser!.username;
       passwordController.text = widget.editingUser!.password;
       selectedIsActive = widget.editingUser!.isActive;
-      roleController.text = widget.editingUser!.role;
-      // selectedIsRoles = widget.editingUser!.role;
+      // roleController.text = widget.editingUser!.role;
+      _isEditing = true;
+      selectedRole = widget.editingUser!.role;
     } else {
       selectedIsActive = 'T';
-      // selectedIsRoles = 'user';
+      _isEditing = false;
+      selectedRole = 'ADM';
     }
   }
 
@@ -80,11 +88,22 @@ class _AddUserPageState extends State<AddUserPage> {
             const SizedBox(height: 20),
             TextField(
               controller: nameController,
+              // readOnly: _isEditing,
+              enabled: !_isEditing,
               decoration: InputDecoration(
+                disabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 hintText: 'Enter your name',
-                prefixIcon: const Icon(Icons.person),
+                prefixIcon: Icon(
+                  Icons.person,
+                  color: _isEditing ? Colors.grey[500] : Colors.black,
+                ),
                 filled: true,
-                fillColor: const Color(0xFFF0ECE9),
+                fillColor: _isEditing ? Colors.grey[300] : Color(0xFFF0ECE9),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -95,11 +114,15 @@ class _AddUserPageState extends State<AddUserPage> {
             TextField(
               controller: passwordController,
               obscureText: true,
+              enabled: !_isEditing,
               decoration: InputDecoration(
                 hintText: 'Enter your password',
-                prefixIcon: const Icon(Icons.lock),
+                prefixIcon: Icon(
+                  Icons.lock_rounded,
+                  color: _isEditing ? Colors.grey[500] : Colors.black,
+                ),
                 filled: true,
-                fillColor: const Color(0xFFF0ECE9),
+                fillColor: _isEditing ? Colors.grey[300] : Color(0xFFF0ECE9),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -107,18 +130,44 @@ class _AddUserPageState extends State<AddUserPage> {
               ),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: roleController,
-              decoration: InputDecoration(
-                hintText: 'Role',
-                prefixIcon: const Icon(Icons.person_rounded),
-                filled: true,
-                fillColor: const Color(0xFFF0ECE9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+            // TextField(
+            //   controller: roleController,
+            //   decoration: InputDecoration(
+            //     hintText: 'Role',
+            //     prefixIcon: const Icon(Icons.person_rounded),
+            //     filled: true,
+            //     fillColor: const Color(0xFFF0ECE9),
+            //     border: OutlineInputBorder(
+            //       borderRadius: BorderRadius.circular(12),
+            //       borderSide: BorderSide.none,
+            //     ),
+            //   ),
+            // ),
+            // DropdownButtonFormField<String>(items: , onChanged: onChanged),
+            Consumer<UserProvider>(
+              builder: (context, userProvider, child) {
+                if (userProvider.isLoading) {}
+                if (userProvider.errorMessage != null) {
+                  return Text(
+                    'Error: ${userProvider.errorMessage!}',
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  );
+                }
+
+                final roleList = userProvider.listRoles;
+                return DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  onChanged: (value) => setState(() => selectedRole = value),
+                  items:
+                      roleList.map<DropdownMenuItem<String>>((RoleEntity role) {
+                        return DropdownMenuItem<String>(
+                          value: role.code,
+                          child: Text('${role.code} - ${role.name}'),
+                        );
+                      }).toList(),
+                );
+              },
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
@@ -155,7 +204,7 @@ class _AddUserPageState extends State<AddUserPage> {
                 ),
                 onPressed: _registerUser,
                 child: Text(
-                  widget.editingUser == null ? 'Add User' : 'Edit User',
+                  widget.editingUser == null ? 'Add User' : 'Edit User Role',
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
@@ -166,17 +215,14 @@ class _AddUserPageState extends State<AddUserPage> {
     );
   }
 
-  AppBar buildAppBar() => AppBar(title: const Text('Add User'));
+  AppBar buildAppBar() => AppBar(
+    title: Text(widget.editingUser == null ? 'Add User' : 'Edit User Role'),
+  );
 
   void _registerUser() async {
     final username = nameController.text.trim();
-    final password = passwordController.text.trim();
-    final role = roleController.text.trim();
 
-    if (username.isEmpty ||
-        password.isEmpty ||
-        role.isEmpty ||
-        selectedIsActive == null) {
+    if (username.isEmpty || selectedRole == null || selectedIsActive == null) {
       _showSnackBar('Mohon isi semua fields.');
       return;
     }
@@ -186,28 +232,30 @@ class _AddUserPageState extends State<AddUserPage> {
     final userData = UserEntity(
       userid: widget.editingUser?.userid ?? uuid.v4(),
       username: username,
-      password: password,
-      role: role,
+      password: '',
+      role: selectedRole!,
       isActive: selectedIsActive!,
     );
 
     bool? success;
 
-    if (widget.editingUser == null) {
-      success = await userProvider.registerUser(userData);
-      switch (success) {
-        case null:
-          _showSnackBar('Terjadi error: ${userProvider.errorMessage}');
-        case false:
-          _showSnackBar('Registrasi User gagal: ${userProvider.errorMessage}');
-        case true:
-          _showSnackBar('Registrasi User berhasil.');
-          if (mounted) Navigator.pop(context);
-        // _resetForm();
-      }
+    if (_isEditing) {
+      success = await userProvider.updateUser(userData);
     } else {
-      _showSnackBar('TODO: Fitur edit belum jadi');
+      success = await userProvider.registerUser(userData);
     }
+    switch (success) {
+      case null:
+        _showSnackBar('Terjadi error: ${userProvider.errorMessage}');
+      case false:
+        _showSnackBar('Registrasi User gagal: ${userProvider.errorMessage}');
+      case true:
+        _showSnackBar('Registrasi User berhasil.');
+        userProvider.fetchAllUsers();
+        if (mounted) Navigator.pop(context);
+      // _resetForm();
+    }
+
     // _showSnackBar('User berhasil ditambah.');
   }
 }

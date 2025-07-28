@@ -92,33 +92,71 @@ class _PlantPageState extends State<PlantPage> {
                   horizontal: 16,
                   vertical: 8,
                 ),
-                leading: const Icon(
-                  Icons.factory,
-                  color: Color(0xFF6B7280),
-                  size: 40,
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withAlpha(25),
+                  radius: 24,
+                  child: Icon(
+                    Icons.factory,
+                    color: Theme.of(context).colorScheme.primary.withAlpha(200),
+                    size: 36,
+                  ),
                 ),
                 title: Text(
-                  plant.plantName ?? "",
+                  plant.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: Color(0xFF655F5B),
                   ),
                 ),
-                subtitle: Text(
-                  'Active: ${plant.isActive == 'T' ? 'Aktif' : 'Tidak Aktif'}',
-                  style: const TextStyle(color: Colors.black54),
+                subtitle: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child:
+                          plant.isActive == 'T'
+                              ? Icon(
+                                Icons.check_circle_rounded,
+                                size: 17,
+                                color: Colors.green,
+                              )
+                              : Icon(
+                                Icons.cancel_rounded,
+                                size: 17,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                    ),
+                    Text(
+                      plant.isActive == 'T' ? 'Aktif' : 'Tidak Aktif',
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ],
                 ),
                 trailing: Wrap(
                   spacing: 12,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit, color: Color(0xFF6B7280)),
-                      onPressed: () => _editPlant(plant),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => AddPlantPage(
+                                  editingPlantEntity:
+                                      plantProvider.plantList[index],
+                                ),
+                          ),
+                        );
+                      },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Color(0xFFB91C1C)),
-                      onPressed: () => _deletePlant(plant.plantCode),
+                      onPressed: () => _deletePlant(plant, plantProvider),
                     ),
                   ],
                 ),
@@ -132,7 +170,49 @@ class _PlantPageState extends State<PlantPage> {
 
   AppBar buildAppBar() => AppBar(title: const Text("Plants"));
 
-  void _editPlant(PlantEntity plant) {}
+  void _deletePlant(PlantEntity plant, PlantProvider provider) async {
+    log("Icon delete plant diclick");
 
-  void _deletePlant(String plantCode) {}
+    bool? confirmDelete = await showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text("Hapus ${plant.name}?"),
+            content: Text("Apakah anda yakin ingin menghapus ${plant.name}?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text(
+                  "Tidak",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Ya"),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmDelete == true) {
+      bool success = await provider.deletePlant(plant.code);
+
+      if (success) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Plant ${plant.name} berhasil dihapus.')),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Gagal menghapus Plant ${plant.name}: ${provider.errorMessage}',
+            ),
+          ),
+        );
+      }
+    }
+  }
 }

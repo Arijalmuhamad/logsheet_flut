@@ -23,6 +23,9 @@ class BusinessUnitRepository {
   }
 
   //UPDATE BUSINESS UNIT
+  Future<bool> updateBusinessUnit(BusinessUnitEntity businessUnit) async {
+    return await _businessUnitMySQLService.updateBusinessUnit(businessUnit);
+  }
 
   //DELETE BUSINESS UNIT
   Future<bool> deleteBusinessUnit(String buCode) async {

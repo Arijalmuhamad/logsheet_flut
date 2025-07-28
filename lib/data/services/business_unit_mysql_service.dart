@@ -48,6 +48,27 @@ class BusinessUnitMySQLService {
     }
   }
 
+  Future<bool> updateBusinessUnit(BusinessUnitEntity businessUnit) async {
+    final conn = await getMySQLConnection();
+    if (conn == null) {
+      log('Failed to get MySQL connection for updating Business Unit.');
+      return false;
+    }
+
+    try {
+      final result = await conn.execute(
+        "UPDATE m_business_unit SET isactive = :isactive WHERE bu_code = :bu_code",
+        {"isactive": businessUnit.isActive, "bu_code": businessUnit.buCode},
+      );
+
+      log('Business Unit updated: ${result.affectedRows} row(s) affected.');
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating business unit: $e');
+      return false;
+    }
+  }
+
   Future<bool> deleteBusinessUnit(String buCode) async {
     final conn = await getMySQLConnection();
     if (conn == null) {

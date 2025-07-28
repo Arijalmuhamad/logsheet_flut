@@ -1,3 +1,4 @@
+import 'package:logsheet_app/data/remote/role_entity.dart';
 import 'package:logsheet_app/data/remote/user_entity.dart';
 import 'package:logsheet_app/data/services/user_mysql_service.dart';
 
@@ -42,17 +43,19 @@ class UserRepository {
 
   // UPDATE A USER
   Future<bool> updateUser(UserEntity user) async {
-    return await _userMySQLService.updateUser(
-      user.userid,
-      user.username,
-      user.password, // problem
-      user.isActive,
-      user.role,
-    );
+    return await _userMySQLService.updateUser(user);
   }
 
   // DELETE A USER
   Future<bool> deleteUser(String userId) async {
     return await _userMySQLService.deleteUser(userId);
+  }
+
+  // GET ALL ROLES
+  Future<List<RoleEntity>> getAllRoles() async {
+    final List<Map<String, dynamic>> roleMaps =
+        await _userMySQLService.getAllRoles();
+
+    return roleMaps.map((map) => RoleEntity.fromMap(map)).toList();
   }
 }

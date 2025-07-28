@@ -16,15 +16,15 @@ class PlantMySQLService {
       final result = await conn.execute(
         "INSERT INTO m_plant (plant_code, plant_name, bu_code, isactive) VALUES (:plant_code, :plant_name, :bu_code, :isactive)",
         {
-          "plant_code": plant.plantCode,
-          "plant_name": plant.plantName,
+          "plant_code": plant.code,
+          "plant_name": plant.name,
           "bu_code": plant.buCode,
           "isactive": plant.isActive,
         },
       );
 
       log(
-        "Plant ${plant.plantName} teregistrasi: ${result.affectedRows} row(s) affected.",
+        "Plant ${plant.name} teregistrasi: ${result.affectedRows} row(s) affected.",
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
@@ -60,10 +60,9 @@ class PlantMySQLService {
 
     try {
       final result = await conn.execute(
-        "UPDATE m_plant SET plant_code = :plant_code, plant_name = :plant_name, bu_code = :bu_code, isactive = :isactive",
+        "UPDATE m_plant SET bu_code = :bu_code, isactive = :isactive WHERE plant_code = :plant_code",
         {
-          "plant_code": plant.plantCode,
-          "plant_name": plant.plantName,
+          "plant_code": plant.code,
           "bu_code": plant.buCode,
           "isactive": plant.isActive,
         },
