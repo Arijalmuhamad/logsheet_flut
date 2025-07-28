@@ -32,8 +32,50 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   // Data dropdown & kontrol
   double? selectedTankSource;
   String? selectedPartSource;
-  List<MMastervalue> tankList = [];
-  List<MMastervalue> partList = [];
+  List<MMastervalue> tankList = [
+    MMastervalue(
+      id: '1',
+      code: '1',
+      name: '1',
+      group: '1',
+      number: 1,
+      isactive: 'T',
+      entryBy: '1',
+      entryDate: DateTime.now(),
+    ),
+    MMastervalue(
+      id: '2',
+      code: '2',
+      name: '2',
+      group: '2',
+      number: 2,
+      isactive: 'T',
+      entryBy: '2',
+      entryDate: DateTime.now(),
+    ),
+  ];
+  List<MMastervalue> partList = [
+    MMastervalue(
+      id: '1',
+      code: '1',
+      name: '1',
+      group: '1',
+      number: 1,
+      isactive: 'T',
+      entryBy: '1',
+      entryDate: DateTime.now(),
+    ),
+    MMastervalue(
+      id: '2',
+      code: '2',
+      name: '2',
+      group: '2',
+      number: 2,
+      isactive: 'T',
+      entryBy: '2',
+      entryDate: DateTime.now(),
+    ),
+  ];
 
   int? selectedHour;
   // String? selectedPart;
@@ -105,8 +147,8 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     db = AppDatabase();
     qualityReportRefDao = QualityReportRefineryDao(db);
     mastervalueDao = MastervalueDao(db);
-    _loadTankList();
-    _loadPartList();
+    // _loadTankList();
+    // _loadPartList();
   }
 
   Future<void> _loadTankList() async {
@@ -218,6 +260,69 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     }
   }
 
+  bool _validateCurrentStep() {
+    String? errorMessage;
+
+    if (selectedTankSource == null || selectedHour == null) {
+      errorMessage = "Mohon lengkapi Tank Source dan Jam Input";
+    } else {
+      switch (currentStep) {
+        case 0: // Parameters
+          if (pflowRateController.text.isEmpty ||
+              pffaController.text.isEmpty ||
+              pivController.text.isEmpty ||
+              ppvController.text.isEmpty ||
+              panVController.text.isEmpty ||
+              pdobiController.text.isEmpty ||
+              pcaroteneController.text.isEmpty ||
+              pmnIController.text.isEmpty ||
+              pcolorController.text.isEmpty) {
+            errorMessage = 'Mohon lengkapi semua input pada Parameters.';
+          }
+          break;
+        case 1: // Chemicals
+          if (chempaController.text.isEmpty || chembeController.text.isEmpty) {
+            errorMessage = 'Mohon lengkapi semua input Chemical.';
+          }
+          break;
+        case 2: // BPO / BPKO
+          if (bpocolorRController.text.isEmpty ||
+              bpocolorYController.text.isEmpty ||
+              bpobtController.text.isEmpty) {
+            errorMessage = 'Mohon lengkapi semua input BPO / BPKO.';
+          }
+          break;
+        case 3: // RPO
+          if (rpoffaController.text.isEmpty ||
+              rpocolorRController.text.isEmpty ||
+              rpocolorYController.text.isEmpty ||
+              rpocolorBController.text.isEmpty ||
+              rpopvController.text.isEmpty ||
+              rpomnIController.text.isEmpty ||
+              rpoproductController.text.isEmpty) {
+            errorMessage = 'Mohon lengkapi semua input RPO';
+          }
+          break;
+        case 4: // PFAD
+          if (pfadpurityController.text.isEmpty ||
+              pfadproductController.text.isEmpty) {
+            errorMessage = 'Mohon lengkapi semua input PFAD';
+          }
+          break;
+        case 5:
+          break;
+      }
+    }
+
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _refreshPage() async {
     setState(() => isLoading = true);
     await Future.delayed(const Duration(milliseconds: 600));
@@ -228,11 +333,24 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   // Navigasi Stepper
   void _nextStep() {
-    if (currentStep < 5) setState(() => currentStep++);
+    if (_validateCurrentStep()) {
+      if (currentStep < 5) setState(() => currentStep++);
+    }
   }
 
   void _prevStep() {
     if (currentStep > 0) setState(() => currentStep--);
+  }
+
+  void _goToStep(int step) {
+    if (step < currentStep) {
+      setState(() => currentStep = step);
+    } else {
+      // For jumping forward, validate current step
+      if (_validateCurrentStep()) {
+        setState(() => currentStep = step);
+      }
+    }
   }
 
   // Save Data
@@ -240,6 +358,11 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   Future<void> _saveQualityReport() async {
     if (isSaving) return;
+
+    if (!_validateCurrentStep()) {
+      // validate before saving
+      return;
+    }
     setState(() => isSaving = true);
 
     final tanksource = selectedTankSource;
@@ -254,15 +377,15 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
             : '';
 
     // Validasi input wajib
-    if (tanksource == null || formattedTime.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mohon lengkapi Tank Source dan Jam Input'),
-        ),
-      );
-      setState(() => isSaving = false);
-      return;
-    }
+    // if (tanksource == null || formattedTime.isEmpty) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(
+    //       content: Text('Mohon lengkapi Tank Source dan Jam Input'),
+    //     ),
+    //   );
+    //   setState(() => isSaving = false);
+    //   return;
+    // }
 
     // Fungsi bantu untuk parsing angka
     double? parseDouble(TextEditingController c) {
@@ -774,22 +897,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-        title: const Text(
-          'Quality Report - Refinery',
-          style: TextStyle(
-            color: Color(0xFF655F5B),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
-        ],
-      ),
+      appBar: buildAppBar(),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -900,26 +1008,29 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(6, (index) {
                       final isSelected = currentStep == index;
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? const Color(0xFFAB2F2B)
-                                  : Colors.grey.shade300,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              color:
-                                  isSelected
-                                      ? Colors.white
-                                      : const Color(0xFF655F5B),
-                              fontWeight: FontWeight.bold,
+                      return InkWell(
+                        onTap: () => _goToStep(index),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color:
+                                isSelected
+                                    ? const Color(0xFFAB2F2B)
+                                    : Colors.grey.shade300,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                color:
+                                    isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF655F5B),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -1024,6 +1135,25 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
             ),
         ],
       ),
+    );
+  }
+
+  AppBar buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
+      title: const Text(
+        'Quality Report - Refinery',
+        style: TextStyle(
+          color: Color(0xFF655F5B),
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+      actions: [
+        IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
+      ],
     );
   }
 }
