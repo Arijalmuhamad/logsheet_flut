@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/data/remote/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/data/services/plant_mysql_service.dart';
 
 class PlantRepository {

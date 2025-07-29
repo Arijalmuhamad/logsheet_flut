@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/data/repositories/plant_repository.dart';
 
 class PlantProvider with ChangeNotifier {

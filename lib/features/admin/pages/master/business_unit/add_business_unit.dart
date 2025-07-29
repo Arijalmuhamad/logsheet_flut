@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/providers/business_unit_provider.dart';
 import 'package:provider/provider.dart';
 

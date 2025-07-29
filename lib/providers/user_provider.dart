@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/role_entity.dart';
-import 'package:logsheet_app/data/remote/user_entity.dart';
+import 'package:logsheet_app/data/remote/master/role_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/repositories/user_repository.dart';
 
 class UserProvider with ChangeNotifier {

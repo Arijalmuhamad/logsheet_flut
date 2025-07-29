@@ -1,4 +1,4 @@
-import 'package:logsheet_app/data/remote/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/data/services/business_unit_mysql_service.dart';
 
 class BusinessUnitRepository {

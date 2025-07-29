@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logger/logger.dart';
+import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/providers/quality_report_refinery_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -333,9 +335,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   // Navigasi Stepper
   void _nextStep() {
-    if (_validateCurrentStep()) {
-      if (currentStep < 5) setState(() => currentStep++);
-    }
+    // if (_validateCurrentStep()) {
+    if (currentStep < 5) setState(() => currentStep++);
+    // }
   }
 
   void _prevStep() {
@@ -347,9 +349,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       setState(() => currentStep = step);
     } else {
       // For jumping forward, validate current step
-      if (_validateCurrentStep()) {
-        setState(() => currentStep = step);
-      }
+      // if (_validateCurrentStep()) {
+      setState(() => currentStep = step);
+      // }
     }
   }
 
@@ -359,10 +361,10 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   Future<void> _saveQualityReport() async {
     if (isSaving) return;
 
-    if (!_validateCurrentStep()) {
-      // validate before saving
-      return;
-    }
+    // if (!_validateCurrentStep()) {
+    //   // validate before saving
+    //   return;
+    // }
     setState(() => isSaving = true);
 
     final tanksource = selectedTankSource;
@@ -410,105 +412,168 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       final rpopv = rpopvController.text.trim();
       final rpomni = rpomnIController.text.trim();
 
-      final qualityreport = TQualityReportRefineryCompanion(
-        id: drift.Value(reportId),
-        report_date: drift.Value(DateTime.now()),
-        time: drift.Value(formattedTime),
-
-        // CPO
-        p_cat: drift.Value(partsource),
-        p_tank_source: drift.Value(tanksource),
-        p_flowrate: drift.Value(parseDouble(pflowRateController)),
-        p_ffa: drift.Value(parseDouble(pffaController)),
-        p_iv: drift.Value(parseDouble(pivController)),
-        p_pv: drift.Value(parseDouble(ppvController)),
-        p_anv: drift.Value(parseDouble(panVController)),
-        p_dobi: drift.Value(parseDouble(pdobiController)),
-        p_carotene: drift.Value(parseDouble(pcaroteneController)),
-        p_m_i: drift.Value(parseDouble(pmnIController)),
-        p_color: drift.Value(pcolorController.text.trim()),
-
-        // Chemical
-        c_cat: drift.Value(null),
-        c_pa: drift.Value(parseDouble(chempaController)),
-        c_be: drift.Value(parseDouble(chembeController)),
-
-        // BPO
-        b_color_r:
-            bpocolorR.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(bpocolorR) ?? 0),
-        b_color_y:
-            bpocolorY.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(bpocolorY) ?? 0),
-        b_break_test: drift.Value(bpobtController.text.trim()),
-
-        // RPO
-        r_cat: drift.Value(null),
-        r_ffa: drift.Value(parseDouble(rpoffaController)),
-        r_color_r:
-            rpocolorR.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(rpocolorR)),
-        r_color_y:
-            rpocolorY.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(rpocolorY)),
-        r_color_b:
-            rpocolorB.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(rpocolorB)),
-        r_pv:
-            rpopv.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(rpopv)),
-        r_m_i:
-            rpomni.isEmpty
-                ? const drift.Value.absent()
-                : drift.Value(parseInt(rpomni)),
-        r_product_tank_no: drift.Value(parseDouble(rpoproductController)),
-
-        // PFAD
-        fp_cat: drift.Value(null),
-        fp_purity: drift.Value(parseDouble(pfadpurityController)),
-        fp_product_tank_no: drift.Value(parseDouble(pfadproductController)),
-
-        // Spent Earth
-        spent_earth_oic: drift.Value(parseDouble(spenoicController)),
-
-        // Meta
-        pic: drift.Value(userProvider.userName),
-        remarks: drift.Value(remarkController.text.trim()),
-        checked_by:
-            checkedBy == null
-                ? const drift.Value.absent()
-                : drift.Value(checkedBy),
-        checked_date: drift.Value(null),
-        checked_time: drift.Value(null),
-        approved_by: drift.Value(null),
-        approved_date: drift.Value(null),
-        approved_time: drift.Value(null),
-
-        // Sistem
-        flag: drift.Value('T'),
-        company: drift.Value(null),
-        plant: drift.Value(null),
-        entry_by: drift.Value(userProvider.userName),
-        entry_date: drift.Value(DateTime.now()),
-      );
-
-      await qualityReportRefDao.insertQualityReportRefinery(qualityreport);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Laporan berhasil disimpan ✅')),
-      );
-
-      Navigator.pop(context); // Atau bisa direset form
-    } catch (e) {
-      ScaffoldMessenger.of(
+      final provider = Provider.of<QualityReportRefineryProvider>(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan laporan: $e')));
+        listen: false,
+      );
+
+      final entity = QualityReportRefineryEntity(
+        id: reportId,
+        reportDate: DateTime.now(),
+        time: formattedTime,
+        pCat: partsource,
+        pTankSource: tanksource!.toInt(),
+        pFlowRate: parseDouble(pflowRateController)!.toInt(),
+        pFFA: parseDouble(pffaController),
+        pIV: parseDouble(pivController),
+        pPV: parseDouble(ppvController),
+        pANV: parseDouble(panVController),
+        pDobi: parseDouble(pdobiController),
+        pCarotene: parseDouble(pcaroteneController),
+        pMNI: parseDouble(pmnIController),
+        pColor: pcolorController.text.trim(),
+        cCat: null,
+        cPA: parseDouble(chempaController),
+        cBE: parseDouble(chembeController),
+        bCat: null,
+        bColorR: int.parse(bpocolorR),
+        bColorY: int.parse(bpocolorY),
+        bBreakTest: bpobtController.text.trim(),
+        rCat: null,
+        rFFA: parseDouble(rpoffaController),
+        rColorR: int.parse(rpocolorR),
+        rColorY: int.parse(rpocolorY),
+        rColorB: int.parse(rpocolorB),
+        rPV: parseInt(rpopv),
+        rMNI: parseInt(rpomni),
+        rProductTankNo: int.parse(rpoproductController.text.trim()),
+        fpCat: null,
+        fpPurity: parseDouble(pfadpurityController),
+        fpProductTankNumber: parseInt(pfadproductController.text.toString()),
+        pic: userProvider.userName,
+        spentEarthOIC: parseDouble(spenoicController),
+        remarks: (remarkController.text.toString()),
+        checkedBy: checkedBy,
+        checkedDate: DateTime.now(),
+        checkedTime: null,
+        approvedBy: null,
+        approvedDate: null,
+        approvedTime: null,
+        flag: 'T',
+        company: null,
+        plant: null,
+        entryBy: entryBy,
+        entryDate: DateTime.now(),
+      );
+
+      bool? success;
+
+      success = await provider.insert(entity);
+
+      if (success) {
+        _showSnackBar('Input Report berhasil.');
+        if (mounted) Navigator.pop(context);
+      } else {
+        _showSnackBar('Input Report gagal: ${userProvider.errorMessage}');
+      }
+
+      // final qualityreport = TQualityReportRefineryCompanion(
+      //   id: drift.Value(reportId),
+      //   report_date: drift.Value(DateTime.now()),
+      //   time: drift.Value(formattedTime),
+
+      //   // CPO
+      //   p_cat: drift.Value(partsource),
+      //   p_tank_source: drift.Value(tanksource),
+      //   p_flowrate: drift.Value(parseDouble(pflowRateController)),
+      //   p_ffa: drift.Value(parseDouble(pffaController)),
+      //   p_iv: drift.Value(parseDouble(pivController)),
+      //   p_pv: drift.Value(parseDouble(ppvController)),
+      //   p_anv: drift.Value(parseDouble(panVController)),
+      //   p_dobi: drift.Value(parseDouble(pdobiController)),
+      //   p_carotene: drift.Value(parseDouble(pcaroteneController)),
+      //   p_m_i: drift.Value(parseDouble(pmnIController)),
+      //   p_color: drift.Value(pcolorController.text.trim()),
+
+      //   // Chemical
+      //   c_cat: drift.Value(null),
+      //   c_pa: drift.Value(parseDouble(chempaController)),
+      //   c_be: drift.Value(parseDouble(chembeController)),
+
+      //   // BPO
+      //   b_color_r:
+      //       bpocolorR.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(bpocolorR) ?? 0),
+      //   b_color_y:
+      //       bpocolorY.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(bpocolorY) ?? 0),
+      //   b_break_test: drift.Value(bpobtController.text.trim()),
+
+      //   // RPO
+      //   r_cat: drift.Value(null),
+      //   r_ffa: drift.Value(parseDouble(rpoffaController)),
+      //   r_color_r:
+      //       rpocolorR.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(rpocolorR)),
+      //   r_color_y:
+      //       rpocolorY.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(rpocolorY)),
+      //   r_color_b:
+      //       rpocolorB.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(rpocolorB)),
+      //   r_pv:
+      //       rpopv.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(rpopv)),
+      //   r_m_i:
+      //       rpomni.isEmpty
+      //           ? const drift.Value.absent()
+      //           : drift.Value(parseInt(rpomni)),
+      //   r_product_tank_no: drift.Value(parseDouble(rpoproductController)),
+
+      //   // PFAD
+      //   fp_cat: drift.Value(null),
+      //   fp_purity: drift.Value(parseDouble(pfadpurityController)),
+      //   fp_product_tank_no: drift.Value(parseDouble(pfadproductController)),
+
+      //   // Spent Earth
+      //   spent_earth_oic: drift.Value(parseDouble(spenoicController)),
+
+      //   // Meta
+      //   pic: drift.Value(userProvider.userName),
+      //   remarks: drift.Value(remarkController.text.trim()),
+      //   checked_by:
+      //       checkedBy == null
+      //           ? const drift.Value.absent()
+      //           : drift.Value(checkedBy),
+      //   checked_date: drift.Value(null),
+      //   checked_time: drift.Value(null),
+      //   approved_by: drift.Value(null),
+      //   approved_date: drift.Value(null),
+      //   approved_time: drift.Value(null),
+
+      //   // Sistem
+      //   flag: drift.Value('T'),
+      //   company: drift.Value(null),
+      //   plant: drift.Value(null),
+      //   entry_by: drift.Value(userProvider.userName),
+      //   entry_date: drift.Value(DateTime.now()),
+      // );
+
+      // await qualityReportRefDao.insertQualityReportRefinery(qualityreport);
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('Laporan berhasil disimpan ✅')),
+      // );
+
+      // Navigator.pop(context); // Atau bisa direset form
+    } catch (e) {
+      _showSnackBar("Gagal menyimpan laporan: $e");
     } finally {
       setState(() => isSaving = false);
     }
@@ -657,7 +722,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         return 'PFAD';
 
       case 5:
-        return 'Spent Eart & remark';
+        return 'Spent Earth & remark';
 
       default:
         return 'Parameters'; // fallback default
@@ -1155,5 +1220,11 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
       ],
     );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

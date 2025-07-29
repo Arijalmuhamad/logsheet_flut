@@ -1,8 +1,7 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/role_entity.dart';
-import 'package:logsheet_app/data/remote/user_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 
 class UserMySQLService {
   Future<bool> registerUser(

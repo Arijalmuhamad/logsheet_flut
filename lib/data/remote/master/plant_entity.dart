@@ -25,7 +25,7 @@ class PlantEntity {
       'plant_code': code,
       'plant_name': name,
       'bu_code': buCode,
-      'is_active': isActive,
+      'isactive': isActive,
     };
   }
 }

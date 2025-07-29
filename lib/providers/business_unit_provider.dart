@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/data/repositories/business_unit_repository.dart';
 
 class BusinessUnitProvider extends ChangeNotifier {

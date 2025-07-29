@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/features/admin/pages/master/plant/add_plant_page.dart';
 import 'package:logsheet_app/providers/plant_provider.dart';
 import 'package:provider/provider.dart';

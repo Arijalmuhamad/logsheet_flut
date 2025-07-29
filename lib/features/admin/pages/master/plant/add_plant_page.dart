@@ -1,5 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/providers/plant_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -27,6 +29,10 @@ class _AddPlantPageState extends State<AddPlantPage> {
       plantCodeController.text = plant.code;
       plantNameController.text = plant.name;
       isActive = plant.isActive;
+
+      // _isActive = isActive == 'T' ? true : false;
+
+      log('the current plant is ${plant.isActive}');
       _isEditing = true;
       buCode = plant.buCode;
     } else {
@@ -34,6 +40,8 @@ class _AddPlantPageState extends State<AddPlantPage> {
       _isEditing = false;
       buCode = "CD";
     }
+
+    _isActive = isActive == 'T' ? true : false;
   }
 
   @override
@@ -174,7 +182,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
       return;
     }
 
-    if (isActive != "T") {
+    if (isActive != "T" && !_isEditing) {
       _showSnackBar('Plant Harus Aktif.');
       return;
     }
@@ -200,13 +208,19 @@ class _AddPlantPageState extends State<AddPlantPage> {
     switch (success) {
       case null:
         _showSnackBar('Terjadi error: ${plantProvider.errorMessage}');
-        plantProvider.fetchAllPlant();
         break;
       case false:
-        _showSnackBar('Registrasi Plant gagal: ${plantProvider.errorMessage}');
+        _showSnackBar(
+          _isEditing
+              ? 'Edit plant gagal: ${plantProvider.errorMessage}'
+              : 'Registrasi plant gagal: ${plantProvider.errorMessage}',
+        );
         break;
       case true:
-        _showSnackBar('Registrasi Plant berhasil.');
+        _showSnackBar(
+          _isEditing ? 'Edit plant berhasil.' : 'Registrasi Plant berhasil.',
+        );
+        plantProvider.fetchAllPlant();
         if (mounted) Navigator.pop(context);
     }
   }

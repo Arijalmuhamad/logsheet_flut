@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 
 class BusinessUnitMySQLService {
   Future<bool> registerBusinessUnit(BusinessUnitEntity businessUnit) async {

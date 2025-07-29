@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 
 class PlantMySQLService {
   // Create Plant
@@ -62,12 +62,12 @@ class PlantMySQLService {
       final result = await conn.execute(
         "UPDATE m_plant SET bu_code = :bu_code, isactive = :isactive WHERE plant_code = :plant_code",
         {
-          "plant_code": plant.code,
           "bu_code": plant.buCode,
           "isactive": plant.isActive,
+          "plant_code": plant.code,
         },
       );
-      log('User updated: ${result.affectedRows} row(s) affected.');
+      log('Plant updated: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating plant: $e');
