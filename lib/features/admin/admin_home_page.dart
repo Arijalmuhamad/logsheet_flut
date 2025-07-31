@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/fer_daily_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/fractination/fra_daily_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/filtration/fp_input.dart';
@@ -17,10 +18,7 @@ import 'package:logsheet_app/features/admin/pages/master/plant/plant_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/user/user_page.dart';
 import 'package:logsheet_app/features/upload/upload_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/master_mastervalue.dart';
-import 'package:logsheet_app/features/user/user_page.dart';
 import '../auth/login_page.dart';
-import 'pages/master/user/master_user.dart';
-import 'pages/master/master_business_unit.dart';
 import 'pages/quality/quality_report_input.dart';
 import 'pages/quality/quality_report_data.dart';
 import 'pages/quality/quality_report_status.dart';
@@ -28,9 +26,14 @@ import 'pages/quality/quality_report_status.dart';
 // import 'pages/quality_report/quality_report_main.dart';
 
 class AdminHomePage extends StatefulWidget {
+  final UserEntity userEntity;
   final String userName;
   final astronautBlue = const Color(0xFF00336E);
-  const AdminHomePage({super.key, required this.userName});
+  const AdminHomePage({
+    super.key,
+    required this.userEntity,
+    required this.userName,
+  });
 
   @override
   State<AdminHomePage> createState() => _AdminHomePageState();
@@ -107,7 +110,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Welcome, ${widget.userName}!',
+              'Welcome, ${widget.userEntity.username}!',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 24,
@@ -250,7 +253,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) => MstMastervaluePage(userName: widget.userName),
+                          (_) => MstMastervaluePage(
+                            userName: widget.userEntity.username,
+                            userEntity: widget.userEntity,
+                          ),
                       settings: const RouteSettings(name: 'MasterValues'),
                     ),
                   );
@@ -293,7 +299,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) => QualityReportRefineryPage(
-                                userName: widget.userName,
+                                userName: widget.userEntity.username,
                               ),
                           settings: const RouteSettings(name: 'QualityInput'),
                         ),
@@ -312,7 +318,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         context,
                         MaterialPageRoute(
                           builder:
-                              (_) => QualityListPage(userName: widget.userName),
+                              (_) => QualityListPage(
+                                userName: widget.userEntity.username,
+                              ),
                           settings: const RouteSettings(name: 'QualityReports'),
                         ),
                       );
@@ -329,7 +337,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => StatusPage(userName: widget.userName),
+                          builder:
+                              (_) => StatusPage(
+                                userName: widget.userEntity.username,
+                              ),
                           settings: const RouteSettings(name: 'QualityStatus'),
                         ),
                       );
@@ -356,7 +367,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) => FiltrationPerformPage(
-                                userName: widget.userName,
+                                userName: widget.userEntity.username,
                               ),
                           settings: const RouteSettings(
                             name: 'FiltrationInput',
@@ -386,7 +397,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) => DailyProductionRefineryPage(
-                                userName: widget.userName,
+                                userName: widget.userEntity.username,
                               ),
                           settings: const RouteSettings(
                             name: 'FiltrationInput',
@@ -405,7 +416,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) => DailyProductionFractinationPage(
-                                userName: widget.userName,
+                                userName: widget.userEntity.username,
                               ),
                           settings: const RouteSettings(
                             name: 'FiltrationInput',
@@ -445,7 +456,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceCleaningPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'Cleaning'),
                     ),
@@ -465,8 +476,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceDryFracPage(userName: widget.userName),
+                          (_) => MaintenanceDryFracPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'DryFracMonitor'),
                     ),
                   );
@@ -483,7 +495,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceSchedulePage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'CleaningSchedule'),
                     ),
@@ -501,7 +513,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceChecksheetPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'DailyCheck'),
                     ),
@@ -522,7 +534,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceLampsGlassPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'LampGlass'),
                     ),
@@ -539,8 +551,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceFilterPage(userName: widget.userName),
+                          (_) => MaintenanceFilterPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'NiagaraFilter'),
                     ),
                   );
@@ -560,7 +573,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceChangeChecklistPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'ChangeProduct'),
                     ),
@@ -580,8 +593,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceStartupPage(userName: widget.userName),
+                          (_) => MaintenanceStartupPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'StartupProduct'),
                     ),
                   );
@@ -613,7 +627,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceCleaningPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'Cleaning'),
                     ),
@@ -633,8 +647,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceDryFracPage(userName: widget.userName),
+                          (_) => MaintenanceDryFracPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'DryFracMonitor'),
                     ),
                   );
@@ -651,7 +666,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceSchedulePage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'CleaningSchedule'),
                     ),
@@ -669,7 +684,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceChecksheetReportPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'DailyCheck'),
                     ),
@@ -690,7 +705,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceLampsGlassPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'LampGlass'),
                     ),
@@ -707,8 +722,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceFilterPage(userName: widget.userName),
+                          (_) => MaintenanceFilterPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'NiagaraFilter'),
                     ),
                   );
@@ -728,7 +744,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     MaterialPageRoute(
                       builder:
                           (_) => MaintenanceChangeChecklistPage(
-                            userName: widget.userName,
+                            userName: widget.userEntity.username,
                           ),
                       settings: const RouteSettings(name: 'ChangeProduct'),
                     ),
@@ -748,8 +764,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) =>
-                              MaintenanceStartupPage(userName: widget.userName),
+                          (_) => MaintenanceStartupPage(
+                            userName: widget.userEntity.username,
+                          ),
                       settings: const RouteSettings(name: 'StartupProduct'),
                     ),
                   );

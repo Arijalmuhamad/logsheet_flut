@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
+import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_data.dart';
 
 class QualityDetailPage extends StatelessWidget {
-  final TQualityReportRefineryData item;
+  final QualityReportRefineryEntity item;
 
   const QualityDetailPage({super.key, required this.item});
 
@@ -117,24 +118,26 @@ class QualityDetailPage extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: _buildInfoCard('Tanggal', item.tanggal),
+                    child: _buildInfoCard('Tanggal', item.entryDate.toString()),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     flex: 1,
                     child: _buildInfoCard(
                       'Jam',
-                      item.time?.substring(0, 5) ?? '-',
+                      item.time == null
+                          ? "${item.time}"
+                          : item.time!.toIso8601String(),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(flex: 1, child: _buildInfoCard('Shift', item.shift)),
+                  Expanded(flex: 1, child: _buildInfoCard('Shift', "null")),
                   const SizedBox(width: 8),
                   Expanded(
                     flex: 1,
                     child: _buildInfoCard(
                       'Tank',
-                      item.p_tank_source?.toStringAsFixed(1) ?? '-',
+                      item.pTankSource?.toStringAsFixed(1) ?? '-',
                     ),
                   ),
                 ],
@@ -144,97 +147,90 @@ class QualityDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
 
             _buildSection('Product', [
-              _buildDataRow('Part', item.p_cat ?? '-'),
+              _buildDataRow('Part', item.pCat ?? '-'),
               _buildDataRow(
                 'Flowrate',
-                item.p_flowrate?.toStringAsFixed(2) ?? '-',
+                item.pFlowRate?.toStringAsFixed(2) ?? '-',
               ),
-              _buildDataRow('FFA', item.p_ffa?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('IV', item.p_iv?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('PV', item.p_pv?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('AnV', item.p_anv?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('DOBI', item.p_dobi?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('FFA', item.pFFA?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('IV', item.pIV?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('PV', item.pPV?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('AnV', item.pANV?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('DOBI', item.pDobi?.toStringAsFixed(2) ?? '-'),
               _buildDataRow(
                 'Carotene',
-                item.p_carotene?.toStringAsFixed(2) ?? '-',
+                item.pCarotene?.toStringAsFixed(2) ?? '-',
               ),
-              _buildDataRow('M & I', item.p_m_i?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('Color', item.p_color ?? '-'),
+              _buildDataRow('M & I', item.pMNI?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('Color', item.pColor ?? '-'),
             ]),
 
             _buildSection('Chemical', [
-              _buildDataRow('Category', item.c_cat ?? '-'),
-              _buildDataRow('PA', item.c_pa?.toStringAsFixed(2) ?? '-'),
-              _buildDataRow('BE', item.c_be?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('Category', item.cCat ?? '-'),
+              _buildDataRow('PA', item.cPA?.toStringAsFixed(2) ?? '-'),
+              _buildDataRow('BE', item.cBE?.toStringAsFixed(2) ?? '-'),
             ]),
 
             _buildSection('BPO', [
-              _buildDataRow('Category', item.b_cat ?? '-'),
-              _buildDataRow('Color R', item.b_color_r?.toString() ?? '-'),
-              _buildDataRow('Color Y', item.b_color_y?.toString() ?? '-'),
-              _buildDataRow('Break Test', item.b_break_test ?? '-'),
+              _buildDataRow('Category', item.bCat ?? '-'),
+              _buildDataRow('Color R', item.bColorR?.toString() ?? '-'),
+              _buildDataRow('Color Y', item.bColorY?.toString() ?? '-'),
+              _buildDataRow('Break Test', item.bBreakTest ?? '-'),
             ]),
 
             _buildSection('RPO', [
-              _buildDataRow('Category', item.r_cat?.toString() ?? '-'),
+              _buildDataRow('Category', item.rCat?.toString() ?? '-'),
               _buildDataRow(
                 'FFA',
-                item.r_ffa is num
-                    ? (item.r_ffa as num).toStringAsFixed(2)
-                    : '-',
+                item.rFFA is num ? (item.rFFA as num).toStringAsFixed(2) : '-',
               ),
               _buildDataRow(
                 'Color R',
-                item.r_color_r is num
-                    ? (item.r_color_r as num).toStringAsFixed(2)
+                item.rColorR is num
+                    ? (item.rColorR as num).toStringAsFixed(2)
                     : '-',
               ),
               _buildDataRow(
                 'Color Y',
-                item.r_color_y is num
-                    ? (item.r_color_y as num).toStringAsFixed(2)
+                item.rColorY is num
+                    ? (item.rColorY as num).toStringAsFixed(2)
                     : '-',
               ),
               _buildDataRow(
                 'Color B',
-                item.r_color_b is num
-                    ? (item.r_color_b as num).toStringAsFixed(2)
+                item.rColorB is num
+                    ? (item.rColorB as num).toStringAsFixed(2)
                     : '-',
               ),
               _buildDataRow(
                 'PV',
-                item.r_pv is num ? (item.r_pv as num).toStringAsFixed(2) : '-',
+                item.rPV is num ? (item.rPV as num).toStringAsFixed(2) : '-',
               ),
               _buildDataRow(
                 'M & I',
-                item.r_m_i is num
-                    ? (item.r_m_i as num).toStringAsFixed(2)
-                    : '-',
+                item.rMNI is num ? (item.rMNI as num).toStringAsFixed(2) : '-',
               ),
-              _buildDataRow(
-                'Tank No',
-                item.r_product_tank_no?.toString() ?? '-',
-              ),
+              _buildDataRow('Tank No', item.rProductTankNo?.toString() ?? '-'),
             ]),
 
             _buildSection('FRAD', [
-              _buildDataRow('Category', item.fp_cat?.toString() ?? '-'),
+              _buildDataRow('Category', item.fpCat?.toString() ?? '-'),
               _buildDataRow(
                 'Purity',
-                item.fp_purity is num
-                    ? (item.fp_purity as num).toStringAsFixed(2)
+                item.fpPurity is num
+                    ? (item.fpPurity as num).toStringAsFixed(2)
                     : '-',
               ),
               _buildDataRow(
                 'Tank No',
-                item.fp_product_tank_no?.toString() ?? '-',
+                item.fpProductTankNumber?.toString() ?? '-',
               ),
             ]),
 
             _buildSection('Spent Earth', [
               _buildDataRow(
                 'Spent Earth OIC',
-                item.spent_earth_oic?.toString() ?? '-',
+                item.spentEarthOIC?.toString() ?? '-',
               ),
             ]),
 

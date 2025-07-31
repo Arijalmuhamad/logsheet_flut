@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
-import 'package:logsheet_app/features/admin/admin_page.dart';
+import 'package:logsheet_app/features/admin/admin_home_page.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:logger/logger.dart';
@@ -12,8 +13,13 @@ import '../../../../../data/dao/user_dao.dart';
 
 class MstUserPage extends StatefulWidget {
   final String userName;
+  final UserEntity userEntity;
 
-  const MstUserPage({super.key, required this.userName});
+  const MstUserPage({
+    super.key,
+    required this.userName,
+    required this.userEntity,
+  });
 
   @override
   State<MstUserPage> createState() => _UserPageState();
@@ -245,7 +251,11 @@ class _UserPageState extends State<MstUserPage> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => AdminHomePage(userName: widget.userName),
+                    builder:
+                        (_) => AdminHomePage(
+                          userName: widget.userName,
+                          userEntity: widget.userEntity,
+                        ),
                   ),
                 );
               },

@@ -8,6 +8,8 @@ import 'package:logsheet_app/data/services/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/plant_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality_report_refinery_mysql_service.dart';
 import 'package:logsheet_app/data/services/user_mysql_service.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_report_data.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_report_input.dart';
 import 'package:logsheet_app/providers/business_unit_provider.dart';
 import 'package:logsheet_app/providers/plant_provider.dart';
 import 'package:logsheet_app/providers/quality_report_refinery_provider.dart';
@@ -28,15 +30,12 @@ void main() {
       providers: [
         // Provide UserMySQL Service
         Provider<UserMySQLService>(create: (context) => UserMySQLService()),
-
         // Provide BusinessUnitMySQL Service
         Provider<BusinessUnitMySQLService>(
           create: (context) => BusinessUnitMySQLService(),
         ),
-
         // Provide PlantMySQL Service
         Provider<PlantMySQLService>(create: (context) => PlantMySQLService()),
-
         // Provide Quality Report Refinery MySQL Service
         Provider<QualityReportRefineryMysqlService>(
           create: (context) => QualityReportRefineryMysqlService(),
@@ -46,7 +45,6 @@ void main() {
         Provider<UserRepository>(
           create: (context) => UserRepository(context.read<UserMySQLService>()),
         ),
-
         // Provide Business Unit Repository
         Provider<BusinessUnitRepository>(
           create:
@@ -54,13 +52,11 @@ void main() {
                 context.read<BusinessUnitMySQLService>(),
               ),
         ),
-
         // Provide Plant Repository
         Provider<PlantRepository>(
           create:
               (context) => PlantRepository(context.read<PlantMySQLService>()),
         ),
-
         // Provide Quality Report Refinery Repository
         Provider<QualityReportRefineryRepository>(
           create:
@@ -73,19 +69,16 @@ void main() {
         ChangeNotifierProvider(
           create: (context) => UserProvider(context.read<UserRepository>()),
         ),
-
         // Provide the Business Unit Provider
         ChangeNotifierProvider(
           create:
               (context) =>
                   BusinessUnitProvider(context.read<BusinessUnitRepository>()),
         ),
-
         // Provide Plant Provider
         ChangeNotifierProvider(
           create: (context) => PlantProvider(context.read<PlantRepository>()),
         ),
-
         // Provide Quality Report Refinery Provider
         ChangeNotifierProvider(
           create:

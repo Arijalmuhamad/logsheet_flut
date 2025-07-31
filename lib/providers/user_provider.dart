@@ -118,7 +118,7 @@ class UserProvider with ChangeNotifier {
       _setLoading(false);
       _setErrorMessage(null);
 
-      _listUsers.add(user);
+      _listUsers.insert(0, user);
       notifyListeners();
 
       return response;

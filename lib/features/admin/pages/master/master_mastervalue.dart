@@ -2,17 +2,23 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/dao/mastervalue_dao.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
-import 'package:logsheet_app/features/admin/admin_page.dart';
+import 'package:logsheet_app/features/admin/admin_home_page.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../providers/user_provider.dart';
 
 class MstMastervaluePage extends StatefulWidget {
   final String userName;
+  final UserEntity userEntity;
 
-  const MstMastervaluePage({super.key, required this.userName});
+  const MstMastervaluePage({
+    super.key,
+    required this.userName,
+    required this.userEntity,
+  });
 
   @override
   State<MstMastervaluePage> createState() => _MasterValuePageState();
@@ -216,7 +222,11 @@ class _MasterValuePageState extends State<MstMastervaluePage> {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => AdminHomePage(userName: widget.userName),
+                    builder:
+                        (_) => AdminHomePage(
+                          userName: widget.userName,
+                          userEntity: widget.userEntity,
+                        ),
                   ),
                 );
               },

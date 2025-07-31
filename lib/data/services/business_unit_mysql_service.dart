@@ -40,7 +40,7 @@ class BusinessUnitMySQLService {
 
     try {
       final result = await conn.execute("SELECT * FROM m_business_unit");
-      log('Fetched ${result.affectedRows} Business Units');
+      log('Fetched ${result.numOfRows} Business Units');
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('Gagal mengambil semua business units: $e');

@@ -156,6 +156,11 @@ class _AddBusinessUnitState extends State<AddBusinessUnit> {
       return;
     }
 
+    if (!_isActive) {
+      _showSnackBar('Business Unit harus aktif terlebih dahulu.');
+      return;
+    }
+
     final businessUnitProvider = Provider.of<BusinessUnitProvider>(
       context,
       listen: false,

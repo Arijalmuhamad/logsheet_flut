@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/data/repositories/business_unit_repository.dart';
@@ -41,7 +43,7 @@ class BusinessUnitProvider extends ChangeNotifier {
       _setLoading(false);
       _setErrorMessage(null);
 
-      _listBusinessUnits.add(businessUnit);
+      _listBusinessUnits.insert(0, businessUnit);
       notifyListeners();
 
       return response;
@@ -53,13 +55,14 @@ class BusinessUnitProvider extends ChangeNotifier {
     }
   }
 
-  void fetchAllBusinessUnits() async {
+  Future<void> fetchAllBusinessUnits() async {
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
       _listBusinessUnits = await _businessUnitRepository.getAllBusinessUnits();
-
+      log("_listBusinessUnits length: ${_listBusinessUnits.length}");
+      notifyListeners();
       _setLoading(false);
     } catch (e) {
       _setErrorMessage('Failed to fetch business units: $e');

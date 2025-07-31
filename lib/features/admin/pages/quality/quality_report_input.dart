@@ -1,9 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:developer';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/providers/quality_report_refinery_provider.dart';
@@ -262,68 +265,68 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     }
   }
 
-  bool _validateCurrentStep() {
-    String? errorMessage;
+  // bool _validateCurrentStep() {
+  //   String? errorMessage;
 
-    if (selectedTankSource == null || selectedHour == null) {
-      errorMessage = "Mohon lengkapi Tank Source dan Jam Input";
-    } else {
-      switch (currentStep) {
-        case 0: // Parameters
-          if (pflowRateController.text.isEmpty ||
-              pffaController.text.isEmpty ||
-              pivController.text.isEmpty ||
-              ppvController.text.isEmpty ||
-              panVController.text.isEmpty ||
-              pdobiController.text.isEmpty ||
-              pcaroteneController.text.isEmpty ||
-              pmnIController.text.isEmpty ||
-              pcolorController.text.isEmpty) {
-            errorMessage = 'Mohon lengkapi semua input pada Parameters.';
-          }
-          break;
-        case 1: // Chemicals
-          if (chempaController.text.isEmpty || chembeController.text.isEmpty) {
-            errorMessage = 'Mohon lengkapi semua input Chemical.';
-          }
-          break;
-        case 2: // BPO / BPKO
-          if (bpocolorRController.text.isEmpty ||
-              bpocolorYController.text.isEmpty ||
-              bpobtController.text.isEmpty) {
-            errorMessage = 'Mohon lengkapi semua input BPO / BPKO.';
-          }
-          break;
-        case 3: // RPO
-          if (rpoffaController.text.isEmpty ||
-              rpocolorRController.text.isEmpty ||
-              rpocolorYController.text.isEmpty ||
-              rpocolorBController.text.isEmpty ||
-              rpopvController.text.isEmpty ||
-              rpomnIController.text.isEmpty ||
-              rpoproductController.text.isEmpty) {
-            errorMessage = 'Mohon lengkapi semua input RPO';
-          }
-          break;
-        case 4: // PFAD
-          if (pfadpurityController.text.isEmpty ||
-              pfadproductController.text.isEmpty) {
-            errorMessage = 'Mohon lengkapi semua input PFAD';
-          }
-          break;
-        case 5:
-          break;
-      }
-    }
+  //   if (selectedTankSource == null || selectedHour == null) {
+  //     errorMessage = "Mohon lengkapi Tank Source dan Jam Input";
+  //   } else {
+  //     switch (currentStep) {
+  //       case 0: // Parameters
+  //         if (pflowRateController.text.isEmpty ||
+  //             pffaController.text.isEmpty ||
+  //             pivController.text.isEmpty ||
+  //             ppvController.text.isEmpty ||
+  //             panVController.text.isEmpty ||
+  //             pdobiController.text.isEmpty ||
+  //             pcaroteneController.text.isEmpty ||
+  //             pmnIController.text.isEmpty ||
+  //             pcolorController.text.isEmpty) {
+  //           errorMessage = 'Mohon lengkapi semua input pada Parameters.';
+  //         }
+  //         break;
+  //       case 1: // Chemicals
+  //         if (chempaController.text.isEmpty || chembeController.text.isEmpty) {
+  //           errorMessage = 'Mohon lengkapi semua input Chemical.';
+  //         }
+  //         break;
+  //       case 2: // BPO / BPKO
+  //         if (bpocolorRController.text.isEmpty ||
+  //             bpocolorYController.text.isEmpty ||
+  //             bpobtController.text.isEmpty) {
+  //           errorMessage = 'Mohon lengkapi semua input BPO / BPKO.';
+  //         }
+  //         break;
+  //       case 3: // RPO
+  //         if (rpoffaController.text.isEmpty ||
+  //             rpocolorRController.text.isEmpty ||
+  //             rpocolorYController.text.isEmpty ||
+  //             rpocolorBController.text.isEmpty ||
+  //             rpopvController.text.isEmpty ||
+  //             rpomnIController.text.isEmpty ||
+  //             rpoproductController.text.isEmpty) {
+  //           errorMessage = 'Mohon lengkapi semua input RPO';
+  //         }
+  //         break;
+  //       case 4: // PFAD
+  //         if (pfadpurityController.text.isEmpty ||
+  //             pfadproductController.text.isEmpty) {
+  //           errorMessage = 'Mohon lengkapi semua input PFAD';
+  //         }
+  //         break;
+  //       case 5:
+  //         break;
+  //     }
+  //   }
 
-    if (errorMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
-      );
-      return false;
-    }
-    return true;
-  }
+  //   if (errorMessage != null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+  //     );
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   Future<void> _refreshPage() async {
     setState(() => isLoading = true);
@@ -361,6 +364,8 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   Future<void> _saveQualityReport() async {
     if (isSaving) return;
 
+    log('Save report button clicked.');
+
     // if (!_validateCurrentStep()) {
     //   // validate before saving
     //   return;
@@ -373,11 +378,12 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final uuid = Uuid();
 
+    log('Alleged Null check opeator.');
     final String formattedTime =
         selectedHour != null
             ? '${selectedHour.toString().padLeft(2, '0')}:00:00'
             : '';
-
+    log('Alleged Null check opeator Done. $formattedTime');
     // Validasi input wajib
     // if (tanksource == null || formattedTime.isEmpty) {
     //   ScaffoldMessenger.of(context).showSnackBar(
@@ -393,6 +399,10 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     double? parseDouble(TextEditingController c) {
       final text = c.text.trim();
       return text.isEmpty ? null : double.tryParse(text);
+    }
+
+    double? parseDoubleString(String c) {
+      return c.isEmpty ? null : double.tryParse(c);
     }
 
     int? parseInt(String value) {
@@ -420,10 +430,10 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       final entity = QualityReportRefineryEntity(
         id: reportId,
         reportDate: DateTime.now(),
-        time: formattedTime,
+        time: DateFormat('HH:mm:ss').parse(formattedTime),
         pCat: partsource,
-        pTankSource: tanksource!.toInt(),
-        pFlowRate: parseDouble(pflowRateController)!.toInt(),
+        pTankSource: tanksource,
+        pFlowRate: parseDouble(pflowRateController),
         pFFA: parseDouble(pffaController),
         pIV: parseDouble(pivController),
         pPV: parseDouble(ppvController),
@@ -436,25 +446,27 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         cPA: parseDouble(chempaController),
         cBE: parseDouble(chembeController),
         bCat: null,
-        bColorR: int.parse(bpocolorR),
-        bColorY: int.parse(bpocolorY),
+        bColorR: parseDoubleString(bpocolorR),
+        bColorY: parseDoubleString(bpocolorY),
         bBreakTest: bpobtController.text.trim(),
         rCat: null,
         rFFA: parseDouble(rpoffaController),
-        rColorR: int.parse(rpocolorR),
-        rColorY: int.parse(rpocolorY),
-        rColorB: int.parse(rpocolorB),
-        rPV: parseInt(rpopv),
-        rMNI: parseInt(rpomni),
-        rProductTankNo: int.parse(rpoproductController.text.trim()),
+        rColorR: parseDoubleString(rpocolorR),
+        rColorY: parseDoubleString(rpocolorY),
+        rColorB: parseDoubleString(rpocolorB),
+        rPV: parseDoubleString(rpopv),
+        rMNI: parseDoubleString(rpomni),
+        rProductTankNo: parseDoubleString(rpoproductController.text.trim()),
         fpCat: null,
         fpPurity: parseDouble(pfadpurityController),
-        fpProductTankNumber: parseInt(pfadproductController.text.toString()),
+        fpProductTankNumber: parseDoubleString(
+          pfadproductController.text.toString(),
+        ),
         pic: userProvider.userName,
         spentEarthOIC: parseDouble(spenoicController),
         remarks: (remarkController.text.toString()),
         checkedBy: checkedBy,
-        checkedDate: DateTime.now(),
+        checkedDate: null,
         checkedTime: null,
         approvedBy: null,
         approvedDate: null,
@@ -468,12 +480,16 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
       bool? success;
 
+      log('attemp to insert');
       success = await provider.insert(entity);
 
       if (success) {
         _showSnackBar('Input Report berhasil.');
+
+        log('insert successful.');
         if (mounted) Navigator.pop(context);
       } else {
+        log('insert is not successful.');
         _showSnackBar('Input Report gagal: ${userProvider.errorMessage}');
       }
 

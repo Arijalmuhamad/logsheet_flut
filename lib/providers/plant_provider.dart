@@ -55,7 +55,7 @@ class PlantProvider with ChangeNotifier {
       _setLoading(false);
       _setErrorMessage(null);
 
-      _plantList.add(plant);
+      _plantList.insert(0, plant);
       notifyListeners();
 
       return response;
@@ -75,15 +75,15 @@ class PlantProvider with ChangeNotifier {
       _setLoading(false);
       _setErrorMessage(null);
 
-      if (response) {
-        _setLoading(false);
-        _setErrorMessage(null);
-        return true;
-      } else {
-        _setLoading(false);
-        _setErrorMessage('Failed to edit plant.');
-        return false;
-      }
+      // if (response) {
+      _setLoading(false);
+      _setErrorMessage(null);
+      return response;
+      // } else {
+      //   _setLoading(false);
+      //   _setErrorMessage('Failed to edit plant.');
+      //   return false;
+      // }
     } catch (e) {
       _setLoading(false);
       _setErrorMessage('Failed to edit plant: $e');

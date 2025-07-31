@@ -251,7 +251,7 @@ class _AddUserPageState extends State<AddUserPage> {
         _showSnackBar('Registrasi User gagal: ${userProvider.errorMessage}');
       case true:
         _showSnackBar('Registrasi User berhasil.');
-        userProvider.fetchAllUsers();
+        // userProvider.fetchAllUsers();
         if (mounted) Navigator.pop(context);
       // _resetForm();
     }

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:mysql_client/mysql_client.dart';
 
 class QualityReportRefineryMysqlService {
   Future<bool> insertQualityReportRefinery(
@@ -52,6 +53,47 @@ class QualityReportRefineryMysqlService {
     } catch (e) {
       log('Error inserting Quality Report Refinery Report: $e');
       return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllReports(
+    DateTime? dateFilter,
+    String? time,
+  ) async {
+    final conn = await getMySQLConnection();
+    if (conn == null) {
+      log('Failed to get MySQL connection for get all reports.');
+      return [];
+    }
+
+    try {
+      IResultSet? result;
+      if (dateFilter != null && time != null) {
+        result = await conn.execute(
+          "SELECT * FROM t_quality_report_refinery WHERE time = :time AND report_date = :dateFilter ORDER BY report_date DESC",
+          {"time": time, "dateFilter": dateFilter},
+        );
+      } else if (dateFilter != null && time == null) {
+        result = await conn.execute(
+          "SELECT * FROM t_quality_report_refinery WHERE report_date = :dateFilter ORDER BY report_date DESC",
+          {"dateFilter": dateFilter},
+        );
+      } else if (dateFilter == null && time != null) {
+        result = await conn.execute(
+          "SELECT * FROM t_quality_report_refinery WHERE time = :time ORDER BY report_date DESC",
+          {"time": time},
+        );
+      } else {
+        result = await conn.execute(
+          "SELECT * FROM t_quality_report_refinery ORDER BY report_date DESC",
+        );
+      }
+
+      log('Fetched ${result.rows.length}');
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all reports: $e');
+      return [];
     }
   }
 }

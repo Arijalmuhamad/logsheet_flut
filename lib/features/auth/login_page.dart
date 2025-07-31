@@ -3,8 +3,8 @@ import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/data/dao/user_dao.dart';
 import 'package:provider/provider.dart';
 
-import '../../features/admin/admin_page.dart';
-import '../../features/user/user_page.dart';
+import '../admin/admin_home_page.dart';
+import '../user/user_home_page.dart';
 import '../../providers/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -48,12 +48,14 @@ class _LoginPageState extends State<LoginPage> {
     final user = await userProvider.loginUser(username, password);
 
     if (user != null) {
-      if (user.role == 'ADM' || user.role == 'ADMIN' || user.role == 'admin') {
+      if (user.role == 'ADM') {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => AdminHomePage(userName: user.username),
+            builder:
+                (context) =>
+                    AdminHomePage(userEntity: user, userName: user.username),
           ),
         );
       } else {
@@ -61,10 +63,14 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => UserHomePage(userName: user.username),
+            builder: (context) => UserHomePage(userEntity: user),
           ),
         );
       }
+    } else {
+      setState(() {
+        errorMessage = 'Username atau password salah, atau akun tidak aktif.';
+      });
     }
 
     // if (selectedPlant == null || selectedCompany == null) {
