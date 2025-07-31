@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
-class MaintenanceCleaningPage extends StatelessWidget {
+class MaintenanceCleaningPage extends StatefulWidget {
   final String userName;
   const MaintenanceCleaningPage({super.key, required this.userName});
 
+  @override
+  State<MaintenanceCleaningPage> createState() =>
+      _MaintenanceCleaningPageState();
+}
+
+class _MaintenanceCleaningPageState extends State<MaintenanceCleaningPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,27 +40,39 @@ class MaintenanceCleaningPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 // Contoh Form Field
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Area',
-                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Color(0xFFF0ECE9),
+                    prefixIcon: Icon(Icons.location_city),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'PIC',
-                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Color(0xFFF0ECE9),
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
+
+                const SizedBox(height: 20),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Simpan data
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.save),
                   label: const Text('Save'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Color(0xFFB91C1C),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

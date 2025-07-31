@@ -158,12 +158,37 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   Future<void> _loadTankList() async {
     final tanks = await mastervalueDao.getActiveTanks();
-    setState(() => tankList = tanks);
+    //dummy data tank
+    final tanksDummy = [
+      MMastervalue(
+        id: '1',
+        code: '1',
+        name: 'a',
+        group: 'a',
+        number: 1,
+        isactive: 'T',
+        entryBy: 'admin',
+        entryDate: DateTime.now(),
+      ),
+    ];
+    setState(() => tankList = tanksDummy);
   }
 
   Future<void> _loadPartList() async {
     final parts = await mastervalueDao.getActiveParts();
-    setState(() => partList = parts);
+    final partsDummy = [
+      MMastervalue(
+        id: '1',
+        code: '1',
+        name: 'a',
+        group: 'a',
+        number: 1,
+        isactive: 'T',
+        entryBy: 'admin',
+        entryDate: DateTime.now(),
+      ),
+    ];
+    setState(() => partList = partsDummy);
   }
 
   void _resetForm() {
@@ -647,25 +672,28 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {}); // Refresh UI
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFAB2F2B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+              SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {}); // Refresh UI
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFAB2F2B),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    child: const Text('Pilih', style: TextStyle(fontSize: 16)),
                   ),
-                  child: const Text('Pilih', style: TextStyle(fontSize: 16)),
                 ),
               ),
             ],

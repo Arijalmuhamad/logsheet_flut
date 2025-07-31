@@ -530,6 +530,119 @@ class _QualityListPageState extends State<QualityListPage> {
       MaterialPageRoute(builder: (context) => QualityDetailPage(item: item)),
     );
   }
+
+  Widget _filterChips() {
+    return Row(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CustomFilterDropdownChip(
+                  label: 'Filter',
+                  options: ['List 1', 'List 2', 'List 3'],
+                  chipIcon: Icons.calendar_today,
+                  controller: dateController,
+                  isCalendar: true,
+                  onSelected: (value) {},
+                ),
+                const SizedBox(width: 8),
+                CustomFilterDropdownChip(
+                  label: 'Pilih Tanggal',
+                  options: const [],
+                  chipIcon: Icons.calendar_today,
+                  controller: dateController,
+                  isCalendar: true,
+                  selectedOption:
+                      _selectedDate != null
+                          ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+                          : null,
+                  onSelected: (_) {
+                    _pickDate(context);
+                  },
+                ),
+                const SizedBox(width: 8),
+                CustomFilterDropdownChip(
+                  label: 'Pilih Waktu',
+                  options: _hours,
+                  chipIcon: Icons.alarm,
+                  controller: timeController,
+                  isCalendar: false,
+                  selectedOption: _selectedHour,
+                  onSelected: (selectedValue) {
+                    setState(() {
+                      (_selectedHour == 'All')
+                          ? null
+                          : _selectedHour = selectedValue;
+                      // _selectedHour = selectedValue;
+                      _filterData();
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReportContent() {
+    return Expanded(
+      child:
+          isInitialLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 4,
+                shadowColor: Colors.black26,
+                margin: const EdgeInsets.only(top: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child:
+                      filteredData.isEmpty
+                          ? const Center(
+                            child: Text(
+                              'Tidak ada data',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF655F5B), // Neutral Gray
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                          : ListView.builder(
+                            itemCount: allData.length,
+                            itemBuilder: (context, index) {
+                              final report = allData[index];
+                              return QualityReportItemCard(
+                                report: report,
+                                index: index,
+                                onTap: () => _onTapRow(report),
+                                onEdit: () => _editData(report),
+                                onDelete: () => _deleteData(allData[index].id),
+                              );
+                            },
+                          ),
+                ),
+              ),
+    );
+  }
 }
 
 extension QualityReportRefineryEntityExtension on QualityReportRefineryEntity {
