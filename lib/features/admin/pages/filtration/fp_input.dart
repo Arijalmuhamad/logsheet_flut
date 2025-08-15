@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:provider/provider.dart';
 
 class FiltrationPerformPage extends StatefulWidget {
   final String userName;
@@ -13,7 +15,7 @@ class FiltrationPerformPage extends StatefulWidget {
 class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
   String? selectedFilter;
   int? selectedHour;
-
+  String? selectedWorkCenter;
   final List<String> filterOptions = [
     'Niagara Filter',
     'Sleeve Filter',
@@ -34,6 +36,8 @@ class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
   final TextEditingController tekananAwalController = TextEditingController();
   final TextEditingController tekananAkhirController = TextEditingController();
   final TextEditingController tekananSleeveController = TextEditingController();
+
+  // Pretreatment
 
   Future<void> _refreshPage() async {
     await Future.delayed(const Duration(milliseconds: 600));
@@ -329,29 +333,87 @@ class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-        title: const Text(
-          'Filtration Performance - Refinery',
-          style: TextStyle(
-            color: Color(0xFF655F5B),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                if (provider.workCenterLists.isEmpty) {
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return DropdownButtonFormField(
+                  value: selectedWorkCenter,
+                  items:
+                      provider.workCenterLists.map((machine) {
+                        return DropdownMenuItem<String>(
+                          value: machine.code,
+                          child: Text("${machine.code} - ${machine.name}"),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedWorkCenter = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Work Center',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 8),
             InkWell(
               onTap: () => _showHourPicker(context),
               child: InputDecorator(
@@ -423,6 +485,21 @@ class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
           ],
         ),
       ),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
+      title: const Text(
+        'Filtration Performance - Refinery',
+        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
+      ),
+      actions: [
+        IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
+      ],
     );
   }
 }

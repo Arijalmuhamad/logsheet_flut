@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/role_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/providers/user_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 

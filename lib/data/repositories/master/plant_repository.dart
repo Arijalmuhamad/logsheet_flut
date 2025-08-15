@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
-import 'package:logsheet_app/data/services/plant_mysql_service.dart';
+import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
 
 class PlantRepository {
   final PlantMySQLService _plantMySQLService;
@@ -13,9 +13,18 @@ class PlantRepository {
     return await _plantMySQLService.createPlant(plant);
   }
 
-  // READ ALL PLANTS
+  // GET ALL PLANTS
   Future<List<PlantEntity>> getAllPlants() async {
     final plantMaps = await _plantMySQLService.getAllPlants();
+
+    log(plantMaps.length.toString());
+
+    return plantMaps.map((map) => PlantEntity.fromMap(map)).toList();
+  }
+
+  // GET ALL PLANTS BY BUCODE
+  Future<List<PlantEntity>> getPlantsByBusinessUnits(String buCode) async {
+    final plantMaps = await _plantMySQLService.getPlantsByBusinessUnits(buCode);
 
     log(plantMaps.length.toString());
 

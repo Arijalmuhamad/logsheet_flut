@@ -1,17 +1,21 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_edit.dart';
-import 'package:logsheet_app/providers/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityListPage extends StatefulWidget {
   final String userName;
+  final String role;
 
-  const QualityListPage({super.key, required this.userName});
+  const QualityListPage({
+    super.key,
+    required this.userName,
+    required this.role,
+  });
 
   @override
   State<QualityListPage> createState() => _QualityListPageState();
@@ -21,13 +25,7 @@ class _QualityListPageState extends State<QualityListPage> {
   final TextEditingController _dateController = TextEditingController();
 
   DateTime? _selectedDate;
-  String? _selectedHour;
   String? _tempSelectedHour;
-
-  List<QualityReportRefineryEntity> _filteredData = [];
-
-  bool _isLoading = false;
-  bool _isInitialLoading = true;
 
   final List<String> _hours = List.generate(
     24,
@@ -38,57 +36,47 @@ class _QualityListPageState extends State<QualityListPage> {
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchReports();
-    });
+
+    final user = Provider.of<UserProvider>(context, listen: false).currentUser;
+    final plantCode =
+        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
+        "";
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => Provider.of<QualityReportRefineryProvider>(
+        context,
+        listen: false,
+      ).fetchAllReports(
+        null,
+        null,
+        user?.username ?? "",
+        user?.role ?? "",
+        plantCode,
+        filter: false,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _dateController.dispose();
+
     super.dispose();
   }
 
-  void _fetchReports() {
-    Provider.of<QualityReportRefineryProvider>(
-      context,
-      listen: false,
-    ).fetchAllReports(null, null);
-  }
-
-  // void _filterData(List<QualityReportRefineryEntity> allReports) {
-  //   setState(() {
-  //     _filteredData =
-  //         allReports.where((item) {
-  //           final itemHour =
-  //               item.time != null
-  //                   ? DateFormat('HH:mm').format(item.time!)
-  //                   : null;
-
-  //           final matchHour =
-  //               (_selectedHour == null || _selectedHour == 'all')
-  //                   ? true
-  //                   : itemHour == _selectedHour;
-
-  //           final matchDate =
-  //               _selectedDate == null ||
-  //               DateFormat(
-  //                     'yyyy-MM-dd',
-  //                   ).format(item.entryDate ?? DateTime.now()) ==
-  //                   DateFormat('yyyy-MM-dd').format(_selectedDate!);
-
-  //           return matchHour && matchDate;
-  //         }).toList();
-  //   });
+  // void _fetchReports() {
+  //   Provider.of<QualityReportRefineryProvider>(
+  //     context,
+  //     listen: false,
+  //   ).fetchAllReports(null, null, widget.userName, widget.role);
   // }
 
   void _resetFormAndRefresh() {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
-      _selectedHour = null;
       _tempSelectedHour = null;
-      _fetchReports();
+      // _fetchReports();
     });
   }
 
@@ -115,24 +103,10 @@ class _QualityListPageState extends State<QualityListPage> {
       setState(() {
         _selectedDate = picked;
         _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-        _fetchReports();
+        // _fetchReports();
       });
     }
   }
-
-  // Future<void> _editData(QualityReportRefineryEntity item) async {
-  //   final result = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder:
-  //           (context) => QualityEditPage(item: item, userName: widget.userName),
-  //     ),
-  //   );
-
-  //   if (result == true) {
-  //     _fetchReports();
-  //   }
-  // }
 
   Future<void> _deleteData(String id) async {
     final confirm = await showDialog<bool>(
@@ -179,7 +153,7 @@ class _QualityListPageState extends State<QualityListPage> {
       // Assuming you have a delete method in your provider
       // await Provider.of<QualityReportRefineryProvider>(context, listen: false).delete(id);
       _showSnackbar('🗑️ Data berhasil dihapus');
-      _fetchReports();
+      // _fetchReports();
     }
   }
 
@@ -188,28 +162,7 @@ class _QualityListPageState extends State<QualityListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(),
-      body: Consumer<QualityReportRefineryProvider>(
-        builder: (context, provider, child) {
-          _filteredData = provider.reportsList;
-          if (_isInitialLoading) {
-            // _filterData(provider.reportsList); // Apply initial filter
-            _isInitialLoading = false;
-          } else {
-            // Re-filter data when provider's reportsList changes (e.g., after fetchAllReports)
-            // _filterData(provider.reportsList);
-          }
-
-          if (provider.isLoading && _isInitialLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (provider.errorMessage != null && !provider.isLoading) {
-            return Center(child: Text('Error: ${provider.errorMessage}'));
-          }
-
-          return _buildBody(context);
-        },
-      ),
+      body: _buildBody(context),
     );
   }
 
@@ -230,43 +183,180 @@ class _QualityListPageState extends State<QualityListPage> {
                   elevation: 4,
                   shadowColor: Colors.black26,
                   margin: const EdgeInsets.only(top: 16),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child:
-                        _filteredData.isEmpty
-                            ? const Center(
-                              child: Text(
-                                'Tidak ada data',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF655F5B),
-                                  fontWeight: FontWeight.w500,
+                  child: Consumer<QualityReportRefineryProvider>(
+                    builder: (context, provider, child) {
+                      if (provider.reportsList.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text("No data."),
+                              OutlinedButton(
+                                onPressed: () {
+                                  final plantCode =
+                                      Provider.of<PlantProvider>(
+                                        context,
+                                        listen: false,
+                                      ).currentPlant?.code ??
+                                      "";
+
+                                  Provider.of<QualityReportRefineryProvider>(
+                                    context,
+                                    listen: false,
+                                  ).fetchAllPreparedTransactions(plantCode);
+                                },
+                                child: const Text("Refresh"),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 88),
+                        itemCount: provider.reportsList.length,
+                        itemBuilder: (context, index) {
+                          final report = provider.reportsList[index];
+                          return Card(
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => QualityDetailPage(
+                                          item: report,
+                                          isDisplayed: false,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 18.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            report.id,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blueGrey,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(report),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _getStatusText(report),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const Divider(height: 16),
+
+                                    // Transaction Date and Time
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.calendar_today,
+                                          size: 16,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          DateFormat(
+                                            'yyyy-MM-dd',
+                                          ).format(report.transactionDate!),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        SizedBox(width: 16),
+                                        const Icon(
+                                          Icons.schedule,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          DateFormat(
+                                            'HH:mm',
+                                          ).format(report.time!),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        SizedBox(width: 16),
+                                        const Icon(
+                                          Icons.timelapse,
+                                          size: 18,
+                                          color: Colors.grey,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "Shift ${report.shift}",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    // Entered By
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.person,
+                                          size: 16,
+                                          color: Colors.grey,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Entried by: ${report.entryBy}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                            )
-                            : _buildDataTable(),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
             ],
           ),
         ),
-        if (_isLoading)
-          Container(
-            color: Colors.black45,
-            child: const Center(child: CircularProgressIndicator()),
-          ),
       ],
     );
   }
@@ -335,8 +425,7 @@ class _QualityListPageState extends State<QualityListPage> {
         ElevatedButton.icon(
           onPressed: () {
             setState(() {
-              _selectedHour = _tempSelectedHour;
-              _fetchReports(); // Fetch reports again with updated filters
+              // _fetchReports();
             });
           },
           icon: const Icon(Icons.search),
@@ -351,153 +440,6 @@ class _QualityListPageState extends State<QualityListPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDataTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columnSpacing: 32,
-          headingRowColor: WidgetStateProperty.all(const Color(0xFFF0ECE9)),
-          headingTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: Color(0xFF655F5B),
-          ),
-          dataTextStyle: const TextStyle(fontSize: 13, color: Colors.black87),
-          columns: const [
-            DataColumn(label: Center(child: Text('No'))),
-            DataColumn(label: Center(child: Text('Tanggal'))),
-            DataColumn(label: Center(child: Text('Jam'))),
-            DataColumn(label: Center(child: Text('Shift'))),
-            DataColumn(label: Center(child: Text('Flowrate'))),
-            DataColumn(label: Center(child: Text('FFA'))),
-            DataColumn(label: Center(child: Text('IV'))),
-            DataColumn(label: Center(child: Text('PV'))),
-            DataColumn(label: Center(child: Text('DOBI'))),
-            DataColumn(label: Center(child: Text('Carotene'))),
-            DataColumn(label: Center(child: Text('Color R'))),
-            DataColumn(label: Center(child: Text('Color Y'))),
-            DataColumn(label: Center(child: Text('Status'))),
-            DataColumn(label: Center(child: Text('Aksi'))),
-          ],
-          rows: List.generate(_filteredData.length, (index) {
-            final item = _filteredData[index];
-            final isEven = index % 2 == 0;
-            return DataRow(
-              color: WidgetStateProperty.all(
-                isEven ? Colors.grey.shade100 : Colors.white,
-              ),
-              cells: [
-                DataCell(Center(child: Text('${index + 1}'))),
-                DataCell(
-                  Center(
-                    child: Text(
-                      DateFormat(
-                        'yyyy-MM-dd',
-                      ).format(item.entryDate ?? DateTime.now()),
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Center(
-                    child: Text(
-                      item.time != null
-                          ? DateFormat('HH:mm').format(item.time!)
-                          : '-',
-                    ),
-                  ),
-                ),
-                DataCell(Center(child: Text(item.shift))),
-                DataCell(
-                  Center(
-                    child: Text(item.pFlowRate?.toStringAsFixed(2) ?? '-'),
-                  ),
-                ),
-                DataCell(
-                  Center(child: Text(item.pFFA?.toStringAsFixed(2) ?? '-')),
-                ),
-                DataCell(
-                  Center(child: Text(item.pIV?.toStringAsFixed(2) ?? '-')),
-                ),
-                DataCell(
-                  Center(child: Text(item.pPV?.toStringAsFixed(2) ?? '-')),
-                ),
-                DataCell(
-                  Center(child: Text(item.pDobi?.toStringAsFixed(2) ?? '-')),
-                ),
-                DataCell(
-                  Center(
-                    child: Text(item.pCarotene?.toStringAsFixed(2) ?? '-'),
-                  ),
-                ),
-                DataCell(Center(child: Text(item.bColorR?.toString() ?? '-'))),
-                DataCell(Center(child: Text(item.bColorY?.toString() ?? '-'))),
-                DataCell(
-                  Center(
-                    child: Text(
-                      item.flag != 'T' ? 'Not Uploaded' : 'Uploaded',
-                      style: TextStyle(
-                        color:
-                            item.flag != 'T'
-                                ? const Color(0xFFAB2F2B)
-                                : const Color(0xFF655F5B),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                DataCell(
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Tooltip(
-                          message: 'Edit',
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.edit,
-                              color: Color(0xFF6B7280),
-                            ),
-                            onPressed: () {
-                              // _editData(item);
-                            },
-                          ),
-                        ),
-                        Tooltip(
-                          message: 'Hapus',
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Color(0xFFB91C1C),
-                            ),
-                            onPressed: () {
-                              _deleteData(item.id);
-                            },
-                          ),
-                        ),
-                        Tooltip(
-                          message: 'Detail',
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.info_outline,
-                              color: Color(0xFF655F5B),
-                            ),
-                            onPressed: () => _onTapRow(item),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ),
-      ),
     );
   }
 
@@ -524,11 +466,49 @@ class _QualityListPageState extends State<QualityListPage> {
     );
   }
 
-  void _onTapRow(QualityReportRefineryEntity item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => QualityDetailPage(item: item)),
-    );
+  String _getStatusText(QualityReportRefineryEntity report) {
+    if (report.checkedStatus == "Approved") {
+      return "Approved";
+    }
+
+    if (report.checkedStatus == "Rejected") {
+      return "Rejected";
+    }
+    if (report.preparedStatusShift1 == "Approved" ||
+        report.preparedStatusShift2 == "Approved" ||
+        report.preparedStatusShift3 == "Approved") {
+      return "Prepared ${report.shift}";
+    }
+
+    if (report.preparedStatusShift1 == "Rejected" ||
+        report.preparedStatusShift2 == "Rejected" ||
+        report.preparedStatusShift3 == "Rejected") {
+      return "Rejected";
+    }
+    return "Submitted";
+  }
+
+  Color _getStatusColor(QualityReportRefineryEntity report) {
+    if (report.checkedStatus == "Approved") {
+      return Colors.green;
+    }
+
+    if (report.checkedStatus == "Rejected") {
+      return Colors.red;
+    }
+
+    if (report.preparedStatusShift1 == "Approved" ||
+        report.preparedStatusShift2 == "Approved" ||
+        report.preparedStatusShift3 == "Approved") {
+      return Colors.orangeAccent;
+    }
+
+    if (report.preparedStatusShift1 == "Rejected" ||
+        report.preparedStatusShift2 == "Rejected" ||
+        report.preparedStatusShift3 == "Rejected") {
+      return Colors.red;
+    }
+    return Colors.grey;
   }
 }
 

@@ -8,7 +8,7 @@ import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/features/admin/admin_home_page.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../providers/user_provider.dart';
+import '../../../../providers/master/user_provider.dart';
 
 class MstMastervaluePage extends StatefulWidget {
   final String userName;

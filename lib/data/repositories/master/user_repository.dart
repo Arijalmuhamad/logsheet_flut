@@ -1,6 +1,6 @@
 import 'package:logsheet_app/data/remote/master/role_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/services/user_mysql_service.dart';
+import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 
 class UserRepository {
   final UserMySQLService _userMySQLService;
@@ -20,16 +20,17 @@ class UserRepository {
   }
 
   // LOGIN
-  Future<UserEntity?> login(String username, String password) async {
-    final Map<String, dynamic>? userData = await _userMySQLService.loginUser(
-      username,
-      password,
-    );
-
-    if (userData == null) {
-      return null;
+  Future<({UserEntity? user, String? errorMessage})> login(
+    String username,
+    String password,
+  ) async {
+    final loginResult = await _userMySQLService.loginUser(username, password);
+    if (loginResult.errorMessage != null) {
+      return (user: null, errorMessage: loginResult.errorMessage);
+    } else if (loginResult.user == null) {
+      return (user: null, errorMessage: 'Invalid username or password.');
     } else {
-      return UserEntity.fromMap(userData);
+      return (user: UserEntity.fromMap(loginResult.user!), errorMessage: null);
     }
   }
 

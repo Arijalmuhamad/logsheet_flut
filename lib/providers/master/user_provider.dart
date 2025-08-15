@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/role_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/repositories/user_repository.dart';
+import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 
 class UserProvider with ChangeNotifier {
   final UserRepository _userRepository;
@@ -72,6 +72,7 @@ class UserProvider with ChangeNotifier {
       if (result) {
         _setLoading(false);
         _setErrorMessage(null);
+        fetchAllUsers();
         return true;
       } else {
         _setLoading(false);
@@ -91,16 +92,20 @@ class UserProvider with ChangeNotifier {
 
     try {
       final result = await _userRepository.login(username, password);
-
-      if (result == null) {
+      if (result.errorMessage != null) {
+        _setErrorMessage(result.errorMessage);
+        _setLoading(false);
+        return null;
+      } else if (result.user == null) {
         _setErrorMessage('Invalid username or password.');
         _setLoading(false);
         return null;
       } else {
         _setErrorMessage(null);
         _setLoading(false);
-        _currentUser = result;
-        return result;
+        await Future.delayed(const Duration(seconds: 1));
+        _currentUser = result.user;
+        return result.user;
       }
     } catch (e) {
       _setErrorMessage('Failed to fetch users: $e');

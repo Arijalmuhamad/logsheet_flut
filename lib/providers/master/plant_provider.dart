@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
-import 'package:logsheet_app/data/repositories/plant_repository.dart';
+import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
 
 class PlantProvider with ChangeNotifier {
   final PlantRepository _plantRepository;
@@ -15,6 +15,9 @@ class PlantProvider with ChangeNotifier {
   List<PlantEntity> _plantList = [];
   List<PlantEntity> get plantList => _plantList;
 
+  PlantEntity? _currentPlant;
+  PlantEntity? get currentPlant => _currentPlant;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -23,6 +26,11 @@ class PlantProvider with ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void setCurrentPlant(PlantEntity plantEntity) {
+    _currentPlant = plantEntity;
     notifyListeners();
   }
 
@@ -45,6 +53,26 @@ class PlantProvider with ChangeNotifier {
       _setErrorMessage('Failed to fetch plants: $e');
       _setLoading(false);
     }
+  }
+
+  void fetchPlantsByBusinessUnit(String buCode) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      _plantList = await _plantRepository.getPlantsByBusinessUnits(buCode);
+      notifyListeners();
+
+      log("List length: ${_plantList.length}");
+
+      _setLoading(false);
+    } catch (e) {
+      _setErrorMessage('Failed to fetch plants: $e');
+      _setLoading(false);
+    }
+  }
+
+  void clearPlants() {
+    _plantList.clear();
   }
 
   Future<bool?> createPlant(PlantEntity plant) async {

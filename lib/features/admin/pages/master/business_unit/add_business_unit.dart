@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
-import 'package:logsheet_app/providers/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:provider/provider.dart';
 
 class AddBusinessUnit extends StatefulWidget {
@@ -112,7 +112,7 @@ class _AddBusinessUnitState extends State<AddBusinessUnit> {
                   _isActive = !_isActive;
                 });
               },
-              contentPadding: const EdgeInsets.only(left: 0.0, right: 160.0),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
             const SizedBox(height: 20),
             Spacer(),

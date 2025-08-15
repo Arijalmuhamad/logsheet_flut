@@ -1,5 +1,5 @@
 import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
-import 'package:logsheet_app/data/services/business_unit_mysql_service.dart';
+import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 
 class BusinessUnitRepository {
   final BusinessUnitMySQLService _businessUnitMySQLService;

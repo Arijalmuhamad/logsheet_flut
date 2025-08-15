@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/features/admin/pages/master/plant/add_plant_page.dart';
-import 'package:logsheet_app/providers/plant_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
 
 class PlantPage extends StatefulWidget {
@@ -55,10 +55,24 @@ class _PlantPageState extends State<PlantPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                plantProvider.errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    plantProvider.errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<PlantProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllPlant();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
@@ -68,15 +82,30 @@ class _PlantPageState extends State<PlantPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'Tidak ada Plant dalam database.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tidak ada Plant dalam database.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<PlantProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllPlant();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.only(bottom: 88),
           itemCount: plantProvider.plantList.length,
           itemBuilder: (context, index) {
             final plant = plantProvider.plantList[index];

@@ -1,9 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/features/admin/pages/master/business_unit/add_business_unit.dart';
-import 'package:logsheet_app/providers/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:provider/provider.dart';
 
 class BusinessUnitPage extends StatefulWidget {
@@ -62,10 +61,24 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'Error: ${businessUnitProvider.errorMessage!}',
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Error: ${businessUnitProvider.errorMessage!}',
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<BusinessUnitProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllBusinessUnits();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
@@ -75,16 +88,30 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'Tidak ada Business Unit dalam database.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tidak ada Business Unit dalam database.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<BusinessUnitProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllBusinessUnits();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          padding: const EdgeInsets.only(bottom: 88),
           itemCount: businessUnitProvider.listBusinessUnits.length,
           itemBuilder: (context, index) {
             final businessUnit = businessUnitProvider.listBusinessUnits[index];

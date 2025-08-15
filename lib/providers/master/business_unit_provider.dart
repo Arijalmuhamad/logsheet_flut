@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
-import 'package:logsheet_app/data/repositories/business_unit_repository.dart';
+import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
 
 class BusinessUnitProvider extends ChangeNotifier {
   final BusinessUnitRepository _businessUnitRepository;
@@ -14,6 +14,9 @@ class BusinessUnitProvider extends ChangeNotifier {
 
   List<BusinessUnitEntity> _listBusinessUnits = [];
   List<BusinessUnitEntity> get listBusinessUnits => _listBusinessUnits;
+
+  String? _businessUnitCode;
+  String? get businessUnitCode => _businessUnitCode;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -29,6 +32,10 @@ class BusinessUnitProvider extends ChangeNotifier {
   void _setErrorMessage(String? message) {
     _errorMessage = message;
     notifyListeners();
+  }
+
+  void setCurrentBusinessUnit(BusinessUnitEntity? businessUnit) {
+    _currentBusinessUnit = businessUnit;
   }
 
   Future<bool?> createBusinessUnit(BusinessUnitEntity businessUnit) async {

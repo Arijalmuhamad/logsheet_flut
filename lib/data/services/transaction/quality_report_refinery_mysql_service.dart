@@ -1,0 +1,434 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:mysql_client/mysql_client.dart';
+
+class QualityReportRefineryMysqlService {
+  Future<bool> insertQualityReportRefinery(
+    QualityReportRefineryEntity entity,
+  ) async {
+    MySQLConnection? connection;
+    try {
+      var connResult = await getMySQLConnection();
+      await closeMySQLConnection();
+      log("closed? ${connResult.connection?.connected}");
+      connResult = await getMySQLConnection();
+
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for business unit registration.');
+        return false;
+      }
+
+      connection = connResult.connection;
+
+      List<String> columns = [];
+      List<String> params = [];
+      final Map<String, dynamic> entityData = entity.toMap();
+      final Map<String, dynamic> sqlExecuteParams = {};
+
+      entityData.forEach((keyInEntityMap, value) {
+        String actualDbColumnName = keyInEntityMap;
+        String safeParameterName = keyInEntityMap;
+        dynamic formattedValue = value;
+
+        if (keyInEntityMap == 'transaction_date' ||
+            keyInEntityMap == 'posting_date' ||
+            keyInEntityMap == 'entry_date') {
+          if (value != null && value is DateTime) {
+            formattedValue = DateFormat('yyyy-MM-dd HH:mm:ss').format(value);
+          }
+        }
+
+        if (keyInEntityMap == 'rm_mni') {
+          actualDbColumnName = 'rm_m&i';
+          safeParameterName = 'rm_mni_param';
+        } else if (keyInEntityMap == 'fg_mni') {
+          actualDbColumnName = 'fg_m&i';
+          safeParameterName = 'fg_mni_param';
+        } else if (keyInEntityMap == 'bp_mni') {
+          actualDbColumnName = 'bp_m&i';
+          safeParameterName = 'bp_mni_param';
+        } else if (keyInEntityMap == 'wsbeqc') {
+          actualDbColumnName = 'w_sbe_qc';
+          safeParameterName = 'w_sbe_qc_param';
+        }
+
+        // Validate decimal values to prevent overflow
+        if (formattedValue is double) {
+          // For decimal(4,3) fields - max value is 9.999
+          if (keyInEntityMap.contains('rm_ffa') ||
+              keyInEntityMap.contains('fg_ffa')) {
+            if (formattedValue > 9.999) {
+              log(
+                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(4,3) limit, capping at 9.999',
+              );
+              formattedValue = 9.999;
+            }
+          }
+          // For decimal(3,2) fields - max value is 9.99
+          else if (keyInEntityMap.contains('rm_iv') ||
+              keyInEntityMap.contains('rm_dobi') ||
+              keyInEntityMap.contains('rm_av') ||
+              keyInEntityMap.contains('rm_pv') ||
+              keyInEntityMap.contains('fg_iv') ||
+              keyInEntityMap.contains('bp_ffa') ||
+              keyInEntityMap.contains('w_sbe_qc')) {
+            if (formattedValue > 9.99) {
+              log(
+                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,2) limit, capping at 9.99',
+              );
+              formattedValue = 9.99;
+            }
+          }
+          // For decimal(3,0) fields - max value is 999
+          else if (keyInEntityMap.contains('rm_temp') ||
+              keyInEntityMap.contains('fg_pv') ||
+              keyInEntityMap.contains('fg_mni') ||
+              keyInEntityMap.contains('fg_color_r') ||
+              keyInEntityMap.contains('fg_color_y') ||
+              keyInEntityMap.contains('bp_mni')) {
+            if (formattedValue > 999) {
+              log(
+                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,0) limit, capping at 999',
+              );
+              formattedValue = 999;
+            }
+          }
+        }
+
+        columns.add('`$actualDbColumnName`');
+        params.add(':$safeParameterName');
+        sqlExecuteParams[safeParameterName] = formattedValue;
+      });
+
+      final String sql =
+          'INSERT INTO t_quality_report_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
+
+      // final String sql =
+      //     'INSERT INTO t_quality_report_refinery_2 (`id`) VALUES ("QRMPS2125000108")';
+
+      log('Generated SQL: $sql');
+      log('Data for SQL: $sqlExecuteParams');
+      log(
+        connection!.connected
+            ? "Connected to the database"
+            : "Not Connected to the database",
+      );
+
+      final result = await connResult.connection!.execute(
+        sql,
+        sqlExecuteParams,
+      );
+
+      // connResult.connection?.close();
+
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error inserting Quality Report Refinery Report: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection();
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllReports(
+    DateTime? dateFilter,
+    String? time,
+    String username,
+    String role,
+    String plantCode,
+  ) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all reports.');
+        return [];
+      }
+      String baseQuery;
+      final Map<String, dynamic> params = {};
+
+      switch (role) {
+        case 'LEAD':
+          baseQuery = """
+          SELECT
+            t_quality_report_refinery.*
+          FROM
+            t_quality_report_refinery
+          JOIN
+            m_roles_shift_prepared ON t_quality_report_refinery.shift = m_roles_shift_prepared.shift_code
+          WHERE
+            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode 
+        """;
+          params["username"] = username;
+          params["is_active"] = "T";
+          params["plantCode"] = plantCode;
+          break;
+        case 'OPR':
+          baseQuery = """
+          SELECT
+            *
+          FROM
+            t_quality_report_refinery
+          WHERE plant = :plantCode
+        """;
+
+          params["plantCode"] = plantCode;
+          break;
+
+        case 'MGR':
+          baseQuery = """
+          SELECT
+            *
+          FROM
+            t_quality_report_refinery
+          WHERE
+            (prepared_status_shift1 = :status OR prepared_status_shift2 = :status OR prepared_status_shift3 = :status) AND plant = :plantCode
+        """;
+          params["status"] = "Approved";
+          params["plantCode"] = plantCode;
+          break;
+        case 'ADM':
+          // Query for Admin: Can see all reports.
+          baseQuery =
+              "SELECT * FROM t_quality_report_refinery WHERE plant = :plantCode";
+          params["plantCode"] = plantCode;
+          break;
+
+        default:
+          log('User role $role is not authorized to view reports.');
+          return [];
+      }
+
+      // Add date and time filters to the query for all roles
+      if (dateFilter != null) {
+        if (baseQuery.contains("WHERE")) {
+          baseQuery += " AND report_date = :reportDate";
+        } else {
+          baseQuery += " WHERE report_date = :reportDate";
+        }
+        params["reportDate"] = dateFilter;
+      }
+      if (time != null) {
+        if (baseQuery.contains("WHERE")) {
+          baseQuery += " AND time = :time";
+        } else {
+          baseQuery += " WHERE time = :time";
+        }
+        params["time"] = time;
+      }
+
+      // Add the ORDER BY clause
+      baseQuery += " ORDER BY transaction_date DESC";
+
+      final IResultSet result = await connResult.connection!.execute(
+        baseQuery,
+        params,
+      );
+
+      log(
+        'Fetched ${result.rows.length} reports for user $username with role $role.',
+      );
+      await closeMySQLConnection();
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all reports: $e');
+      return [];
+    }
+  }
+
+  Future<String?> getLatestTicketId(String plantCode) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all reports.');
+        return null;
+      }
+      final result = await connResult.connection!.execute(
+        // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
+        // {"plant": plantCode},
+        "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'QRM'",
+        {"plant": plantCode},
+      );
+
+      if (result.rows.isNotEmpty) {
+        final row = result.rows.first.assoc();
+
+        final latestId = row['ticket'];
+        log("ticket id from database: ${row['ticket']}");
+
+        return latestId;
+      }
+      await closeMySQLConnection();
+      return null;
+    } catch (e) {
+      log('Error fetching latest ticket id: $e');
+      return null;
+    }
+  }
+
+  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating autonumber.');
+        return false;
+      }
+
+      final sql =
+          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'QRM'";
+      final params = {"autonumber": newAutoNumber, "plantid": plantCode};
+
+      final result = await connResult.connection!.execute(sql, params);
+      log(
+        'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
+      );
+      connResult.connection?.close();
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating autonumber: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateReportQualityRefinery(
+    QualityReportRefineryEntity entity,
+  ) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating report.');
+        return false;
+      }
+
+      final entityData = entity.toMap();
+      final List<String> setClause = [];
+      final Map<String, dynamic> sqlExecuteParams = {};
+
+      entityData.forEach((keyInEntityMap, value) {
+        if (keyInEntityMap != 'id') {
+          String actualDbColumnName = keyInEntityMap;
+          String safeParameterName = keyInEntityMap;
+
+          // Handle specific column name mappings
+          if (keyInEntityMap == 'rm_mni') {
+            actualDbColumnName = 'rm_m&i';
+            safeParameterName = 'rm_mni_param';
+          } else if (keyInEntityMap == 'fg_mni') {
+            actualDbColumnName = 'fg_m&i';
+            safeParameterName = 'fg_mni_param';
+          } else if (keyInEntityMap == 'bp_mni') {
+            actualDbColumnName = 'bp_m&i';
+            safeParameterName = 'bp_mni_param';
+          } else if (keyInEntityMap == 'wsbeqc') {
+            actualDbColumnName = 'w_sbe_qc';
+            safeParameterName = 'w_sbe_qc_param';
+          }
+
+          setClause.add('`$actualDbColumnName` = :$safeParameterName');
+          sqlExecuteParams[safeParameterName] = value;
+        }
+      });
+      sqlExecuteParams['id'] = entity.id;
+
+      final sql =
+          "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id = :id";
+
+      log('Generated UPDATE SQL: $sql');
+      log('Params for SQL: $sqlExecuteParams');
+
+      final result = await connResult.connection!.execute(
+        sql,
+        sqlExecuteParams,
+      );
+      log('Report updated: ${result.affectedRows} row(s) affected.');
+      connResult.connection?.close();
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating report: $e');
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllPreparedTransactions(
+    String plantCode,
+  ) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all reports.');
+        return [];
+      }
+      final result = await connResult.connection!.execute(
+        'SELECT * FROM t_quality_report_refinery WHERE (prepared_status_shift1 = "Approved" OR prepared_status_shift2 = "Approved" OR prepared_status_shift3 = "Approved") AND plant = :plantCode;',
+        {"plantCode": plantCode},
+      );
+      log('Fetched ${result.rows.length} users.');
+      connResult.connection?.close();
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all users: $e');
+      return [];
+    }
+  }
+
+  Future<bool> sendApproveRejectReport(
+    final String username,
+    final String status,
+    final String userRole,
+    final int shift,
+    final String remark,
+    final String id,
+  ) async {
+    try {
+      final connResult = await getMySQLConnection();
+
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating autonumber.');
+        return false;
+      }
+      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      if (userRole == "MGR") {
+        final sql =
+            "UPDATE t_quality_report_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+
+        final result = await connResult.connection!.execute(sql, {
+          "username": username,
+          "status": status,
+          "date": date,
+          "remark": remark,
+          "id": id,
+        });
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        connResult.connection?.close();
+        return result.affectedRows > BigInt.from(0);
+      } else {
+        final sql =
+            "UPDATE t_quality_report_refinery SET prepared_by_shift$shift = :username, prepared_status_shift$shift = :status, prepared_date_shift$shift = :date, prepared_status_remarks_shift = :remark WHERE id = :id";
+
+        final result = await connResult.connection!.execute(sql, {
+          "username": username,
+          "status": status,
+          "date": date,
+          "remark": remark,
+          "id": id,
+        });
+        log("Query Sent: $sql");
+        log("Affected Rows: ${result.affectedRows}");
+        return result.affectedRows > BigInt.from(0);
+      }
+    } catch (e) {
+      log("Error sending approve or reject report");
+      return false;
+    }
+  }
+}

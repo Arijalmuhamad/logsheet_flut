@@ -1,223 +1,992 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:drift/drift.dart' as drift;
+// quality_report_edit.dart
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:provider/provider.dart';
+
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
+import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
 
 class QualityEditPage extends StatefulWidget {
-  final String userName;
-  final TQualityReportRefineryData item;
+  final QualityReportRefineryEntity report;
 
-  const QualityEditPage({
-    super.key,
-    required this.item,
-    required this.userName,
-  });
+  const QualityEditPage({super.key, required this.report});
 
   @override
   State<QualityEditPage> createState() => _QualityEditPageState();
 }
 
 class _QualityEditPageState extends State<QualityEditPage> {
-  late final TextEditingController pflowRateController;
-  late final TextEditingController pffaController;
-  late final TextEditingController pivController;
-  late final TextEditingController ppvController;
-  late final TextEditingController panVController;
-  late final TextEditingController pdobiController;
-  late final TextEditingController pcaroteneController;
-  late final TextEditingController pmnIController;
-  late final TextEditingController pcolorController;
+  // Database & DAO
+  late final AppDatabase db;
+  late final QualityReportRefineryDao qualityReportRefDao;
 
-  bool _isLoading = false;
+  // Data dropdown & kontrol
+  late String? selectedOilType;
+  late String? selectedRefineryMachine;
+  late String? selectedTankSource;
+  late int? selectedHour;
+  late String? selectedToTankGroup;
 
-  final Color primaryBlue = const Color(0xFF007BFF);
+  // Stepper state
+  int currentStep = 0;
+  bool isSaving = false;
+  bool isLoading = false;
+
+  // ==========================
+  // Text Controllers
+  // ==========================
+
+  // CPO / CPKO (Part)
+  final TextEditingController rmTempController = TextEditingController();
+  final TextEditingController rmFFAController = TextEditingController();
+  final TextEditingController rmIVController = TextEditingController();
+  final TextEditingController rmDOBIController = TextEditingController();
+  final TextEditingController rmANVController = TextEditingController();
+  final TextEditingController rmMNIController = TextEditingController();
+  final TextEditingController rmPVController = TextEditingController();
+
+  // BPO
+  final TextEditingController boColorController = TextEditingController();
+  final TextEditingController boBreakTestController = TextEditingController();
+
+  // RPO
+  final TextEditingController fgFFAController = TextEditingController();
+  final TextEditingController fgIVController = TextEditingController();
+  final TextEditingController fgPVController = TextEditingController();
+  final TextEditingController fgMNIController = TextEditingController();
+  final TextEditingController fgColorRController = TextEditingController();
+  final TextEditingController fgColorYController = TextEditingController();
+
+  // RFAD
+  final TextEditingController bpFFAController = TextEditingController();
+  final TextEditingController bpMNIController = TextEditingController();
+
+  // W SBE QC
+  final TextEditingController WSBEQCController = TextEditingController();
+
+  // Remark
+  final TextEditingController remarkController = TextEditingController();
+
+  final Color primaryRed = const Color(0xFFAB2F2B);
   final Color backgroundGrey = const Color(0xFFEFF3F9);
 
   @override
   void initState() {
     super.initState();
-    pflowRateController = TextEditingController(
-      text: widget.item.p_flowrate?.toString() ?? '',
+    db = AppDatabase();
+    qualityReportRefDao = QualityReportRefineryDao(db);
+
+    // Initialize dropdown values from the report
+    selectedOilType = widget.report.oilType;
+    selectedRefineryMachine = widget.report.workCenter;
+    selectedTankSource = widget.report.rmTankSource;
+    selectedHour = widget.report.time?.hour;
+    selectedToTankGroup = widget.report.fgTankTo;
+
+    // Initialize all controllers with data from the existing report
+    rmTempController.text = widget.report.rmTemp.toString();
+    rmFFAController.text = widget.report.rmFFA.toString();
+    rmIVController.text = widget.report.rmIV.toString();
+    rmPVController.text = widget.report.rmPV.toString();
+    rmANVController.text = widget.report.rmAV.toString();
+    rmDOBIController.text = widget.report.rmDobi.toString();
+    rmMNIController.text = widget.report.rmMNI.toString();
+
+    boColorController.text = widget.report.boColor ?? '';
+    boBreakTestController.text = widget.report.boBreakTest ?? '';
+
+    fgFFAController.text = widget.report.fgFFA.toString();
+    fgIVController.text = widget.report.fgIV.toString();
+    fgPVController.text = widget.report.fgPV.toString();
+    fgMNIController.text = widget.report.fgMNI.toString();
+    fgColorRController.text = widget.report.fgColorR.toString();
+    fgColorYController.text = widget.report.fgColorY.toString();
+
+    bpFFAController.text = widget.report.bpFFA.toString();
+    bpMNIController.text = widget.report.bpMNI.toString();
+
+    WSBEQCController.text = widget.report.wSBEQC.toString();
+
+    remarkController.text = widget.report.remarks ?? '';
+
+    // Fetch dropdown data similar to the input page
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) =>
+          Provider.of<ValueProvider>(
+            context,
+            listen: false,
+          ).fetchWorkCenterLists(),
     );
-    pffaController = TextEditingController(
-      text: widget.item.p_ffa?.toString() ?? '',
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) =>
+          Provider.of<ValueProvider>(
+            context,
+            listen: false,
+          ).fetchTankSourceLists(),
     );
-    pivController = TextEditingController(
-      text: widget.item.p_iv?.toString() ?? '',
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) =>
+          Provider.of<ValueProvider>(
+            context,
+            listen: false,
+          ).fetchToTankGroupLists(),
     );
-    ppvController = TextEditingController(
-      text: widget.item.p_pv?.toString() ?? '',
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => Provider.of<ValueProvider>(context, listen: false).fetchOilTypes(),
     );
-    panVController = TextEditingController(
-      text: widget.item.p_anv?.toString() ?? '',
-    );
-    pdobiController = TextEditingController(
-      text: widget.item.p_dobi?.toString() ?? '',
-    );
-    pcaroteneController = TextEditingController(
-      text: widget.item.p_carotene?.toString() ?? '',
-    );
-    pmnIController = TextEditingController(
-      text: widget.item.p_m_i?.toString() ?? '',
-    );
-    pcolorController = TextEditingController(text: widget.item.p_color ?? '');
   }
 
   @override
   void dispose() {
-    pflowRateController.dispose();
-    pffaController.dispose();
-    pivController.dispose();
-    ppvController.dispose();
-    panVController.dispose();
-    pdobiController.dispose();
-    pcaroteneController.dispose();
-    pmnIController.dispose();
-    pcolorController.dispose();
+    // Dispose all controllers
+    final controllers = [
+      rmTempController,
+      rmFFAController,
+      rmIVController,
+      rmPVController,
+      rmANVController,
+      rmDOBIController,
+      rmMNIController,
+      boColorController,
+      boBreakTestController,
+      fgFFAController,
+      fgIVController,
+      fgPVController,
+      fgMNIController,
+      fgColorRController,
+      fgColorYController,
+      bpFFAController,
+      bpMNIController,
+      WSBEQCController,
+      remarkController,
+    ];
+
+    for (var c in controllers) {
+      c.dispose();
+    }
+
     super.dispose();
   }
 
-  double? _parseDouble(TextEditingController c) {
-    final text = c.text.trim();
-    return text.isEmpty ? null : double.tryParse(text);
+  // Navigasi Stepper
+  void _nextStep() {
+    if (currentStep < 5) setState(() => currentStep++);
   }
 
+  void _prevStep() {
+    if (currentStep > 0) setState(() => currentStep--);
+  }
+
+  void _goToStep(int step) {
+    setState(() => currentStep = step);
+  }
+
+  // Save Data
   Future<void> _saveData() async {
-    setState(() => _isLoading = true);
+    if (isSaving) return;
+    setState(() => isSaving = true);
 
-    final updatedItem = widget.item.copyWith(
-      p_flowrate: drift.Value(_parseDouble(pflowRateController)),
-      p_ffa: drift.Value(_parseDouble(pffaController)),
-      p_iv: drift.Value(_parseDouble(pivController)),
-      p_pv: drift.Value(_parseDouble(ppvController)),
-      p_anv: drift.Value(_parseDouble(panVController)),
-      p_dobi: drift.Value(_parseDouble(pdobiController)),
-      p_carotene: drift.Value(_parseDouble(pcaroteneController)),
-      p_m_i: drift.Value(_parseDouble(pmnIController)),
-      p_color: drift.Value(pcolorController.text.trim()),
-    );
+    // Helper function to parse doubles and handle empty strings
+    double? parseDouble(TextEditingController c) {
+      final text = c.text.trim();
+      return text.isEmpty ? null : double.tryParse(text);
+    }
 
-    final db = AppDatabase();
-    final dao = QualityReportRefineryDao(db);
-    await dao.updateQualityReportRefinery(updatedItem);
+    // double? parseDoubleString(String c) {
+    //   return c.isEmpty ? null : double.tryParse(c);
+    // }
 
-    setState(() => _isLoading = false);
+    final userName =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.username;
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data berhasil diperbarui ✅')),
+    final role =
+        Provider.of<UserProvider>(context, listen: false).currentUser?.role;
+    final plantCode =
+        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
+        "";
+
+    final String formattedTime =
+        selectedHour != null
+            ? '${selectedHour.toString().padLeft(2, '0')}:00:00'
+            : '';
+    final time = DateFormat('HH:mm:ss').parse(formattedTime);
+    try {
+      final updatedItem = QualityReportRefineryEntity(
+        id: widget.report.id,
+        company: widget.report.company,
+        plant: widget.report.plant,
+        transactionDate: widget.report.transactionDate,
+        postingDate: widget.report.postingDate,
+        workCenter: selectedRefineryMachine,
+        oilType: selectedOilType,
+        time: time,
+        shift: getShiftBasedOnDate(time),
+        rmTankSource: selectedTankSource,
+        rmTemp: parseDouble(rmTempController) ?? 0.0,
+        rmFFA: parseDouble(rmFFAController) ?? 0.0,
+        rmIV: parseDouble(rmIVController) ?? 0.0,
+        rmPV: parseDouble(rmPVController) ?? 0.0,
+        rmAV: parseDouble(rmANVController) ?? 0.0,
+        rmDobi: parseDouble(rmDOBIController) ?? 0.0,
+        rmMNI: parseDouble(rmMNIController) ?? 0.0,
+        boColor:
+            boColorController.text.trim().isEmpty
+                ? ""
+                : boColorController.text.trim(),
+        boBreakTest:
+            boBreakTestController.text.trim().isEmpty
+                ? ""
+                : boBreakTestController.text.trim(),
+        fgFFA: parseDouble(fgFFAController) ?? 0.0,
+        fgIV: parseDouble(fgIVController) ?? 0.0,
+        fgPV: parseDouble(fgPVController) ?? 0.0,
+        fgMNI: parseDouble(fgMNIController) ?? 0.0,
+        fgColorR: parseDouble(fgColorRController) ?? 0.0,
+        fgColorY: parseDouble(fgColorYController) ?? 0.0,
+        fgTankTo: selectedToTankGroup,
+        bpFFA: parseDouble(bpFFAController) ?? 0.0,
+        bpMNI: parseDouble(bpMNIController) ?? 0.0,
+        wSBEQC: parseDouble(WSBEQCController) ?? 0.0,
+        remarks:
+            remarkController.text.trim().isEmpty
+                ? null
+                : remarkController.text.trim(),
+        entryBy: widget.report.entryBy,
+        entryDate: widget.report.entryDate,
+        preparedByShift1: widget.report.preparedByShift1,
+        preparedDateShift1: widget.report.preparedDateShift1,
+        preparedStatusShift1: widget.report.preparedStatusShift1,
+        preparedByShift2: widget.report.preparedByShift2,
+        preparedDateShift2: widget.report.preparedDateShift2,
+        preparedStatusShift2: widget.report.preparedStatusShift2,
+        preparedByShift3: widget.report.preparedByShift3,
+        preparedDateShift3: widget.report.preparedDateShift3,
+        preparedStatusShift3: widget.report.preparedStatusShift3,
+        preparedStatusRemarksShift: widget.report.preparedStatusRemarksShift,
+        checkedBy: widget.report.checkedBy,
+        checkedDate: widget.report.checkedDate,
+        checkedStatus: widget.report.checkedStatus,
+        checkedStatusRemarks: widget.report.checkedStatusRemarks,
+        updatedBy: userName ?? "Unknown",
+        updatedDate: DateTime.now(),
       );
-      Navigator.pop(context, true);
+
+      bool? success;
+
+      success = await Provider.of<QualityReportRefineryProvider>(
+        context,
+        listen: false,
+      ).updateReport(updatedItem, userName ?? "", role ?? "", plantCode);
+
+      if (success) {
+        _showSnackBar('Data berhasil diperbarui ✅');
+        if (!mounted) return;
+        Navigator.pop(context, true);
+        Navigator.pop(context, true);
+      } else {
+        _showSnackBar('Edit Gagal');
+      }
+    } catch (e) {
+      _showSnackBar('Gagal memperbarui laporan: $e');
+    } finally {
+      setState(() => isSaving = false);
     }
   }
 
-  Widget _buildTextField(
-    String label,
-    TextEditingController controller, {
-    bool isText = false,
+  // Hour Picker
+  void _showHourPicker(BuildContext context) {
+    int initialHour = selectedHour ?? TimeOfDay.now().hour;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 300,
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Pilih Jam Input',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF655F5B),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: initialHour,
+                  ),
+                  onSelectedItemChanged: (int value) {
+                    selectedHour = value;
+                  },
+                  children: List.generate(
+                    24,
+                    (index) => Center(
+                      child: Text(
+                        '${index.toString().padLeft(2, '0')}:00',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF655F5B),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {}); // Refresh UI
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryRed,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Pilih', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // TextField Builder
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hintText,
+    bool isNumeric = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: TextField(
         controller: controller,
+        keyboardType:
+            isNumeric
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
+        inputFormatters:
+            isNumeric
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                : [],
         decoration: InputDecoration(
           labelText: label,
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+          hintText: hintText,
+          labelStyle: const TextStyle(
+            color: Color(0xFF655F5B),
+            fontWeight: FontWeight.w500,
           ),
+          hintStyle: const TextStyle(color: Colors.grey),
+          prefixIcon: Icon(icon, color: const Color(0xFF655F5B)),
+          filled: true,
+          fillColor: const Color(0xFFF0ECE9),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            // ignore: deprecated_member_use
-            borderSide: BorderSide(color: primaryBlue.withOpacity(0.5)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: primaryBlue, width: 2),
+            borderSide: BorderSide.none,
           ),
         ),
-        keyboardType:
-            isText
-                ? TextInputType.text
-                : const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters:
-            isText
-                ? []
-                : [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+        style: const TextStyle(color: Color(0xFF655F5B), fontSize: 16),
       ),
     );
+  }
+
+  // Step title
+  String getStepTitle() {
+    switch (currentStep) {
+      case 0:
+        return 'Raw Material';
+      case 1:
+        return 'Bleach Oil';
+      case 2:
+        return 'FG';
+      case 3:
+        return 'BP';
+      case 4:
+        return 'W SBE QC';
+      case 5:
+        return 'Remark';
+      default:
+        return 'Parameters'; // fallback default
+    }
+  }
+
+  Widget _buildStepContent() {
+    switch (currentStep) {
+      case 0:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: rmTempController,
+              label: 'Temp (°C)',
+              icon: Icons.thermostat,
+              hintText: 'Masukkan nilai Temperatur (°C)',
+              isNumeric: true,
+            ),
+            _buildTextField(
+              controller: rmFFAController,
+              label: 'FFA',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FFA (%)',
+            ),
+            _buildTextField(
+              controller: rmIVController,
+              label: 'IV',
+              icon: Icons.scale,
+              isNumeric: true,
+              hintText: 'Masukkan nilai IV (g/mg)',
+            ),
+            _buildTextField(
+              controller: rmPVController,
+              label: 'PV',
+              icon: Icons.energy_savings_leaf,
+              isNumeric: true,
+              hintText: 'Masukkan nilai PV (meq/kg)',
+            ),
+            _buildTextField(
+              controller: rmANVController,
+              label: 'AnV',
+              icon: Icons.fact_check,
+              isNumeric: true,
+              hintText: 'Masukkan nilai AnV',
+            ),
+            _buildTextField(
+              controller: rmDOBIController,
+              label: 'DOBI',
+              icon: Icons.opacity,
+              isNumeric: true,
+              hintText: 'Masukkan nilai DOBI',
+            ),
+            _buildTextField(
+              controller: rmMNIController,
+              label: 'M&I',
+              icon: Icons.opacity,
+              isNumeric: true,
+              hintText: 'Masukkan nilai M&I (%)',
+            ),
+          ],
+        );
+
+      case 1:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: boColorController,
+              label: 'Color',
+              icon: Icons.color_lens,
+              hintText: 'Masukkan nilai Color',
+            ),
+            _buildTextField(
+              controller: boBreakTestController,
+              label: 'Break Test',
+              icon: Icons.color_lens,
+              hintText: 'Masukkan nilai Break Test',
+            ),
+          ],
+        );
+
+      case 2:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: fgFFAController,
+              label: 'FFA',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FFA (%)',
+            ),
+            _buildTextField(
+              controller: fgIVController,
+              label: 'IV',
+              icon: Icons.speed,
+              isNumeric: true,
+              hintText: 'Masukkan nilai IV',
+            ),
+            _buildTextField(
+              controller: fgPVController,
+              label: 'PV',
+              icon: Icons.energy_savings_leaf,
+              isNumeric: true,
+              hintText: 'Masukkan nilai PV',
+            ),
+            _buildTextField(
+              controller: fgMNIController,
+              label: 'M&I',
+              icon: Icons.science,
+              isNumeric: true,
+              hintText: 'Masukkan nilai M&I (%)',
+            ),
+            _buildTextField(
+              controller: fgColorRController,
+              label: 'Color R',
+              icon: Icons.color_lens,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (R)',
+            ),
+            _buildTextField(
+              controller: fgColorYController,
+              label: 'Color Y',
+              icon: Icons.color_lens,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (Y)',
+            ),
+            // Tank To Dropdown
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                return DropdownButtonFormField<String>(
+                  value: selectedToTankGroup,
+                  items:
+                      provider.toTankGroupLists.map((tank) {
+                        return DropdownMenuItem<String>(
+                          value: tank.code,
+                          child: Text(
+                            "${tank.code} - ${tank.name}",
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedToTankGroup = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih To Tank Group',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      case 3:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: bpFFAController,
+              label: 'FFA',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FFA (%)',
+            ),
+            _buildTextField(
+              controller: bpMNIController,
+              label: 'M&I',
+              icon: Icons.opacity,
+              isNumeric: true,
+              hintText: 'Masukkan nilai M&I (%)',
+            ),
+          ],
+        );
+      case 4:
+        return Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "W SBE QC",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF655F5B),
+                  ),
+                ),
+              ),
+            ),
+            _buildTextField(
+              controller: WSBEQCController,
+              label: 'W SBE QC',
+              icon: Icons.high_quality,
+              hintText: 'Masukkan remark tambahan',
+              isNumeric: true,
+            ),
+          ],
+        );
+      case 5:
+        return Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Remark",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF655F5B),
+                  ),
+                ),
+              ),
+            ),
+            _buildTextField(
+              controller: remarkController,
+              label: 'Remark',
+              icon: Icons.note,
+              hintText: 'Masukkan remark tambahan',
+            ),
+          ],
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundGrey,
-      appBar: AppBar(
-        title: const Text(
-          'Edit Quality Data',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 4,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        _buildTextField('Flow Rate', pflowRateController),
-                        _buildTextField('FFA', pffaController),
-                        _buildTextField('IV', pivController),
-                        _buildTextField('PV', ppvController),
-                        _buildTextField('ANV', panVController),
-                        _buildTextField('DOBI', pdobiController),
-                        _buildTextField('Carotene', pcaroteneController),
-                        _buildTextField('M&I', pmnIController),
-                        _buildTextField(
-                          'Color',
-                          pcolorController,
-                          isText: true,
-                        ),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.save),
-                            label: const Text('Save Changes'),
-                            onPressed: _saveData,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryBlue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+      appBar: buildAppBar(),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Refinery Dropdown
+                Consumer<ValueProvider>(
+                  builder: (context, provider, child) {
+                    return DropdownButtonFormField<String>(
+                      value: selectedRefineryMachine,
+                      items:
+                          provider.workCenterLists.map((machine) {
+                            return DropdownMenuItem<String>(
+                              value: machine.code,
+                              child: Text(
+                                "${machine.code} - ${machine.name}",
+                                style: const TextStyle(fontSize: 14),
                               ),
-                              elevation: 6,
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedRefineryMachine = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Pilih Work Center',
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/icons/oil-refinery-tanks.svg',
+                            height: 24,
+                            width: 24,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                // Oil Type Dropdown
+                Consumer<ValueProvider>(
+                  builder: (context, provider, child) {
+                    return DropdownButtonFormField<String>(
+                      value: selectedOilType,
+                      items:
+                          provider.oilTypeLists.map((oil) {
+                            return DropdownMenuItem<String>(
+                              value: oil.code,
+                              child: Text(
+                                "${oil.code} - ${oil.name}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedOilType = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Pilih Oil Type',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.oil_barrel_rounded),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+                // Tank Source Dropdown
+                Consumer<ValueProvider>(
+                  builder: (context, provider, child) {
+                    return DropdownButtonFormField<String>(
+                      value: selectedTankSource,
+                      isExpanded: true,
+                      items:
+                          provider.tankSourceList.map((tank) {
+                            return DropdownMenuItem<String>(
+                              value: tank.code,
+                              child: Text(
+                                "${tank.code} - ${tank.name}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() => selectedTankSource = value);
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Pilih tank source',
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/icons/oil-refinery-tanks.svg',
+                            height: 24,
+                            width: 24,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 8),
+
+                // Jam Input
+                InkWell(
+                  onTap: () => _showHourPicker(context),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(Icons.access_time),
+                    ),
+                    child: Text(
+                      selectedHour != null
+                          ? '${selectedHour.toString().padLeft(2, '0')}:00'
+                          : 'Pilih jam input',
+                      style: TextStyle(
+                        color:
+                            selectedHour != null
+                                ? const Color(0xFF655F5B)
+                                : Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Step Indicator
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(6, (index) {
+                    final isSelected = currentStep == index;
+                    return InkWell(
+                      onTap: () => _goToStep(index),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: isSelected ? primaryRed : Colors.grey.shade300,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              color:
+                                  isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF655F5B),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+
+                // Step Form
+                Card(
+                  color: Colors.white,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          getStepTitle(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E1E1E),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildStepContent(),
                       ],
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+
+                // Navigation Buttons
+                Row(
+                  children: [
+                    if (currentStep > 0)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.arrow_back),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade400,
+                            foregroundColor: Colors.black87,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: _prevStep,
+                          label: const Text('Back'),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: Icon(
+                          currentStep == 5 ? Icons.save : Icons.arrow_forward,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryRed,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: currentStep == 5 ? _saveData : _nextStep,
+                        label: Text(currentStep == 5 ? 'Save' : 'Next'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+
+          // Loading Overlay
+          if (isSaving)
+            Container(
+              color: Colors.black26,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      ),
     );
+  }
+
+  AppBar buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
+      title: const Text(
+        'Edit Quality Report - Refinery',
+        style: TextStyle(
+          color: Color(0xFF655F5B),
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  int getShiftBasedOnDate(DateTime time) {
+    int hour = time.hour;
+    if (hour >= 8 && hour <= 15) {
+      return 1;
+    } else if (hour >= 16 && hour <= 23) {
+      return 2;
+    } else {
+      return 3;
+    }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/database/app_database.dart';
-import '../data/dao/mastervalue_dao.dart'; // impor dari hasil Drift
+import '../../core/database/app_database.dart';
+import '../../data/dao/mastervalue_dao.dart'; // impor dari hasil Drift
 // atau wherever your generated part file for `MMastervalue` is
 
 class TankProvider extends ChangeNotifier {

@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/features/admin/pages/master/user/add_user_page.dart';
-import 'package:logsheet_app/providers/user_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class UserPage extends StatefulWidget {
@@ -59,10 +59,24 @@ class _UserPageState extends State<UserPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'Error: ${userProvider.errorMessage!}',
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Error: ${userProvider.errorMessage!}',
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<UserProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllUsers();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
@@ -72,9 +86,23 @@ class _UserPageState extends State<UserPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                'Tidak ada User dalam database.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tidak ada User dalam database.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Provider.of<UserProvider>(
+                        context,
+                        listen: false,
+                      ).fetchAllUsers();
+                    },
+                    child: const Text("Refresh"),
+                  ),
+                ],
               ),
             ),
           );
@@ -83,6 +111,7 @@ class _UserPageState extends State<UserPage> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 88),
             itemCount: userProvider.listUser.length,
             itemBuilder: (context, index) {
               final user = userProvider.listUser[index];

@@ -1,122 +1,152 @@
+import 'package:intl/intl.dart';
+
 class QualityReportRefineryEntity {
   // Parameter
   final String id;
-  final DateTime? reportDate;
-  final DateTime? time;
-
-  final String? pCat;
-  final double? pTankSource;
-  final double? pFlowRate;
-  final double? pFFA;
-  final double? pIV;
-  final double? pPV;
-  final double? pANV;
-  final double? pDobi;
-  final double? pCarotene;
-  final double? pMNI;
-  final String? pColor;
-
-  // Chemical
-  final String? cCat;
-  final double? cPA;
-  final double? cBE;
-
-  // BPO / BPKO
-  final String? bCat;
-  final double? bColorR;
-  final double? bColorY;
-  final String? bBreakTest;
-
-  // RPO
-  final String? rCat;
-  final double? rFFA;
-  final double? rColorR;
-  final double? rColorY;
-  final double? rColorB;
-  final double? rPV;
-  final double? rMNI;
-  final double? rProductTankNo;
-
-  // PFAD
-  final double? fpCat;
-  final double? fpPurity;
-  final double? fpProductTankNumber;
-
-  final String? pic;
-
-  // Spent Earth & Remark
-  final double? spentEarthOIC;
-  final String? remarks;
-
-  final String? checkedBy;
-  final DateTime? checkedDate;
-  final DateTime? checkedTime;
-
-  final String? approvedBy;
-  final DateTime? approvedDate;
-  final DateTime? approvedTime;
-
-  final String? flag;
   final String? company;
   final String? plant;
+
+  final DateTime? transactionDate;
+  final DateTime? postingDate; // postingDate
+  final String? workCenter;
+
+  final String? oilType;
+  final DateTime? time;
+  final int? shift;
+
+  final String? rmTankSource; // rmTankSource
+  final double rmTemp;
+  final double rmFFA; //rmFFA
+  final double rmIV; //rmIV
+  final double rmDobi; //rmDobi
+  final double rmAV; //rmAV
+  final double rmMNI; // rmMNI
+  final double rmPV; // rmPV
+
+  // BPO / BPKO
+  final String? boColor; // boColor
+  final String? boBreakTest; //boBreakTest
+
+  // RPO
+  final double fgFFA; // fgFFA
+  final double fgIV; // fgIV
+  final double fgPV; // fgPV
+  final double fgMNI; //fgMNI
+  final double fgColorR; //fgColorR
+  final double fgColorY; //fgColorY
+  final String? fgTankTo; //fgTankTo
+
+  // PFAD
+  final double bpFFA; //bpFFA
+  final double bpMNI; //bgMNI
+  final double wSBEQC; //wSBEQC
+
+  // Remark
+  final String? remarks;
   final String? entryBy;
   final DateTime? entryDate;
 
+  final String? preparedByShift1;
+  final DateTime? preparedDateShift1;
+  final String? preparedStatusShift1;
+
+  final String? preparedByShift2;
+  final DateTime? preparedDateShift2;
+  final String? preparedStatusShift2;
+
+  final String? preparedByShift3;
+  final DateTime? preparedDateShift3;
+  final String? preparedStatusShift3;
+  final String? preparedStatusRemarksShift;
+
+  final String? checkedBy;
+  final DateTime? checkedDate;
+  String? checkedStatus;
+  final String? checkedStatusRemarks;
+
+  final String? updatedBy;
+  final DateTime? updatedDate;
+
   QualityReportRefineryEntity({
+    required this.oilType,
+    required this.transactionDate,
     required this.id,
-    required this.reportDate,
+    required this.postingDate,
     required this.time,
-    required this.pCat,
-    required this.pTankSource,
-    required this.pFlowRate,
-    required this.pFFA,
-    required this.pIV,
-    required this.pPV,
-    required this.pANV,
-    required this.pDobi,
-    required this.pCarotene,
-    required this.pMNI,
-    required this.pColor,
-    required this.cCat,
-    required this.cPA,
-    required this.cBE,
-    required this.bCat,
-    required this.bColorR,
-    required this.bColorY,
-    required this.bBreakTest,
-    required this.rCat,
-    required this.rFFA,
-    required this.rColorR,
-    required this.rColorY,
-    required this.rColorB,
-    required this.rPV,
-    required this.rMNI,
-    required this.rProductTankNo,
-    required this.fpCat,
-    required this.fpPurity,
-    required this.fpProductTankNumber,
-    required this.pic,
-    required this.spentEarthOIC,
+    required this.shift,
+
+    required this.rmTankSource,
+
+    required this.rmTemp,
+    required this.rmFFA,
+    required this.rmIV,
+    required this.rmPV,
+    required this.rmAV,
+    required this.rmDobi,
+
+    required this.rmMNI,
+    required this.boColor,
+
+    required this.boBreakTest,
+
+    required this.fgFFA,
+    required this.fgColorR,
+    required this.fgColorY,
+    required this.fgIV,
+    required this.fgPV,
+    required this.fgTankTo,
+    required this.fgMNI,
+
+    required this.bpFFA,
+    required this.bpMNI,
+    required this.wSBEQC,
+
     required this.remarks,
     required this.checkedBy,
     required this.checkedDate,
-    required this.checkedTime,
-    required this.approvedBy,
-    required this.approvedDate,
-    required this.approvedTime,
-    required this.flag,
+    required this.preparedByShift1,
+    required this.preparedDateShift1,
+
     required this.company,
     required this.plant,
     required this.entryBy,
     required this.entryDate,
+
+    required this.preparedStatusShift1,
+    required this.preparedByShift2,
+    required this.preparedDateShift2,
+    required this.preparedStatusShift2,
+    required this.preparedByShift3,
+    required this.preparedDateShift3,
+    required this.preparedStatusShift3,
+    required this.preparedStatusRemarksShift,
+    required this.checkedStatus,
+    required this.checkedStatusRemarks,
+
+    required this.workCenter,
+    required this.updatedBy,
+    required this.updatedDate,
   });
 
   factory QualityReportRefineryEntity.fromMap(Map<String, dynamic> map) {
-    double? parseDouble(dynamic value) {
+    double parseDouble(dynamic value) {
+      if (value == null) {
+        return 0.0;
+      } else if (value is double) {
+        return value;
+      } else if (value is int) {
+        return value.toDouble();
+      } else if (value is String) {
+        return double.tryParse(value) ?? 0.0;
+      }
+      return 0.0;
+    }
+
+    int? parseInt(dynamic value) {
       if (value == null) return null;
-      if (value is double) return value;
-      if (value is int) return value.toDouble();
-      if (value is String) return double.tryParse(value);
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value);
       return null;
     }
 
@@ -127,148 +157,120 @@ class QualityReportRefineryEntity {
       return null;
     }
 
+    DateTime? parseTime(dynamic value) {
+      if (value is String) return DateFormat('HH:mm:ss').parse(value);
+      if (value is DateTime) return value;
+      if (value == null) return null;
+      return null;
+    }
+
     return QualityReportRefineryEntity(
       id: map['id'] as String,
-      reportDate: parseDateTime(map['report_date']),
-      time: parseDateTime(map['time']),
-      pCat: null,
-      pTankSource: parseDouble(map['p_tank_source']),
-      pFlowRate: parseDouble(map['p_flow_rate']),
-      pFFA: parseDouble(map['p_ffa']),
-      pIV: parseDouble(map['p_iv']),
-      pPV: parseDouble(map['p_pv']),
-      pANV: parseDouble(map['p_anv']),
-      pDobi: parseDouble(map['p_dobi']),
-      pCarotene: parseDouble(map['p_carotene']),
-      pMNI: parseDouble(map['p_m&i']),
-      pColor: map['p_color'] as String,
-      cCat: null,
-      cPA: parseDouble(map['c_pa']),
-      cBE: parseDouble(map['c_be']),
-      bCat: null,
-      bColorR: parseDouble(map['b_color_r']),
-      bColorY: parseDouble(map['b_color_y']),
-      bBreakTest: map['b_break_test'] as String?,
-      rCat: map['r_cat'] as String?,
-      rFFA: parseDouble(map['r_ffa']),
-      rColorR: parseDouble(map['r_color_r']),
-      rColorY: parseDouble(map['r_color_y']),
-      rColorB: parseDouble(map['r_color_b']),
-      rPV: parseDouble(map['r_pv']),
-      rMNI: parseDouble(map['r_m&i']),
-      rProductTankNo: parseDouble(map['r_product_tank_no']),
-      fpCat: parseDouble(map['fp_cat']),
-      fpPurity: parseDouble(map['fp_purity']),
-      fpProductTankNumber: parseDouble(map['fp_product_tank_no']),
-      spentEarthOIC: parseDouble(map['spent_earth_oic']),
-      pic: map['pic'] as String?,
-      remarks: map['remarks'] as String?,
-      checkedBy: map['check_by'] as String?,
-      checkedDate: parseDateTime(map['checked_date']),
-      checkedTime: parseDateTime(map['checked_time']),
-      approvedBy: map['approved_by'] as String?,
-      approvedDate: parseDateTime(map['approved_date']),
-      approvedTime: parseDateTime(map['approved_time']),
-      flag: map['flag'] as String?,
       company: map['company'] as String?,
       plant: map['plant'] as String?,
+      transactionDate: parseDateTime(map['transaction_date']),
+      postingDate: parseDateTime(map['posting_date']),
+      workCenter: map['work_center'],
+      oilType: map['oil_type'] as String?,
+      time: parseTime(map['time']),
+      shift: parseInt(map['shift']),
+      rmTankSource: map['rm_tank_source'] as String?,
+      rmTemp: parseDouble(map['rm_temp']),
+      rmFFA: parseDouble(map['rm_ffa']),
+      rmIV: parseDouble(map['rm_iv']),
+      rmDobi: parseDouble(map['rm_dobi']),
+      rmAV: parseDouble(map['rm_av']),
+      rmMNI: parseDouble(map['rm_m&i']),
+      rmPV: parseDouble(map['rm_pv']),
+      boColor: map['bo_color'] as String?,
+      boBreakTest: map['bo_break_test'] as String?,
+      fgFFA: parseDouble(map['fg_ffa']),
+      fgIV: parseDouble(map['fg_iv']),
+      fgPV: parseDouble(map['fg_pv']),
+      fgMNI: parseDouble(map['fg_m&i']),
+      fgColorR: parseDouble(map['fg_color_r']),
+      fgColorY: parseDouble(map['fg_color_y']),
+      fgTankTo: map['fg_tank_to'] as String?,
+      bpFFA: parseDouble(map['bp_ffa']),
+      bpMNI: parseDouble(map['bp_m&i']),
+      wSBEQC: parseDouble(map['w_sbe_qc']),
+      remarks: map['remarks'] as String?,
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
-
-      // pCat: map['p_cat'] as String?,
-      // pTankSource: map['p_tank_source'] as double?,
-      // pFlowRate: map['p_flowrate'] as double?,
-      // pFFA: map['p_ffa'] as double?,
-      // pIV: map['p_iv'] as double?,
-      // pPV: map['p_pv'] as double?,
-      // pANV: map['p_anv'] as double?,
-      // pDobi: map['p_dobi'] as double?,
-      // pCarotene: map['p_carotene'] as double?,
-      // pMNI: map['p_m&i'] as double?,
-      // pColor: map['p_color'] as String?,
-      // cCat: map['c_cat'] as String?,
-      // cPA: map['c_pa'] as double?,
-      // cBE: map['c_be'] as double?,
-      // bCat: map['b_cat'] as String?,
-      // bColorR: map['b_color_r'] as double?,
-      // bColorY: map['b_color_y'] as double?,
-      // bBreakTest: map['b_break_test'] as String?,
-      // rCat: map['r_cat'] as String?,
-      // rFFA: map['r_ffa'] as double?,
-      // rColorR: map['r_color_r'] as double?,
-      // rColorY: map['r_color_y'] as double?,
-      // rColorB: map['r_color_b'] as double?,
-      // rPV: map['r_pv'] as double?,
-      // rMNI: map['r_m&i'] as double?,
-      // rProductTankNo: map['r_product_tank_no'] as double?,
-      // fpCat: map['fp_cat'] as double?,
-      // fpPurity: map['fp_purity'] as double?,
-      // fpProductTankNumber: map['fp_product_tank_no'] as double?,
-      // spentEarthOIC: map['spent_earth_oic'] as double?,
-      // pic: map['pic'] as String?,
-      // remarks: map['remarks'] as String?,
-      // checkedBy: map['check_by'] as String?,
-      // checkedDate: map['checked_date'] as DateTime?,
-      // checkedTime: map['checked_time'] as DateTime?,
-      // approvedBy: map['approved_by'] as String?,
-      // approvedDate: map['approved_date'] as DateTime?,
-      // approvedTime: map['approved_time'] as DateTime?,
-      // flag: map['flag'] as String?,
-      // company: map['company'] as String?,
-      // plant: map['plant'] as String?,
-      // entryBy: map['entry_by'] as String?,
-      // entryDate: map['entry_date'] as DateTime?,
+      preparedByShift1: map['prepared_by_shift1'] as String?,
+      preparedDateShift1: parseDateTime(map['prepared_date_shift1']),
+      preparedStatusShift1: map['prepared_status_shift1'],
+      preparedByShift2: map['prepared_by_shift2'],
+      preparedDateShift2: parseDateTime(map['prepared_date_shift2']),
+      preparedStatusShift2: map['prepared_status_shift2'],
+      preparedByShift3: map['prepared_by_shift3'],
+      preparedDateShift3: parseDateTime(map['prepared_date_shift3']),
+      preparedStatusShift3: map['prepared_status_shift3'],
+      preparedStatusRemarksShift: map['status_remarks_shift'],
+      checkedBy: map['checked_by'] as String?,
+      checkedDate: parseDateTime(map['checked_date']),
+      checkedStatus: map['checked_status'],
+      checkedStatusRemarks: map['checked_status_remarks'],
+      updatedBy: map['updated_by'] as String?,
+      updatedDate: parseDateTime(map['updated_date']),
     );
   }
 
   Map<String, dynamic> toMap() {
+    String? formatDate(DateTime? date) => date?.toIso8601String();
+    // Helper for formatting Time (DateTime) to HH:mm:ss string, or null if the time is null
+    String? formatTime(DateTime? time) =>
+        time != null ? DateFormat('HH:mm:ss').format(time) : null;
+
     return {
       'id': id,
-      'report_date': reportDate,
-      'time': time,
-      'p_cat': pCat,
-      'p_tank_source': pTankSource,
-      'p_flowrate': pFlowRate,
-      'p_ffa': pFFA,
-      'p_iv': pIV,
-      'p_pv': pPV,
-      'p_anv': pANV,
-      'p_dobi': pDobi,
-      'p_carotene': pCarotene,
-      'p_m&i': pMNI,
-      'p_color': pColor,
-      'c_cat': cCat,
-      'c_pa': cPA,
-      'c_be': cBE,
-      'b_cat': bCat,
-      'b_color_r': bColorR,
-      'b_color_y': bColorY,
-      'b_break_test': bBreakTest,
-      'r_cat': rCat,
-      'r_ffa': rFFA,
-      'r_color_r': rColorR,
-      'r_color_y': rColorY,
-      'r_color_b': rColorB,
-      'r_pv': rPV,
-      'r_m&i': rMNI,
-      'r_product_tank_no': rProductTankNo,
-      'fp_cat': fpCat,
-      'fp_purity': fpPurity,
-      'fp_product_tank_no': fpProductTankNumber,
-      'pic': pic,
-      'spent_earth_oic': spentEarthOIC,
-      'remarks': remarks,
-      'checked_by': checkedBy,
-      'checked_date': checkedDate,
-      'checked_time': checkedTime,
-      'approved_by': approvedBy,
-      'approved_date': approvedDate,
-      'approved_time': approvedTime,
-      'flag': flag,
       'company': company,
       'plant': plant,
+      'transaction_date': formatDate(transactionDate),
+      'posting_date': formatDate(postingDate),
+      'work_center': workCenter,
+      'oil_type': oilType,
+      'time': formatTime(time), // Format time as HH:mm:ss string
+      'shift': shift,
+      'rm_tank_source': rmTankSource,
+      'rm_temp': rmTemp,
+      'rm_ffa': rmFFA,
+      'rm_iv': rmIV,
+      'rm_dobi': rmDobi,
+      'rm_av': rmAV,
+      'rm_mni': rmMNI,
+      'rm_pv': rmPV,
+      'bo_color': boColor,
+      'bo_break_test': boBreakTest,
+      'fg_ffa': fgFFA,
+      'fg_iv': fgIV,
+      'fg_pv': fgPV,
+      'fg_mni': fgMNI,
+      'fg_color_r': fgColorR,
+      'fg_color_y': fgColorY,
+      'fg_tank_to': fgTankTo,
+      'bp_ffa': bpFFA,
+      'bp_mni': bpMNI,
+      'w_sbe_qc': wSBEQC,
+      'remarks': remarks,
       'entry_by': entryBy,
-      'entry_date': entryDate,
+      'entry_date': formatDate(entryDate),
+      'prepared_by_shift1': preparedByShift1,
+      'prepared_date_shift1': formatDate(preparedDateShift1),
+      'prepared_status_shift1': preparedStatusShift1,
+      'prepared_by_shift2': preparedByShift2,
+      'prepared_date_shift2': formatDate(preparedDateShift2),
+      'prepared_status_shift2': preparedStatusShift2,
+      'prepared_by_shift3': preparedByShift3,
+      'prepared_date_shift3': formatDate(preparedDateShift3),
+      'prepared_status_shift3': preparedStatusShift3,
+      'prepared_status_remarks_shift': preparedStatusRemarksShift,
+      'checked_by': checkedBy,
+      'checked_date': formatDate(checkedDate),
+      'checked_status': checkedStatus,
+      'checked_status_remarks': checkedStatusRemarks,
+      'updated_by': updatedBy,
+      'updated_date': updatedDate,
     };
   }
 }

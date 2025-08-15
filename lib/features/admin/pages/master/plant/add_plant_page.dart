@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
-import 'package:logsheet_app/providers/business_unit_provider.dart';
-import 'package:logsheet_app/providers/plant_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
 
 class AddPlantPage extends StatefulWidget {

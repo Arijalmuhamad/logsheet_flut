@@ -1,11 +1,14 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/database/app_database.dart';
-import 'package:logsheet_app/data/dao/user_dao.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:mysql_client/mysql_client.dart';
 import 'package:provider/provider.dart';
 
 import '../admin/admin_home_page.dart';
 import '../user/user_home_page.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/master/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,128 +18,163 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  late final AppDatabase db;
-  late final UserDao userDao;
+  String? _errorMessage;
+  bool _isPasswordVisible = false;
 
-  String? errorMessage;
-  bool isPasswordVisible = false;
+  MySQLConnection? _connection;
 
   String? selectedPlant;
-  String? selectedCompany;
+  String? selectedBusinessUnit;
 
-  final List<String> plantOptions = ['Fractination', 'Refinery'];
-  final List<String> companyOptions = ['EUP', 'PS'];
+  bool _isLoggingIn = false;
 
   @override
   void initState() {
     super.initState();
-    db = AppDatabase();
-    userDao = UserDao(db);
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) =>
+          Provider.of<BusinessUnitProvider>(
+            context,
+            listen: false,
+          ).fetchAllBusinessUnits(),
+    );
   }
 
   Future<void> _handleLogin() async {
-    final username = usernameController.text.trim();
-    final password = passwordController.text.trim();
+    if (_isLoggingIn) return;
+
+    setState(() {
+      _isLoggingIn = true;
+      _errorMessage = null;
+    });
+
+    log(selectedBusinessUnit ?? "no biz unit selected");
+    log(selectedPlant ?? "no plant unit selected");
+
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter username and password.';
+        _isLoggingIn = false; // Re-enable the login button
+      });
+      return;
+    }
+
+    if (selectedBusinessUnit == null) {
+      setState(() {
+        _errorMessage = 'Please select a Business Unit.';
+        _isLoggingIn = false; // Re-enable the login button
+      });
+      return; // Stop the login process
+    }
+
+    if (selectedPlant == null) {
+      setState(() {
+        _errorMessage = 'Please select a Plant.';
+        _isLoggingIn = false; // Re-enable the login button
+      });
+      return; // Stop the login process
+    }
 
     // User Provider
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final businessUnitProvider = Provider.of<BusinessUnitProvider>(
+      context,
+      listen: false,
+    );
+    final plantProvider = Provider.of<PlantProvider>(context, listen: false);
 
-    //login to the mysql database
-    final user = await userProvider.loginUser(username, password);
+    try {
+      //login to the mysql database
 
-    if (user != null) {
-      if (user.role == 'ADM') {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) =>
-                    AdminHomePage(userEntity: user, userName: user.username),
-          ),
-        );
+      final user = await userProvider.loginUser(username, password);
+
+      if (user != null) {
+        if (user.role == 'ADM') {
+          final selectedBusinessUnitEntity = businessUnitProvider
+              .listBusinessUnits
+              .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
+          businessUnitProvider.setCurrentBusinessUnit(
+            selectedBusinessUnitEntity,
+          );
+          final selectedPlantEntity = plantProvider.plantList.firstWhere(
+            (plant) => plant.code == selectedPlant,
+          );
+
+          log("Selected Plant: $selectedPlant");
+          log("Founded Plant: ${selectedPlantEntity.name}");
+
+          plantProvider.setCurrentPlant(selectedPlantEntity);
+
+          log("login plant in provider: ${plantProvider.currentPlant?.code}");
+
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      AdminHomePage(userEntity: user, userName: user.username),
+            ),
+          );
+        } else {
+          final selectedBusinessUnitEntity = businessUnitProvider
+              .listBusinessUnits
+              .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
+          businessUnitProvider.setCurrentBusinessUnit(
+            selectedBusinessUnitEntity,
+          );
+          final selectedPlantEntity = plantProvider.plantList.firstWhere(
+            (plant) => plant.code == selectedPlant,
+          );
+
+          log("Selected Plant: $selectedPlant");
+          log("Founded Plant: ${selectedPlantEntity.name}");
+
+          plantProvider.setCurrentPlant(selectedPlantEntity);
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserHomePage(userEntity: user),
+            ),
+          );
+        }
       } else {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserHomePage(userEntity: user),
-          ),
-        );
+        setState(() {
+          _errorMessage =
+              userProvider.errorMessage ?? 'Login gagal. Silakan coba lagi.';
+        });
       }
-    } else {
+    } catch (e) {
       setState(() {
-        errorMessage = 'Username atau password salah, atau akun tidak aktif.';
+        _errorMessage = 'Terjadi kesalahan tidak terduga: $e';
+      });
+      log('Error during login: $e');
+    } finally {
+      setState(() {
+        _isLoggingIn = false;
       });
     }
-
-    // if (selectedPlant == null || selectedCompany == null) {
-    //   setState(() {
-    //     errorMessage = 'Silakan pilih Plant dan Company terlebih dahulu.';
-    //   });
-    //   return;
-    // }
-
-    // final user = await userDao.login(username, password);
-
-    // if (user != null) {
-    //   setState(() => errorMessage = null);
-    //   if (!mounted) return;
-
-    //   Provider.of<UserProvider>(
-    //     context,
-    //     listen: false,
-    //   ).setUserName(user.username);
-
-    //   ScaffoldMessenger.of(
-    //     context,
-    //   ).showSnackBar(const SnackBar(content: Text('Login berhasil ✅')));
-
-    //   if (user.role == 'admin') {
-    //     Navigator.pushReplacement(
-    //       context,
-    //       MaterialPageRoute(
-    //         builder: (_) => AdminHomePage(userName: user.username),
-    //       ),
-    //     );
-    //   } else if (user.role == 'user') {
-    //     Navigator.pushReplacement(
-    //       context,
-    //       MaterialPageRoute(
-    //         builder: (_) => UserHomePage(userName: user.username),
-    //       ),
-    //     );
-    //   } else {
-    //     _showError("Role tidak dikenali");
-    //   }
-    // } else {
-    //   setState(() {
-    //     errorMessage = 'Username atau password salah, atau akun tidak aktif.';
-    //   });
-    // }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    db.close();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _connection?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: const Color(0xFFC8B8AB), // Tan
       backgroundColor: Colors.transparent,
       body: Container(
         decoration: BoxDecoration(
@@ -151,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 40),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 650),
               child: Container(
@@ -181,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                           Text(
                             "E-Logsheet",
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF655F5B), // Neutral Gray
                             ),
@@ -192,9 +230,9 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
                     Center(
                       child: const Text(
-                        "Log In",
+                        "Login",
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 42,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF655F5B), // Neutral Gray
                         ),
@@ -211,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
 
                     // Username
                     TextFormField(
-                      controller: usernameController,
+                      controller: _usernameController,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.person),
                         hintText: "Enter your username",
@@ -223,12 +261,12 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
                     // Password
                     TextFormField(
-                      controller: passwordController,
-                      obscureText: !isPasswordVisible,
+                      controller: _passwordController,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.lock_outline),
                         hintText: "Enter your password",
@@ -240,13 +278,13 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            isPasswordVisible
+                            _isPasswordVisible
                                 ? Icons.visibility
                                 : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
-                              isPasswordVisible = !isPasswordVisible;
+                              _isPasswordVisible = !_isPasswordVisible;
                             });
                           },
                         ),
@@ -254,65 +292,106 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Dropdown Plant
-                    // DropdownButtonFormField<String>(
-                    //   value: selectedPlant,
-                    //   isExpanded: true,
-                    //   decoration: InputDecoration(
-                    //     prefixIcon: const Icon(Icons.factory),
-                    //     filled: true,
-                    //     fillColor: const Color(0xFFF0ECE9),
-                    //     border: OutlineInputBorder(
-                    //       borderRadius: BorderRadius.circular(12),
-                    //       borderSide: BorderSide.none,
-                    //     ),
-                    //   ),
-                    //   hint: const Text("Pilih Plant"),
-                    //   items:
-                    //       plantOptions
-                    //           .map(
-                    //             (plant) => DropdownMenuItem(
-                    //               value: plant,
-                    //               child: Text(plant),
-                    //             ),
-                    //           )
-                    //           .toList(),
-                    //   onChanged:
-                    //       (value) => setState(() => selectedPlant = value),
-                    // ),
-                    // const SizedBox(height: 16),
+                    // Business Unit
+                    Consumer<BusinessUnitProvider>(
+                      builder: (context, provider, child) {
+                        return DropdownButtonFormField<String>(
+                          value: selectedBusinessUnit,
+                          items:
+                              provider.listBusinessUnits.map((businessUnit) {
+                                return DropdownMenuItem<String>(
+                                  value: businessUnit.buCode,
+                                  child: Text(
+                                    "${businessUnit.buCode} - ${businessUnit.buName}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedBusinessUnit = value;
+                              Provider.of<PlantProvider>(
+                                context,
+                                listen: false,
+                              ).clearPlants();
+                              selectedPlant = null;
+                            });
 
-                    // Dropdown Company
-                    // DropdownButtonFormField<String>(
-                    //   value: selectedCompany,
-                    //   isExpanded: true,
-                    //   decoration: InputDecoration(
-                    //     prefixIcon: const Icon(Icons.business),
-                    //     filled: true,
-                    //     fillColor: const Color(0xFFF0ECE9),
-                    //     border: OutlineInputBorder(
-                    //       borderRadius: BorderRadius.circular(12),
-                    //       borderSide: BorderSide.none,
-                    //     ),
-                    //   ),
-                    //   hint: const Text("Pilih Company"),
-                    //   items:
-                    //       companyOptions
-                    //           .map(
-                    //             (company) => DropdownMenuItem(
-                    //               value: company,
-                    //               child: Text(company),
-                    //             ),
-                    //           )
-                    //           .toList(),
-                    //   onChanged:
-                    //       (value) => setState(() => selectedCompany = value),
-                    // ),
-                    // const SizedBox(height: 8),
-                    if (errorMessage != null)
-                      Text(
-                        errorMessage!,
-                        style: const TextStyle(color: Colors.red),
+                            if (value != null) {
+                              Provider.of<PlantProvider>(
+                                context,
+                                listen: false,
+                              ).fetchPlantsByBusinessUnit(value);
+                            } else {
+                              Provider.of<PlantProvider>(
+                                context,
+                                listen: false,
+                              ).clearPlants();
+                            }
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Business Unit',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Icon(Icons.business_center_rounded),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Consumer<PlantProvider>(
+                      builder: (context, provider, child) {
+                        return DropdownButtonFormField<String>(
+                          value: selectedPlant,
+                          items:
+                              provider.plantList.map((plant) {
+                                return DropdownMenuItem<String>(
+                                  value: plant.code,
+                                  child: Text(
+                                    "${plant.code} - ${plant.name}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPlant = value!;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Plant',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Icon(Icons.forest_rounded),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    SizedBox(height: 24),
+
+                    if (_errorMessage != null)
+                      Center(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                     const SizedBox(height: 16),
 
@@ -323,10 +402,24 @@ class _LoginPageState extends State<LoginPage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text(
-                          "Log In",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+                        child:
+                            _isLoggingIn
+                                ? SizedBox(
+                                  width: 23,
+                                  height: 23,
+                                  child: const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
                       ),
                     ),
                   ],
