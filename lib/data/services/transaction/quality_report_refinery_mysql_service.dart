@@ -54,50 +54,56 @@ class QualityReportRefineryMysqlService {
         } else if (keyInEntityMap == 'wsbeqc') {
           actualDbColumnName = 'w_sbe_qc';
           safeParameterName = 'w_sbe_qc_param';
+        } else if (keyInEntityMap == 'w_sbe_mni') {
+          actualDbColumnName = 'w_sbe_m&i';
+          safeParameterName = 'w_sbe_mni_param';
+        } else if (keyInEntityMap == 'w_sbe_m&i') {
+          actualDbColumnName = 'w_sbe_m&i';
+          safeParameterName = 'w_sbe_mni_param';
         }
 
         // Validate decimal values to prevent overflow
-        if (formattedValue is double) {
-          // For decimal(4,3) fields - max value is 9.999
-          if (keyInEntityMap.contains('rm_ffa') ||
-              keyInEntityMap.contains('fg_ffa')) {
-            if (formattedValue > 9.999) {
-              log(
-                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(4,3) limit, capping at 9.999',
-              );
-              formattedValue = 9.999;
-            }
-          }
-          // For decimal(3,2) fields - max value is 9.99
-          else if (keyInEntityMap.contains('rm_iv') ||
-              keyInEntityMap.contains('rm_dobi') ||
-              keyInEntityMap.contains('rm_av') ||
-              keyInEntityMap.contains('rm_pv') ||
-              keyInEntityMap.contains('fg_iv') ||
-              keyInEntityMap.contains('bp_ffa') ||
-              keyInEntityMap.contains('w_sbe_qc')) {
-            if (formattedValue > 9.99) {
-              log(
-                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,2) limit, capping at 9.99',
-              );
-              formattedValue = 9.99;
-            }
-          }
-          // For decimal(3,0) fields - max value is 999
-          else if (keyInEntityMap.contains('rm_temp') ||
-              keyInEntityMap.contains('fg_pv') ||
-              keyInEntityMap.contains('fg_mni') ||
-              keyInEntityMap.contains('fg_color_r') ||
-              keyInEntityMap.contains('fg_color_y') ||
-              keyInEntityMap.contains('bp_mni')) {
-            if (formattedValue > 999) {
-              log(
-                'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,0) limit, capping at 999',
-              );
-              formattedValue = 999;
-            }
-          }
-        }
+        // if (formattedValue is double) {
+        //   // For decimal(4,3) fields - max value is 9.999
+        //   if (keyInEntityMap.contains('rm_ffa') ||
+        //       keyInEntityMap.contains('fg_ffa')) {
+        //     if (formattedValue > 9.999) {
+        //       log(
+        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(4,3) limit, capping at 9.999',
+        //       );
+        //       formattedValue = 9.999;
+        //     }
+        //   }
+        //   // For decimal(3,2) fields - max value is 9.99
+        //   else if (keyInEntityMap.contains('rm_iv') ||
+        //       keyInEntityMap.contains('rm_dobi') ||
+        //       keyInEntityMap.contains('rm_av') ||
+        //       keyInEntityMap.contains('rm_pv') ||
+        //       keyInEntityMap.contains('fg_iv') ||
+        //       keyInEntityMap.contains('bp_ffa') ||
+        //       keyInEntityMap.contains('w_sbe_qc')) {
+        //     if (formattedValue > 9.99) {
+        //       log(
+        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,2) limit, capping at 9.99',
+        //       );
+        //       formattedValue = 9.99;
+        //     }
+        //   }
+        //   // For decimal(3,0) fields - max value is 999
+        //   else if (keyInEntityMap.contains('rm_temp') ||
+        //       keyInEntityMap.contains('fg_pv') ||
+        //       keyInEntityMap.contains('fg_mni') ||
+        //       keyInEntityMap.contains('fg_color_r') ||
+        //       keyInEntityMap.contains('fg_color_y') ||
+        //       keyInEntityMap.contains('bp_mni')) {
+        //     if (formattedValue > 999) {
+        //       log(
+        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,0) limit, capping at 999',
+        //       );
+        //       formattedValue = 999;
+        //     }
+        //   }
+        // }
 
         columns.add('`$actualDbColumnName`');
         params.add(':$safeParameterName');
@@ -330,6 +336,12 @@ class QualityReportRefineryMysqlService {
           } else if (keyInEntityMap == 'wsbeqc') {
             actualDbColumnName = 'w_sbe_qc';
             safeParameterName = 'w_sbe_qc_param';
+          } else if (keyInEntityMap == 'w_sbe_mni') {
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
+          } else if (keyInEntityMap == 'w_sbe_m&i') {
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
           }
 
           setClause.add('`$actualDbColumnName` = :$safeParameterName');
@@ -370,7 +382,7 @@ class QualityReportRefineryMysqlService {
         'SELECT * FROM t_quality_report_refinery WHERE (prepared_status_shift1 = "Approved" OR prepared_status_shift2 = "Approved" OR prepared_status_shift3 = "Approved") AND plant = :plantCode;',
         {"plantCode": plantCode},
       );
-      log('Fetched ${result.rows.length} users.');
+      log('Fetched ${result.rows.length} row.');
       connResult.connection?.close();
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
@@ -429,6 +441,123 @@ class QualityReportRefineryMysqlService {
     } catch (e) {
       log("Error sending approve or reject report");
       return false;
+    }
+  }
+
+  Future<List<int>> getReportedHours(
+    DateTime dateFilter,
+    String plantCode,
+  ) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating autonumber.');
+        return [];
+      }
+      connection = connResult.connection!;
+      final result = await connection.execute(
+        "SELECT time FROM t_quality_report_refinery WHERE date(posting_date) = :date AND plant = :plantCode;",
+        {"date": dateFilter, "plantCode": plantCode},
+      );
+
+      final List<int> hours = [];
+      for (final row in result.rows) {
+        // row.assoc() converts the row into a Map<String, dynamic>
+        // We access the 'time' column and cast it to an int.
+        // It's good practice to handle potential nulls or incorrect types.
+        final timeValue = row.assoc()['time'];
+        if (timeValue is int && timeValue != null) {
+          log(timeValue);
+          hours.add(int.tryParse(timeValue) ?? 0);
+        }
+      }
+      return hours;
+    } catch (e) {
+      return [];
+    } finally {
+      await closeMySQLConnection();
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReadyForManagerApprovalReports() async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for manager alerts.');
+        return [];
+      }
+      connection = connResult.connection!;
+      log('attempting the select query.');
+      final result = await connection.execute("""
+          SELECT
+            DATE(posting_date) as report_date,
+            work_center,
+            oil_type
+          FROM
+            t_quality_report_refinery
+          WHERE
+            posting_date >= CURDATE() - INTERVAL 7 DAY
+          GROUP BY
+            DATE(posting_date),
+            work_center,
+            oil_type
+          HAVING
+           COUNT(CASE
+            WHEN (shift = 1 AND prepared_status_shift1 = 'Approved') THEN 1
+            WHEN (shift = 2 AND prepared_status_shift2 = 'Approved') THEN 1
+            WHEN (shift = 3 AND prepared_status_shift3 = 'Approved') THEN 1
+            ELSE NULL
+            END) = 24
+          AND
+            COUNT(CASE
+              WHEN checked_status IS NOT NULL AND checked_status != '' THEN 1
+              ELSE NULL
+            END) < 24
+          """);
+      log('done selecting.');
+      log("Affected Rows: ${result.affectedRows}");
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching reports ready for manager approval: $e');
+      return [];
+    } finally {
+      await closeMySQLConnection();
+    }
+  }
+
+  Future<bool> deleteReport(String id) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for deleting user.');
+        return false;
+      }
+
+      connection = connResult.connection!;
+
+      final result = await connection.execute(
+        "DELETE FROM t_quality_report_refinery WHERE id = :id",
+        {"id": id},
+      );
+      log('User terhapus: ${result.affectedRows} row(s) affected.');
+      // connResult.connection?.close();
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error deleting user: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection();
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
     }
   }
 }

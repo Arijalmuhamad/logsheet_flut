@@ -37,7 +37,7 @@ class ValueProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchOilTypes() async {
+  Future<void> fetchOilTypes() async {
     _setLoading(true);
     _setErrorMessage(null);
 

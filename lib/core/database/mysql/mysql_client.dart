@@ -14,14 +14,14 @@ getMySQLConnection() async {
   }
   final conn = await MySQLConnection.createConnection(
     // host: '172.30.61.192',
-    // host: dotenv.env['DB_HOST'],
-    // userName: dotenv.env['DB_USER']!,
-    // password: dotenv.env['DB_PASSWORD']!,
-    // databaseName: dotenv.env['DB_NAME'],
-    host: '172.30.6.167',
-    userName: 'user_wb',
-    password: 'kpnwb#2025',
-    databaseName: 'logsheet_automation',
+    host: dotenv.env['DB_HOST'],
+    userName: dotenv.env['DB_USER']!,
+    password: dotenv.env['DB_PASSWORD']!,
+    databaseName: dotenv.env['DB_NAME'],
+    // host: '172.30.6.167',
+    // userName: 'user_wb',
+    // password: 'kpnwb#2025',
+    // databaseName: 'logsheet_automation',
     port: int.parse(dotenv.env['DB_PORT']!),
     secure: false,
   ).timeout(

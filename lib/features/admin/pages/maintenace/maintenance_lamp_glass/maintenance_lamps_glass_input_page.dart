@@ -145,7 +145,7 @@ class _ChecklistLampsGlassPageState
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: AppBar(
         centerTitle: false,
-        title: const Text("Lamps & Glass"),
+        title: const Text("Lamps & Glass (F/RFA-013)"),
         actions: [
           IconButton(
             onPressed: () {

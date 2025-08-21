@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/data/repositories/transaction/quality_report_refinery_repository.dart';
 
 class QualityReportRefineryProvider with ChangeNotifier {
@@ -11,6 +12,9 @@ class QualityReportRefineryProvider with ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isLoadingDelete = false;
+  bool get isLoadingDelete => _isLoadingDelete;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -22,11 +26,19 @@ class QualityReportRefineryProvider with ChangeNotifier {
   List<QualityReportRefineryEntity> get approvedTransactions =>
       _approvedTransactions;
 
+  List<ReportNotificationDataEntity> _readyReportsList = [];
+  List<ReportNotificationDataEntity> get readyReportsList => _readyReportsList;
+
   String? _latestId;
   String? get latestId => _latestId;
 
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setLoadingDelete(bool value) {
+    _isLoadingDelete = value;
     notifyListeners();
   }
 
@@ -76,6 +88,25 @@ class QualityReportRefineryProvider with ChangeNotifier {
     } catch (e) {
       _setLoading(false);
       _setErrorMessage('Failed to insert report: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteReportById(String id) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
+    try {
+      final response = await _repository.deleteReport(id);
+      _setLoadingDelete(false);
+
+      _reportsList.removeWhere((element) => element.id == id);
+      notifyListeners();
+
+      return response;
+    } catch (e) {
+      _setLoadingDelete(false);
+      _setErrorMessage('Failed to delete report: $e');
+
       return false;
     }
   }
@@ -232,8 +263,46 @@ class QualityReportRefineryProvider with ChangeNotifier {
       await Future.delayed(Duration(milliseconds: 500));
       _setLoading(false);
     } catch (e) {
-      _setErrorMessage('Failed to fetch users: $e');
+      _setErrorMessage('Failed to fetch transaction reports: $e');
       _setLoading(false);
+    }
+  }
+
+  Future<List<int>> fetchReportedHours(
+    DateTime dateFilter,
+    String plantCode,
+  ) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      final List<int> reportedTime = await _repository.getReportedHours(
+        dateFilter,
+        plantCode,
+      );
+      return reportedTime;
+    } catch (e) {
+      _setErrorMessage('Failed to fetch reported hours: $e');
+      _setLoading(false);
+      return [];
+    }
+  }
+
+  Future<List<ReportNotificationDataEntity>>
+  fetchReadyForManagerApprovalReports() async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      log("Fetching ready for manager approval list");
+      _readyReportsList = await _repository.getReadyForManagerApprovalReports();
+
+      log("${_readyReportsList.length} is ready to be approved.");
+      _setLoading(false);
+      return _readyReportsList;
+    } catch (e) {
+      log('Failed to fetch reported hours: $e');
+      _setErrorMessage('Failed to fetch reported hours: $e');
+      _setLoading(false);
+      return [];
     }
   }
 }

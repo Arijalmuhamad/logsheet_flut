@@ -14,32 +14,45 @@ class QualityReportRefineryEntity {
   final DateTime? time;
   final int? shift;
 
+  final double? rmFlowRate;
   final String? rmTankSource; // rmTankSource
-  final double rmTemp;
-  final double rmFFA; //rmFFA
-  final double rmIV; //rmIV
-  final double rmDobi; //rmDobi
-  final double rmAV; //rmAV
-  final double rmMNI; // rmMNI
-  final double rmPV; // rmPV
+  final double? rmTemp;
+  final double? rmFFA; //rmFFA
+  final double? rmIV; //rmIV
+  final double? rmDobi; //rmDobi
+  final double? rmAV; //rmAV
+  final double? rmMNI; // rmMNI
+  final double? rmPV; // rmPV
+  final double? rmToTox;
+  final double? rmColorR; // boColorR
+  final double? rmColorY; // boColorY
+  final double? rmColorB; // boColorY
 
   // BPO / BPKO
-  final String? boColor; // boColor
+  final double? boColorR; // boColorR
+  final double? boColorY; // boColorY
+  final double? boColorB; // boColorY
   final String? boBreakTest; //boBreakTest
 
   // RPO
-  final double fgFFA; // fgFFA
-  final double fgIV; // fgIV
-  final double fgPV; // fgPV
-  final double fgMNI; //fgMNI
-  final double fgColorR; //fgColorR
-  final double fgColorY; //fgColorY
+  final double? fgFFA; // fgFFA
+  final double? fgIV; // fgIV
+  final double? fgPV; // fgPV
+  final double? fgMoisture; //fgMNI
+  final double? fgImpurities; //fgMNI
+  final double? fgColorR; //fgColorR
+  final double? fgColorY; //fgColorY
+  final double? fgColorB; //fgColorB
   final String? fgTankTo; //fgTankTo
+  final String? fgTankToOthersRemarks;
 
   // PFAD
-  final double bpFFA; //bpFFA
-  final double bpMNI; //bgMNI
-  final double wSBEQC; //wSBEQC
+  final double? bpFFA; //bpFFA
+  final double? bpMNI; //bgMNI
+  final String? bpToTank;
+
+  final double? wSBEQC; //wSBEQC
+  final double? wasteMNI;
 
   // Remark
   final String? remarks;
@@ -75,31 +88,41 @@ class QualityReportRefineryEntity {
     required this.time,
     required this.shift,
 
+    required this.rmFlowRate,
     required this.rmTankSource,
-
     required this.rmTemp,
     required this.rmFFA,
     required this.rmIV,
     required this.rmPV,
     required this.rmAV,
     required this.rmDobi,
-
     required this.rmMNI,
-    required this.boColor,
+    required this.rmToTox,
+    required this.rmColorR,
+    required this.rmColorY,
+    required this.rmColorB,
 
+    required this.boColorR,
+    required this.boColorY,
+    required this.boColorB,
     required this.boBreakTest,
 
     required this.fgFFA,
     required this.fgColorR,
     required this.fgColorY,
+    required this.fgColorB,
     required this.fgIV,
+    required this.fgMoisture,
+    required this.fgImpurities,
     required this.fgPV,
     required this.fgTankTo,
-    required this.fgMNI,
+    this.fgTankToOthersRemarks,
 
     required this.bpFFA,
     required this.bpMNI,
+    required this.bpToTank,
     required this.wSBEQC,
+    required this.wasteMNI,
 
     required this.remarks,
     required this.checkedBy,
@@ -129,17 +152,17 @@ class QualityReportRefineryEntity {
   });
 
   factory QualityReportRefineryEntity.fromMap(Map<String, dynamic> map) {
-    double parseDouble(dynamic value) {
+    double? parseDouble(dynamic value) {
       if (value == null) {
-        return 0.0;
+        return null;
       } else if (value is double) {
         return value;
       } else if (value is int) {
         return value.toDouble();
       } else if (value is String) {
-        return double.tryParse(value) ?? 0.0;
+        return double.tryParse(value);
       }
-      return 0.0;
+      return null;
     }
 
     int? parseInt(dynamic value) {
@@ -174,6 +197,7 @@ class QualityReportRefineryEntity {
       oilType: map['oil_type'] as String?,
       time: parseTime(map['time']),
       shift: parseInt(map['shift']),
+      rmFlowRate: parseDouble(map['rm_flowrate']),
       rmTankSource: map['rm_tank_source'] as String?,
       rmTemp: parseDouble(map['rm_temp']),
       rmFFA: parseDouble(map['rm_ffa']),
@@ -182,18 +206,29 @@ class QualityReportRefineryEntity {
       rmAV: parseDouble(map['rm_av']),
       rmMNI: parseDouble(map['rm_m&i']),
       rmPV: parseDouble(map['rm_pv']),
-      boColor: map['bo_color'] as String?,
+      rmToTox: parseDouble(map['rm_totox']),
+      rmColorR: parseDouble(map['rm_color_r']),
+      rmColorY: parseDouble(map['rm_color_y']),
+      rmColorB: parseDouble(map['rm_color_b']),
+      boColorR: parseDouble(map['bo_color_r']),
+      boColorY: parseDouble(map['bo_color_y']),
+      boColorB: parseDouble(map['bo_color_b']),
       boBreakTest: map['bo_break_test'] as String?,
       fgFFA: parseDouble(map['fg_ffa']),
       fgIV: parseDouble(map['fg_iv']),
       fgPV: parseDouble(map['fg_pv']),
-      fgMNI: parseDouble(map['fg_m&i']),
+      fgMoisture: parseDouble(map['fg_moisture']),
+      fgImpurities: parseDouble(map['fg_impurities']),
       fgColorR: parseDouble(map['fg_color_r']),
       fgColorY: parseDouble(map['fg_color_y']),
-      fgTankTo: map['fg_tank_to'] as String?,
+      fgColorB: parseDouble(map['fb_color_b']),
+      fgTankTo: map['fg_tank_to'] as String,
+      fgTankToOthersRemarks: map['fg_tank_to_others_remarks'] as String?,
       bpFFA: parseDouble(map['bp_ffa']),
       bpMNI: parseDouble(map['bp_m&i']),
+      bpToTank: map['bp_to_tank'] as String?,
       wSBEQC: parseDouble(map['w_sbe_qc']),
+      wasteMNI: parseDouble(map['w_sbe_mni']),
       remarks: map['remarks'] as String?,
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
@@ -232,6 +267,7 @@ class QualityReportRefineryEntity {
       'oil_type': oilType,
       'time': formatTime(time), // Format time as HH:mm:ss string
       'shift': shift,
+      'rm_flowrate': rmFlowRate,
       'rm_tank_source': rmTankSource,
       'rm_temp': rmTemp,
       'rm_ffa': rmFFA,
@@ -240,18 +276,29 @@ class QualityReportRefineryEntity {
       'rm_av': rmAV,
       'rm_mni': rmMNI,
       'rm_pv': rmPV,
-      'bo_color': boColor,
+      'rm_totox': rmToTox,
+      'rm_color_r': rmColorR,
+      'rm_color_y': rmColorY,
+      'rm_color_b': rmColorB,
+      'bo_color_r': boColorR,
+      'bo_color_y': boColorY,
+      'bo_color_b': boColorB,
       'bo_break_test': boBreakTest,
       'fg_ffa': fgFFA,
       'fg_iv': fgIV,
       'fg_pv': fgPV,
-      'fg_mni': fgMNI,
+      'fg_moisture': fgMoisture,
+      'fg_impurities': fgImpurities,
       'fg_color_r': fgColorR,
       'fg_color_y': fgColorY,
+      'fg_color_b': fgColorB,
       'fg_tank_to': fgTankTo,
+      'fg_tank_to_others_remarks': fgTankToOthersRemarks,
       'bp_ffa': bpFFA,
       'bp_mni': bpMNI,
+      'bp_to_tank': bpToTank,
       'w_sbe_qc': wSBEQC,
+      'w_sbe_mni': wasteMNI,
       'remarks': remarks,
       'entry_by': entryBy,
       'entry_date': formatDate(entryDate),

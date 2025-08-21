@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,8 @@ class _QualityListPageState extends State<QualityListPage> {
   final TextEditingController _dateController = TextEditingController();
 
   DateTime? _selectedDate;
-  String? _tempSelectedHour;
+  String? _tempSelectedShift;
+  final List<String> shifts = ["1", "2", "3"];
 
   final List<String> _hours = List.generate(
     24,
@@ -37,16 +39,15 @@ class _QualityListPageState extends State<QualityListPage> {
     super.initState();
     _selectedDate = DateTime.now();
 
-    final user = Provider.of<UserProvider>(context, listen: false).currentUser;
-    final plantCode =
-        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
-        "";
+    final user = context.read<UserProvider>().currentUser;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<QualityReportRefineryProvider>(
-        context,
-        listen: false,
-      ).fetchAllReports(
+      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<QualityReportRefineryProvider>().fetchAllReports(
         null,
         null,
         user?.username ?? "",
@@ -75,7 +76,7 @@ class _QualityListPageState extends State<QualityListPage> {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
-      _tempSelectedHour = null;
+      _tempSelectedShift = null;
       // _fetchReports();
     });
   }
@@ -185,7 +186,35 @@ class _QualityListPageState extends State<QualityListPage> {
                   margin: const EdgeInsets.only(top: 16),
                   child: Consumer<QualityReportRefineryProvider>(
                     builder: (context, provider, child) {
-                      if (provider.reportsList.isEmpty) {
+                      List<QualityReportRefineryEntity> filteredReports =
+                          provider.reportsList;
+
+                      if (_selectedDate != null) {
+                        filteredReports =
+                            filteredReports.where((report) {
+                              // This ensures we only compare the Year, Month, and Day, ignoring the time.
+                              return report.transactionDate?.year ==
+                                      _selectedDate!.year &&
+                                  report.transactionDate?.month ==
+                                      _selectedDate!.month &&
+                                  report.transactionDate?.day ==
+                                      _selectedDate!.day;
+                            }).toList();
+                      }
+
+                      // 3. Apply the hour filter if an hour is selected.
+                      if (_tempSelectedShift != null) {
+                        // We parse the selected hour string "HH:00" to get the hour as an integer.
+                        final selectedShift = int.tryParse(_tempSelectedShift!);
+                        if (selectedShift != null) {
+                          filteredReports =
+                              filteredReports.where((report) {
+                                return report.shift == selectedShift;
+                              }).toList();
+                        }
+                      }
+
+                      if (filteredReports.isEmpty) {
                         return Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -211,11 +240,12 @@ class _QualityListPageState extends State<QualityListPage> {
                           ),
                         );
                       }
+
                       return ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 88),
-                        itemCount: provider.reportsList.length,
+                        padding: const EdgeInsets.only(top: 12),
+                        itemCount: filteredReports.length,
                         itemBuilder: (context, index) {
-                          final report = provider.reportsList[index];
+                          final report = filteredReports[index];
                           return Card(
                             child: InkWell(
                               onTap: () {
@@ -389,11 +419,11 @@ class _QualityListPageState extends State<QualityListPage> {
         Expanded(
           child: DropdownButtonFormField<String?>(
             isExpanded: true,
-            value: _tempSelectedHour,
+            value: _tempSelectedShift,
             decoration: InputDecoration(
               filled: true,
               fillColor: const Color(0xFFF0ECE9),
-              hintText: "Pilih jam",
+              hintText: "Pilih Shift",
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,
@@ -406,17 +436,19 @@ class _QualityListPageState extends State<QualityListPage> {
             ),
             items: [
               const DropdownMenuItem<String?>(
-                value: 'all',
+                value: null,
                 child: Text('Semua'),
               ),
-              ..._hours.map(
-                (hour) =>
-                    DropdownMenuItem<String?>(value: hour, child: Text(hour)),
+              ...shifts.map(
+                (shift) => DropdownMenuItem<String?>(
+                  value: shift,
+                  child: Text(" $shift"),
+                ),
               ),
             ],
             onChanged: (value) {
               setState(() {
-                _tempSelectedHour = value;
+                _tempSelectedShift = value;
               });
             },
           ),
@@ -450,7 +482,7 @@ class _QualityListPageState extends State<QualityListPage> {
       centerTitle: true,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: const Text(
-        'Quality Data List',
+        'Quality Report List (F/QCO-002)',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,

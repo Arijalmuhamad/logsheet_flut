@@ -61,16 +61,22 @@ class _AddBusinessUnitState extends State<AddBusinessUnit> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Text(
-              widget.editingBusinessUnit == null
-                  ? 'Tambah Business Unit'
-                  : 'Edit Business Unit',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF655F5B),
-              ),
-            ),
+            !context.watch<BusinessUnitProvider>().isLoading
+                ? Text(
+                  widget.editingBusinessUnit == null
+                      ? 'Tambah Business Unit'
+                      : 'Edit Business Unit',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF655F5B),
+                  ),
+                )
+                : SizedBox(
+                  width: 23,
+                  height: 23,
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
             const SizedBox(height: 20),
             TextField(
               controller: businessUnitCodeController,

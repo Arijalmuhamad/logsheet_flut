@@ -4,17 +4,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class FiltrationPerformPage extends StatefulWidget {
+class FiltrationPerformInputPage extends StatefulWidget {
   final String userName;
-  const FiltrationPerformPage({super.key, required this.userName});
+  const FiltrationPerformInputPage({super.key, required this.userName});
 
   @override
-  State<FiltrationPerformPage> createState() => _FiltrationPerformPageState();
+  State<FiltrationPerformInputPage> createState() =>
+      _FiltrationPerformInputPageState();
 }
 
-class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
+class _FiltrationPerformInputPageState
+    extends State<FiltrationPerformInputPage> {
   String? selectedFilter;
   int? selectedHour;
+  int currentStep = 0;
   String? selectedWorkCenter;
   final List<String> filterOptions = [
     'Niagara Filter',
@@ -481,12 +484,46 @@ class _FiltrationPerformPageState extends State<FiltrationPerformPage> {
                 ),
               ),
             ),
-            _buildFilterForm(),
+            // _buildFilterForm(),
+            if (selectedWorkCenter != null && selectedHour != null) ...[
+              // Step indicator
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                // children: List.generate(6, (index) {}),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  String getStepTitle() {
+    switch (currentStep) {
+      case 0:
+        return "Pretreatment";
+      case 1:
+        return "Bleacher";
+      case 3:
+        return "Pump";
+      case 4:
+        return "Niagara Filter";
+      case 5:
+        return "Filter Bag";
+      case 6:
+        return "Catridge Filter";
+      case 7:
+        return "Catridge Filter";
+      case 8:
+        return "Remarks";
+      default:
+        return "Step";
+    }
+  }
+
+  // Widget _buildStepContent(){
+
+  // }
 
   AppBar _buildAppBar() {
     return AppBar(

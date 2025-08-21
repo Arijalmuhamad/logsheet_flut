@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
@@ -38,6 +39,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   String? selectedWorkCenter;
   int? selectedHour;
   String? selectedToTankGroup;
+  String? selectedBpToTank;
   // String? selectedPart;
   String? selectedCcat;
   String? selectedBcat;
@@ -49,6 +51,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   int currentStep = 0;
   bool isLoading = false;
+  // bool isOthersSelected = false;
 
   // List data utama
   List<TQualityReportRefineryData> qualityReportsRefinery = [];
@@ -58,34 +61,49 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   // Text Controllers
   // ==========================
 
+  final TextEditingController dateEntryController = TextEditingController();
+  final TextEditingController fgTankToOthersRemarkController =
+      TextEditingController();
+
   // CPO / CPKO (Part) ✅
+  final TextEditingController rmFlowRateController = TextEditingController();
   final TextEditingController rmTempController = TextEditingController();
   final TextEditingController rmFFAController = TextEditingController();
   final TextEditingController rmIVController = TextEditingController();
   final TextEditingController rmDOBIController = TextEditingController();
-  final TextEditingController rmANVController = TextEditingController();
   final TextEditingController rmMNIController = TextEditingController();
   final TextEditingController rmPVController = TextEditingController();
+  final TextEditingController rmANVController = TextEditingController();
+  final TextEditingController rmToToxController = TextEditingController();
+  final TextEditingController rmColorRController = TextEditingController();
+  final TextEditingController rmColorYController = TextEditingController();
+  final TextEditingController rmColorBController = TextEditingController();
 
   // BPO
-  final TextEditingController boColorController = TextEditingController();
+  final TextEditingController boColorRController = TextEditingController();
+  final TextEditingController boColorYController = TextEditingController();
+  final TextEditingController boColorBController = TextEditingController();
   final TextEditingController boBreakTestController = TextEditingController();
 
   // RPO
   final TextEditingController fgFFAController = TextEditingController();
   final TextEditingController fgIVController = TextEditingController();
   final TextEditingController fgPVController = TextEditingController();
-  final TextEditingController fgMNIController = TextEditingController();
+  final TextEditingController fgMoisture = TextEditingController();
+  final TextEditingController fgImpurities = TextEditingController();
   final TextEditingController fgColorRController = TextEditingController();
   final TextEditingController fgColorYController = TextEditingController();
+  final TextEditingController fgColorBController = TextEditingController();
 
   // RFAD
   final TextEditingController bpFFAController = TextEditingController();
   final TextEditingController bpMNIController = TextEditingController();
+  final TextEditingController bpToTankController = TextEditingController();
 
   // W SBE QC
   // ignore: non_constant_identifier_names
   final TextEditingController WSBEQCController = TextEditingController();
+  final TextEditingController wasteMNIController = TextEditingController();
 
   // Remark
   final TextEditingController remarkController = TextEditingController();
@@ -112,23 +130,15 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<ValueProvider>(
-            context,
-            listen: false,
-          ).fetchTankSourceLists(),
+      (_) => context.read<ValueProvider>().fetchTankSourceLists(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<ValueProvider>(
-            context,
-            listen: false,
-          ).fetchToTankGroupLists(),
+      (_) => context.read<ValueProvider>().fetchToTankGroupLists(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<ValueProvider>(context, listen: false).fetchOilTypes(),
+      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
     );
   }
 
@@ -143,14 +153,20 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     selectedRcat = null;
     selectedFPcat = null;
     selectedWorkCenter = null;
+    selectedBpToTank = null;
 
     // Part input
     for (var c in [
+      rmFlowRateController,
       rmTempController,
       rmFFAController,
       rmIVController,
       rmPVController,
       rmANVController,
+      rmToToxController,
+      rmColorRController,
+      rmColorYController,
+      rmColorBController,
       rmDOBIController,
       rmMNIController,
     ]) {
@@ -158,7 +174,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     }
 
     // BPO
-    boColorController.clear();
+    boColorRController.clear();
+    boColorYController.clear();
+    boColorBController.clear();
     boBreakTestController.clear();
 
     // RPO
@@ -166,9 +184,11 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       fgFFAController,
       fgColorRController,
       fgColorYController,
+      fgColorBController,
       fgIVController,
       fgPVController,
-      fgMNIController,
+      fgMoisture,
+      fgImpurities,
     ]) {
       c.clear();
     }
@@ -176,9 +196,11 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     // PFAD
     bpFFAController.clear();
     bpMNIController.clear();
+    bpToTankController.clear();
 
     //WSBEQC
     WSBEQCController.clear();
+    wasteMNIController.clear();
 
     // Remarks
     remarkController.clear();
@@ -187,23 +209,36 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   @override
   void dispose() {
     final controllers = [
+      rmFlowRateController,
       // Part
       rmTempController,
       rmFFAController, rmIVController, rmPVController,
-      rmANVController, rmDOBIController, rmMNIController,
+      rmANVController,
+      rmToToxController,
+      rmColorRController,
+      rmColorYController,
+      rmColorBController,
+      rmDOBIController,
+      rmMNIController,
 
       // BPO
-      boColorController, boBreakTestController,
+      boColorRController,
+      boColorYController,
+      boColorBController,
+      boBreakTestController,
       // RPO
-      fgFFAController, fgColorRController, fgColorYController,
+      fgFFAController,
+      fgColorRController,
+      fgColorYController,
+      fgColorBController,
       fgIVController,
       fgPVController,
-      fgMNIController,
+      fgMoisture, fgImpurities,
       // PFAD
-      bpFFAController, bpMNIController,
+      bpFFAController, bpMNIController, bpToTankController,
 
       //WSBEQC
-      WSBEQCController,
+      WSBEQCController, wasteMNIController,
       // Remarks
       remarkController,
     ];
@@ -218,7 +253,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = context.read<UserProvider>();
     if (entryBy == null && userProvider.userName.isNotEmpty) {
       setState(() => entryBy = userProvider.userName);
     }
@@ -315,11 +350,6 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     setState(() {
       isSaving = true;
     });
-
-    // final reportProvider = Provider.of<QualityReportRefineryProvider>(
-    //   context,
-    //   listen: false,
-    // );
     final reportProvider = context.read<QualityReportRefineryProvider>();
     final userProvider = context.read<UserProvider>();
     final plantProvider = context.read<PlantProvider>();
@@ -363,11 +393,11 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     // }
 
     // Fungsi bantu untuk parsing angka
-    double parseDouble(TextEditingController c) {
+    double? parseDouble(TextEditingController c) {
       final text = c.text.trim();
-      return text.isEmpty
-          ? 0.0
-          : double.parse(double.parse(text).toStringAsFixed(2));
+      return text.isEmpty || text == "-"
+          ? null
+          : double.parse(double.parse(text).toStringAsFixed(4));
     }
 
     double parseDoubleString(String c) {
@@ -381,38 +411,47 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
     DateTime getPostingDate() {
       final DateTime now = DateTime.now();
-      final DateTime resetTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        7,
-        0,
-        0,
-      );
-      DateTime postingDate;
 
-      if (now.isBefore(resetTime)) {
-        DateTime previousDay = now.subtract(const Duration(days: 1));
-        postingDate = DateTime(
-          previousDay.year,
-          previousDay.month,
-          previousDay.day,
-          previousDay.hour,
-          previousDay.minute,
-          previousDay.second,
-        );
+      final int hour = selectedHour ?? now.hour;
+
+      if (hour < 7) {
+        final DateTime previousDay = now.subtract(const Duration(days: 1));
+        return DateTime(previousDay.year, previousDay.month, previousDay.day);
       } else {
-        postingDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          now.hour,
-          now.minute,
-          now.second,
-        );
+        return DateTime(now.year, now.month, now.day);
       }
+      // final DateTime resetTime = DateTime(
+      //   now.year,
+      //   now.month,
+      //   now.day,
+      //   7,
+      //   0,
+      //   0,
+      // );
+      // DateTime postingDate;
 
-      return postingDate;
+      // if (now.isBefore(resetTime)) {
+      //   DateTime previousDay = now.subtract(const Duration(days: 1));
+      //   postingDate = DateTime(
+      //     previousDay.year,
+      //     previousDay.month,
+      //     previousDay.day,
+      //     previousDay.hour,
+      //     previousDay.minute,
+      //     previousDay.second,
+      //   );
+      // } else {
+      //   postingDate = DateTime(
+      //     now.year,
+      //     now.month,
+      //     now.day,
+      //     now.hour,
+      //     now.minute,
+      //     now.second,
+      //   );
+      // }
+
+      // return postingDate;
     }
 
     DateTime getTransactionDate() {
@@ -451,26 +490,26 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     }
 
     try {
-      final rpocolorR = fgColorRController.text.trim();
-      final rpocolorY = fgColorYController.text.trim();
-      final rpomni = fgMNIController.text.trim();
+      // final rpocolorR = fgColorRController.text.trim();
+      // final rpocolorY = fgColorYController.text.trim();
+      // final rpomni = fgMNIController.text.trim();
       final time = DateFormat('HH:mm:ss').parse(formattedTime);
 
-      final provider = Provider.of<QualityReportRefineryProvider>(
-        context,
-        listen: false,
-      );
+      final provider = context.read<QualityReportRefineryProvider>();
 
-      final currentUser =
-          Provider.of<UserProvider>(context, listen: false).currentUser;
+      final currentUser = context.read<UserProvider>().currentUser;
 
       log("current user: ${currentUser?.username}");
-
+      if (bpToTankController.text.trim() != "") {
+        selectedBpToTank = bpToTankController.text;
+      }
       final entity = QualityReportRefineryEntity(
         id: await buildTicketNumber(),
+        transactionDate: getTransactionDate(),
         postingDate: getPostingDate(),
         time: time,
-        shift: getShiftBasedOnDate(time),
+        shift: getShiftBasedOnTime(time),
+        rmFlowRate: parseDouble(rmFlowRateController),
         rmTankSource: tanksource,
         rmFFA: parseDouble(rmFFAController),
         rmIV: parseDouble(rmIVController),
@@ -478,16 +517,28 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         rmAV: parseDouble(rmANVController),
         rmDobi: parseDouble(rmDOBIController),
         rmMNI: parseDouble(rmMNIController),
+        rmToTox: parseDouble(rmToToxController),
+        rmColorR: parseDouble(rmColorRController),
+        rmColorY: parseDouble(rmColorYController),
+        rmColorB: parseDouble(rmColorBController),
+        boColorR: parseDouble(boColorRController),
+        boColorY: parseDouble(boColorYController),
+        boColorB: parseDouble(boColorBController),
         boBreakTest: boBreakTestController.text.trim(),
         fgFFA: parseDouble(fgFFAController),
-        fgColorR: parseDoubleString(rpocolorR),
-        fgColorY: parseDoubleString(rpocolorY),
-        fgIV: parseDoubleString(fgIVController.text),
-        fgMNI: parseDoubleString(fgMNIController.text),
-        bpFFA: parseDoubleString(bpFFAController.text),
+        fgColorR: parseDouble(fgColorRController),
+        fgColorY: parseDouble(fgColorYController),
+        fgColorB: parseDouble(fgColorBController),
+        fgIV: parseDouble(fgIVController),
+        fgMoisture: parseDouble(fgMoisture),
+        fgImpurities: parseDouble(fgImpurities),
+        fgTankToOthersRemarks: fgTankToOthersRemarkController.text,
+        bpFFA: parseDouble(bpFFAController),
         bpMNI: parseDouble(bpMNIController),
-        wSBEQC: parseDoubleString(WSBEQCController.text.toString()),
-        remarks: (remarkController.text.toString()),
+        bpToTank: selectedBpToTank,
+        wSBEQC: parseDouble(WSBEQCController),
+        wasteMNI: parseDouble(wasteMNIController),
+        remarks: (remarkController.text),
         checkedBy: null,
         checkedDate: null,
         preparedByShift1: null,
@@ -497,8 +548,6 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         entryBy: currentUser?.username,
         entryDate: DateTime.now(),
         oilType: selectedOilType,
-        transactionDate: getTransactionDate(),
-        boColor: boColorController.text,
         fgTankTo: selectedToTankGroup,
         rmTemp: parseDouble(rmTempController),
         fgPV: parseDouble(fgPVController),
@@ -544,6 +593,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         _showSnackBar('Input Report gagal: ${provider.errorMessage}.');
       }
     } catch (e) {
+      log("Gagal menyimpan laporan: $e");
       _showSnackBar("Gagal menyimpan laporan: $e");
     } finally {
       setState(() => isSaving = false);
@@ -684,7 +734,13 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         return 'Bleach Oil';
 
       case 2:
-        return 'Finished Goods';
+        final finishedGoods =
+            context
+                .read<ValueProvider>()
+                .oilTypeLists
+                .where((element) => element.code == selectedOilType)
+                .toList();
+        return 'Finished Goods (${finishedGoods[0].outputOilType})';
 
       case 3:
         return 'By Product';
@@ -705,6 +761,13 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       case 0:
         return Column(
           children: [
+            _buildTextField(
+              controller: rmFlowRateController,
+              label: 'Flow Rate',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FFA (%)',
+            ),
             _buildTextField(
               controller: rmTempController,
               label: 'Temp (°C)',
@@ -753,6 +816,34 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai M&I (%)',
             ),
+            _buildTextField(
+              controller: rmToToxController,
+              label: 'Totox',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Totox',
+            ),
+            _buildTextField(
+              controller: rmColorRController,
+              label: 'Color (R)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (R)',
+            ),
+            _buildTextField(
+              controller: rmColorYController,
+              label: 'Color (Y)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (Y)',
+            ),
+            _buildTextField(
+              controller: rmColorBController,
+              label: 'Color (B)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (B)',
+            ),
           ],
         );
 
@@ -760,16 +851,30 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         return Column(
           children: [
             _buildTextField(
-              controller: boColorController,
-              label: 'Color',
-              icon: Icons.color_lens,
+              controller: boColorRController,
+              label: 'Color (R)',
+              icon: Icons.color_lens_rounded,
               isNumeric: true,
-              hintText: 'Masukkan nilai Color',
+              hintText: 'Masukkan nilai Color (R)',
+            ),
+            _buildTextField(
+              controller: boColorYController,
+              label: 'Color (Y)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (Y)',
+            ),
+            _buildTextField(
+              controller: boColorBController,
+              label: 'Color (B)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (B)',
             ),
             _buildTextField(
               controller: boBreakTestController,
               label: 'Break Test',
-              icon: Icons.color_lens,
+              icon: Icons.color_lens_rounded,
               hintText: 'Masukkan nilai Break Test',
             ),
           ],
@@ -804,11 +909,18 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
               hintText: 'Masukkan nilai PV',
             ),
             _buildTextField(
-              controller: fgMNIController,
-              label: 'M&I',
+              controller: fgMoisture,
+              label: 'Moisture',
               icon: Icons.science,
               isNumeric: true,
-              hintText: 'Masukkan nilai M&I (%)',
+              hintText: 'Masukkan nilai Moisture',
+            ),
+            _buildTextField(
+              controller: fgImpurities,
+              label: 'Impurities',
+              icon: Icons.science,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Impurities',
             ),
             _buildTextField(
               controller: fgColorRController,
@@ -824,15 +936,66 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Color (Y)',
             ),
+            _buildTextField(
+              controller: fgColorBController,
+              label: 'Color B',
+              icon: Icons.color_lens,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (B)',
+            ),
             // Tank To Dropdown
-            Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.toTankGroupLists.isEmpty) {
-                  // Return a disabled dropdown with a loading indicator or message
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.toTankGroupLists.isEmpty) {
+                    // Return a disabled dropdown with a loading indicator or message
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null, // Disable the dropdown
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Tank To...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                   return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null, // Disable the dropdown
+                    isExpanded: true,
+                    value: selectedToTankGroup,
+                    items: [
+                      ...provider.toTankGroupLists.map((tank) {
+                        return DropdownMenuItem<String>(
+                          value: tank.code,
+                          child: Text(
+                            tank.code,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }),
+                      DropdownMenuItem<String>(
+                        value: "Others",
+                        child: Text("Others", style: TextStyle(fontSize: 14)),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedToTankGroup = value;
+                      });
+                    },
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF0ECE9),
@@ -840,55 +1003,29 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'Loading Tank To...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      hintText: 'Pilih To Tank Group',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
                         ),
                       ),
                     ),
                   );
-                }
-                return DropdownButtonFormField<String>(
-                  value: selectedToTankGroup,
-                  items:
-                      provider.toTankGroupLists.map((tank) {
-                        return DropdownMenuItem<String>(
-                          value: tank.code,
-                          child: Text(
-                            "${tank.code} - ${tank.name}",
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedToTankGroup = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    hintText: 'Pilih To Tank Group',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: SvgPicture.asset(
-                        'assets/icons/oil-refinery-tanks.svg',
-                        height: 24,
-                        width: 24,
-                      ),
-                    ),
-                  ),
-                );
-              },
+                },
+              ),
             ),
+
+            if (selectedToTankGroup == "Others")
+              _buildTextField(
+                controller: fgTankToOthersRemarkController,
+                label: 'Remark',
+                icon: Icons.comment, // Using a different icon for remark
+                isNumeric: false, // Remark is likely text, not numeric
+                hintText: 'Masukkan keterangan lainnya',
+              ),
           ],
         );
       case 3:
@@ -908,6 +1045,88 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai M&I (%)',
             ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.toTankGroupLists.isEmpty) {
+                    // Return a disabled dropdown with a loading indicator or message
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null, // Disable the dropdown
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Tank To...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return DropdownButtonFormField<String>(
+                    isExpanded: true,
+                    value: selectedBpToTank,
+                    items: [
+                      ...provider.toTankGroupLists.map((tank) {
+                        return DropdownMenuItem<String>(
+                          value: tank.code,
+                          child: Text(
+                            tank.code,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }),
+                      DropdownMenuItem<String>(
+                        value: "Others",
+                        child: Text("Others", style: TextStyle(fontSize: 14)),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedBpToTank = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Pilih To Tank Group',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            if (selectedBpToTank == "Others")
+              _buildTextField(
+                controller: bpToTankController,
+                label: 'Remark',
+                icon: Icons.comment, // Using a different icon for remark
+                isNumeric: false, // Remark is likely text, not numeric
+                hintText: 'Masukkan keterangan lainnya',
+              ),
           ],
         );
       case 4:
@@ -932,6 +1151,12 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
               label: 'SBE',
               icon: Icons.high_quality,
               hintText: 'Masukkan Waste SBE',
+            ),
+            _buildTextField(
+              controller: wasteMNIController,
+              label: 'M&I',
+              icon: Icons.opacity,
+              hintText: 'Masukkan Waste M&I',
             ),
           ],
         );
@@ -978,6 +1203,17 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Transaction Date: ",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 // Refinery Dropdown
                 Consumer<ValueProvider>(
                   builder: (context, provider, child) {
@@ -1013,7 +1249,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                             return DropdownMenuItem<String>(
                               value: machine.code,
                               child: Text(
-                                "${machine.code} - ${machine.name}",
+                                "${machine.code} | ${machine.name}",
                                 style: TextStyle(fontSize: 14),
                               ),
                             );
@@ -1080,7 +1316,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                             return DropdownMenuItem<String>(
                               value: oil.code,
                               child: Text(
-                                "${oil.code} - ${oil.name}",
+                                oil.code,
                                 style: TextStyle(fontSize: 14),
                               ),
                             );
@@ -1144,7 +1380,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                             return DropdownMenuItem<String>(
                               value: tank.code,
                               child: Text(
-                                "${tank.code} - ${tank.name}",
+                                tank.code,
                                 style: TextStyle(fontSize: 14),
                               ),
                             );
@@ -1362,7 +1598,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: const Text(
-        'Quality Report - Refinery',
+        'Quality Report - Quality Control',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
@@ -1381,8 +1617,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  int getShiftBasedOnDate(DateTime time) {
+  int getShiftBasedOnTime(DateTime time) {
     int hour = time.hour;
+    log("Hour: $hour");
     if (hour >= 8 && hour <= 15) {
       return 1;
     } else if (hour >= 16 && hour <= 23) {

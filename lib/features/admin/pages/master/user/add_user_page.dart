@@ -30,7 +30,7 @@ class _AddUserPageState extends State<AddUserPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<UserProvider>(context, listen: false).fetchAllRoles(),
+      (_) => context.read<UserProvider>().fetchAllRoles(),
     );
 
     if (widget.editingUser != null) {
@@ -202,11 +202,23 @@ class _AddUserPageState extends State<AddUserPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: _registerUser,
-                child: Text(
-                  widget.editingUser == null ? 'Add User' : 'Edit User Role',
-                  style: const TextStyle(fontSize: 16),
-                ),
+                onPressed:
+                    !context.watch<UserProvider>().isCreateEditLoading
+                        ? _registerUser
+                        : () {},
+                child:
+                    !context.watch<UserProvider>().isCreateEditLoading
+                        ? Text(
+                          widget.editingUser == null
+                              ? 'Add User'
+                              : 'Edit User Role',
+                          style: const TextStyle(fontSize: 16),
+                        )
+                        : SizedBox(
+                          width: 23,
+                          height: 23,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
               ),
             ),
           ],
@@ -221,6 +233,7 @@ class _AddUserPageState extends State<AddUserPage> {
 
   void _registerUser() async {
     final username = nameController.text.trim();
+    final password = passwordController.text.trim();
 
     if (username.isEmpty || selectedRole == null || selectedIsActive == null) {
       _showSnackBar('Mohon isi semua fields.');
@@ -232,7 +245,7 @@ class _AddUserPageState extends State<AddUserPage> {
     final userData = UserEntity(
       userid: widget.editingUser?.userid ?? uuid.v4(),
       username: username,
-      password: '',
+      password: password,
       role: selectedRole!,
       isActive: selectedIsActive!,
     );

@@ -30,8 +30,9 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
   // Data dropdown & kontrol
   late String? selectedOilType;
-  late String? selectedRefineryMachine;
+  late String? selectedWorkCenter;
   late String? selectedTankSource;
+  late String? selectedBpToTankGroup;
   late int? selectedHour;
   late String? selectedToTankGroup;
 
@@ -45,6 +46,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
   // ==========================
 
   // CPO / CPKO (Part)
+  final TextEditingController rmFlowrateController = TextEditingController();
   final TextEditingController rmTempController = TextEditingController();
   final TextEditingController rmFFAController = TextEditingController();
   final TextEditingController rmIVController = TextEditingController();
@@ -52,25 +54,37 @@ class _QualityEditPageState extends State<QualityEditPage> {
   final TextEditingController rmANVController = TextEditingController();
   final TextEditingController rmMNIController = TextEditingController();
   final TextEditingController rmPVController = TextEditingController();
+  final TextEditingController rmToToxController = TextEditingController();
+  final TextEditingController rmColorRController = TextEditingController();
+  final TextEditingController rmColorYController = TextEditingController();
+  final TextEditingController rmColorBController = TextEditingController();
 
   // BPO
-  final TextEditingController boColorController = TextEditingController();
+  final TextEditingController boColorRController = TextEditingController();
+  final TextEditingController boColorYController = TextEditingController();
+  final TextEditingController boColorBController = TextEditingController();
   final TextEditingController boBreakTestController = TextEditingController();
 
   // RPO
   final TextEditingController fgFFAController = TextEditingController();
   final TextEditingController fgIVController = TextEditingController();
   final TextEditingController fgPVController = TextEditingController();
-  final TextEditingController fgMNIController = TextEditingController();
+  final TextEditingController fgMoistureController = TextEditingController();
+  final TextEditingController fgImpuritiesController = TextEditingController();
   final TextEditingController fgColorRController = TextEditingController();
   final TextEditingController fgColorYController = TextEditingController();
+  final TextEditingController fgColorBController = TextEditingController();
+  final TextEditingController fgTankToOthersRemarkController =
+      TextEditingController();
 
   // RFAD
   final TextEditingController bpFFAController = TextEditingController();
   final TextEditingController bpMNIController = TextEditingController();
+  final TextEditingController bpToTankController = TextEditingController();
 
   // W SBE QC
   final TextEditingController WSBEQCController = TextEditingController();
+  final TextEditingController wasteMNIController = TextEditingController();
 
   // Remark
   final TextEditingController remarkController = TextEditingController();
@@ -86,12 +100,14 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
     // Initialize dropdown values from the report
     selectedOilType = widget.report.oilType;
-    selectedRefineryMachine = widget.report.workCenter;
+    selectedWorkCenter = widget.report.workCenter;
     selectedTankSource = widget.report.rmTankSource;
+    selectedBpToTankGroup = widget.report.bpToTank;
     selectedHour = widget.report.time?.hour;
     selectedToTankGroup = widget.report.fgTankTo;
 
     // Initialize all controllers with data from the existing report
+    rmFlowrateController.text = widget.report.rmFlowRate.toString();
     rmTempController.text = widget.report.rmTemp.toString();
     rmFFAController.text = widget.report.rmFFA.toString();
     rmIVController.text = widget.report.rmIV.toString();
@@ -99,51 +115,51 @@ class _QualityEditPageState extends State<QualityEditPage> {
     rmANVController.text = widget.report.rmAV.toString();
     rmDOBIController.text = widget.report.rmDobi.toString();
     rmMNIController.text = widget.report.rmMNI.toString();
+    rmToToxController.text = widget.report.rmToTox.toString();
+    rmColorRController.text = widget.report.rmColorR.toString();
+    rmColorYController.text = widget.report.rmColorY.toString();
+    rmColorBController.text = widget.report.rmColorB.toString();
 
-    boColorController.text = widget.report.boColor ?? '';
+    boColorRController.text = widget.report.boColorR.toString();
+    boColorYController.text = widget.report.boColorY.toString();
+    boColorBController.text = widget.report.boColorB.toString();
     boBreakTestController.text = widget.report.boBreakTest ?? '';
 
     fgFFAController.text = widget.report.fgFFA.toString();
     fgIVController.text = widget.report.fgIV.toString();
     fgPVController.text = widget.report.fgPV.toString();
-    fgMNIController.text = widget.report.fgMNI.toString();
+    fgMoistureController.text = widget.report.fgMoisture.toString();
+    fgImpuritiesController.text = widget.report.fgImpurities.toString();
     fgColorRController.text = widget.report.fgColorR.toString();
     fgColorYController.text = widget.report.fgColorY.toString();
+    fgColorBController.text = widget.report.fgColorB.toString();
+    fgTankToOthersRemarkController.text =
+        widget.report.fgTankToOthersRemarks ?? '';
 
     bpFFAController.text = widget.report.bpFFA.toString();
     bpMNIController.text = widget.report.bpMNI.toString();
+    bpToTankController.text = widget.report.bpToTank.toString();
 
     WSBEQCController.text = widget.report.wSBEQC.toString();
+    wasteMNIController.text = widget.report.wasteMNI.toString();
 
     remarkController.text = widget.report.remarks ?? '';
 
     // Fetch dropdown data similar to the input page
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<ValueProvider>(
-            context,
-            listen: false,
-          ).fetchWorkCenterLists(),
+      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<ValueProvider>(
-            context,
-            listen: false,
-          ).fetchTankSourceLists(),
+      (_) => context.read<ValueProvider>().fetchTankSourceLists(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<ValueProvider>(
-            context,
-            listen: false,
-          ).fetchToTankGroupLists(),
+      (_) => context.read<ValueProvider>().fetchToTankGroupLists(),
     );
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<ValueProvider>(context, listen: false).fetchOilTypes(),
+      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
     );
   }
 
@@ -151,24 +167,36 @@ class _QualityEditPageState extends State<QualityEditPage> {
   void dispose() {
     // Dispose all controllers
     final controllers = [
+      rmFlowrateController,
       rmTempController,
       rmFFAController,
       rmIVController,
       rmPVController,
+      rmToToxController,
       rmANVController,
       rmDOBIController,
       rmMNIController,
-      boColorController,
+      rmColorRController,
+      rmColorYController,
+      rmColorBController,
+      boColorRController,
+      boColorYController,
+      boColorBController,
       boBreakTestController,
       fgFFAController,
       fgIVController,
       fgPVController,
-      fgMNIController,
+      fgMoistureController,
+      fgImpuritiesController,
       fgColorRController,
       fgColorYController,
+      fgColorBController,
+      fgTankToOthersRemarkController,
       bpFFAController,
       bpMNIController,
+      bpToTankController,
       WSBEQCController,
+      wasteMNIController,
       remarkController,
     ];
 
@@ -207,14 +235,10 @@ class _QualityEditPageState extends State<QualityEditPage> {
     //   return c.isEmpty ? null : double.tryParse(c);
     // }
 
-    final userName =
-        Provider.of<UserProvider>(context, listen: false).currentUser?.username;
+    final userName = context.read<UserProvider>().currentUser?.username;
 
-    final role =
-        Provider.of<UserProvider>(context, listen: false).currentUser?.role;
-    final plantCode =
-        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
-        "";
+    final role = context.read<UserProvider>().currentUser?.role;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     final String formattedTime =
         selectedHour != null
@@ -222,46 +246,52 @@ class _QualityEditPageState extends State<QualityEditPage> {
             : '';
     final time = DateFormat('HH:mm:ss').parse(formattedTime);
     try {
+      selectedBpToTankGroup = bpToTankController.text.trim();
       final updatedItem = QualityReportRefineryEntity(
         id: widget.report.id,
         company: widget.report.company,
         plant: widget.report.plant,
         transactionDate: widget.report.transactionDate,
         postingDate: widget.report.postingDate,
-        workCenter: selectedRefineryMachine,
+        workCenter: selectedWorkCenter,
         oilType: selectedOilType,
         time: time,
         shift: getShiftBasedOnDate(time),
+        rmFlowRate: parseDouble(rmFlowrateController),
         rmTankSource: selectedTankSource,
-        rmTemp: parseDouble(rmTempController) ?? 0.0,
-        rmFFA: parseDouble(rmFFAController) ?? 0.0,
-        rmIV: parseDouble(rmIVController) ?? 0.0,
-        rmPV: parseDouble(rmPVController) ?? 0.0,
-        rmAV: parseDouble(rmANVController) ?? 0.0,
-        rmDobi: parseDouble(rmDOBIController) ?? 0.0,
-        rmMNI: parseDouble(rmMNIController) ?? 0.0,
-        boColor:
-            boColorController.text.trim().isEmpty
-                ? ""
-                : boColorController.text.trim(),
-        boBreakTest:
-            boBreakTestController.text.trim().isEmpty
-                ? ""
-                : boBreakTestController.text.trim(),
-        fgFFA: parseDouble(fgFFAController) ?? 0.0,
-        fgIV: parseDouble(fgIVController) ?? 0.0,
-        fgPV: parseDouble(fgPVController) ?? 0.0,
-        fgMNI: parseDouble(fgMNIController) ?? 0.0,
-        fgColorR: parseDouble(fgColorRController) ?? 0.0,
-        fgColorY: parseDouble(fgColorYController) ?? 0.0,
+        rmTemp: parseDouble(rmTempController),
+        rmFFA: parseDouble(rmFFAController),
+        rmIV: parseDouble(rmIVController),
+        rmPV: parseDouble(rmPVController),
+        rmAV: parseDouble(rmANVController),
+        rmDobi: parseDouble(rmDOBIController),
+        rmMNI: parseDouble(rmMNIController),
+        rmToTox: parseDouble(rmToToxController),
+        rmColorR: parseDouble(rmColorRController),
+        rmColorY: parseDouble(rmColorYController),
+        rmColorB: parseDouble(rmColorBController),
+        boColorR: parseDouble(boColorRController),
+        boColorY: parseDouble(boColorYController),
+        boColorB: parseDouble(boColorBController),
+        boBreakTest: boBreakTestController.text.trim(),
+
+        fgFFA: parseDouble(fgFFAController),
+        fgIV: parseDouble(fgIVController),
+        fgPV: parseDouble(fgPVController),
+        fgMoisture: parseDouble(fgMoistureController),
+        fgImpurities: parseDouble(fgImpuritiesController),
+        fgColorR: parseDouble(fgColorRController),
+        fgColorY: parseDouble(fgColorYController),
+        fgColorB: parseDouble(fgColorBController),
         fgTankTo: selectedToTankGroup,
-        bpFFA: parseDouble(bpFFAController) ?? 0.0,
-        bpMNI: parseDouble(bpMNIController) ?? 0.0,
-        wSBEQC: parseDouble(WSBEQCController) ?? 0.0,
-        remarks:
-            remarkController.text.trim().isEmpty
-                ? null
-                : remarkController.text.trim(),
+        fgTankToOthersRemarks: fgTankToOthersRemarkController.text.trim(),
+
+        bpFFA: parseDouble(bpFFAController),
+        bpMNI: parseDouble(bpMNIController),
+        wSBEQC: parseDouble(WSBEQCController),
+        wasteMNI: parseDouble(wasteMNIController),
+        remarks: remarkController.text.trim(),
+
         entryBy: widget.report.entryBy,
         entryDate: widget.report.entryDate,
         preparedByShift1: widget.report.preparedByShift1,
@@ -280,17 +310,27 @@ class _QualityEditPageState extends State<QualityEditPage> {
         checkedStatusRemarks: widget.report.checkedStatusRemarks,
         updatedBy: userName ?? "Unknown",
         updatedDate: DateTime.now(),
+        bpToTank: selectedBpToTankGroup,
       );
 
       bool? success;
 
-      success = await Provider.of<QualityReportRefineryProvider>(
-        context,
-        listen: false,
-      ).updateReport(updatedItem, userName ?? "", role ?? "", plantCode);
+      success = await context
+          .read<QualityReportRefineryProvider>()
+          .updateReport(updatedItem, userName ?? "", role ?? "", plantCode);
 
       if (success) {
         _showSnackBar('Data berhasil diperbarui ✅');
+        if (!mounted) return;
+        final user = context.read<UserProvider>().currentUser;
+        context.read<QualityReportRefineryProvider>().fetchAllReports(
+          null,
+          null,
+          userName!,
+          user!.role,
+          plantCode,
+        );
+
         if (!mounted) return;
         Navigator.pop(context, true);
         Navigator.pop(context, true);
@@ -430,11 +470,17 @@ class _QualityEditPageState extends State<QualityEditPage> {
       case 1:
         return 'Bleach Oil';
       case 2:
-        return 'FG';
+        final finishedGoods =
+            context
+                .read<ValueProvider>()
+                .oilTypeLists
+                .where((element) => element.code == selectedOilType)
+                .toList();
+        return 'Finished Goods (${finishedGoods[0].outputOilType})';
       case 3:
-        return 'BP';
+        return 'By Product';
       case 4:
-        return 'W SBE QC';
+        return 'Waste';
       case 5:
         return 'Remark';
       default:
@@ -447,6 +493,13 @@ class _QualityEditPageState extends State<QualityEditPage> {
       case 0:
         return Column(
           children: [
+            _buildTextField(
+              controller: rmTempController,
+              label: 'Flowrate',
+              icon: Icons.thermostat,
+              hintText: 'Masukkan nilai Flowrate',
+              isNumeric: true,
+            ),
             _buildTextField(
               controller: rmTempController,
               label: 'Temp (°C)',
@@ -496,6 +549,34 @@ class _QualityEditPageState extends State<QualityEditPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai M&I (%)',
             ),
+            _buildTextField(
+              controller: rmToToxController,
+              label: 'Totox',
+              icon: Icons.opacity,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Totox',
+            ),
+            _buildTextField(
+              controller: rmColorRController,
+              label: 'Color (R)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (R)',
+            ),
+            _buildTextField(
+              controller: rmColorYController,
+              label: 'Color (Y)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (Y)',
+            ),
+            _buildTextField(
+              controller: rmColorBController,
+              label: 'Color (B)',
+              icon: Icons.color_lens_rounded,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (B)',
+            ),
           ],
         );
 
@@ -503,15 +584,30 @@ class _QualityEditPageState extends State<QualityEditPage> {
         return Column(
           children: [
             _buildTextField(
-              controller: boColorController,
-              label: 'Color',
+              controller: boColorRController,
+              label: 'Color (R)',
               icon: Icons.color_lens,
-              hintText: 'Masukkan nilai Color',
+              hintText: 'Masukkan nilai Color (R)',
+              isNumeric: true,
+            ),
+            _buildTextField(
+              controller: boColorYController,
+              label: 'Color (Y)',
+              icon: Icons.color_lens,
+              hintText: 'Masukkan nilai Color (Y)',
+              isNumeric: true,
+            ),
+            _buildTextField(
+              controller: boColorBController,
+              label: 'Color (B)',
+              icon: Icons.color_lens,
+              hintText: 'Masukkan nilai Color (B)',
+              isNumeric: true,
             ),
             _buildTextField(
               controller: boBreakTestController,
               label: 'Break Test',
-              icon: Icons.color_lens,
+              icon: Icons.science,
               hintText: 'Masukkan nilai Break Test',
             ),
           ],
@@ -542,12 +638,20 @@ class _QualityEditPageState extends State<QualityEditPage> {
               hintText: 'Masukkan nilai PV',
             ),
             _buildTextField(
-              controller: fgMNIController,
-              label: 'M&I',
+              controller: fgMoistureController,
+              label: 'Moisture',
               icon: Icons.science,
               isNumeric: true,
-              hintText: 'Masukkan nilai M&I (%)',
+              hintText: 'Masukkan nilai Moisture',
             ),
+            _buildTextField(
+              controller: fgImpuritiesController,
+              label: 'Impurities',
+              icon: Icons.science,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Impurities',
+            ),
+
             _buildTextField(
               controller: fgColorRController,
               label: 'Color R',
@@ -562,21 +666,33 @@ class _QualityEditPageState extends State<QualityEditPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Color (Y)',
             ),
+            _buildTextField(
+              controller: fgColorBController,
+              label: 'Color B',
+              icon: Icons.color_lens,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Color (B)',
+            ),
             // Tank To Dropdown
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 return DropdownButtonFormField<String>(
                   value: selectedToTankGroup,
-                  items:
-                      provider.toTankGroupLists.map((tank) {
-                        return DropdownMenuItem<String>(
-                          value: tank.code,
-                          child: Text(
-                            "${tank.code} - ${tank.name}",
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
+                  items: [
+                    ...provider.toTankGroupLists.map((tank) {
+                      return DropdownMenuItem<String>(
+                        value: tank.code,
+                        child: Text(
+                          "${tank.code} - ${tank.name}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }),
+                    DropdownMenuItem<String>(
+                      value: "Others",
+                      child: Text("Others", style: TextStyle(fontSize: 14)),
+                    ),
+                  ],
                   onChanged: (value) {
                     setState(() {
                       selectedToTankGroup = value;
@@ -602,6 +718,16 @@ class _QualityEditPageState extends State<QualityEditPage> {
                 );
               },
             ),
+            if (selectedToTankGroup == "Others")
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: _buildTextField(
+                  controller: fgTankToOthersRemarkController,
+                  label: 'Remark (Others)',
+                  icon: Icons.comment,
+                  hintText: 'Masukkan keterangan lainnya',
+                ),
+              ),
           ],
         );
       case 3:
@@ -621,6 +747,60 @@ class _QualityEditPageState extends State<QualityEditPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai M&I (%)',
             ),
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                return DropdownButtonFormField<String>(
+                  value: selectedBpToTankGroup,
+                  items: [
+                    ...provider.toTankGroupLists.map((tank) {
+                      return DropdownMenuItem<String>(
+                        value: tank.code,
+                        child: Text(
+                          "${tank.code} - ${tank.name}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }),
+                    DropdownMenuItem<String>(
+                      value: "Others",
+                      child: Text("Others", style: TextStyle(fontSize: 14)),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedBpToTankGroup = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih To Tank Group',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            if (selectedBpToTankGroup == "Others")
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: _buildTextField(
+                  controller: bpToTankController,
+                  label: 'Remark (Others)',
+                  icon: Icons.comment,
+                  hintText: 'Masukkan keterangan lainnya',
+                ),
+              ),
           ],
         );
       case 4:
@@ -642,9 +822,16 @@ class _QualityEditPageState extends State<QualityEditPage> {
             ),
             _buildTextField(
               controller: WSBEQCController,
-              label: 'W SBE QC',
+              label: 'SBE',
               icon: Icons.high_quality,
-              hintText: 'Masukkan remark tambahan',
+              hintText: 'Masukkan Waste SBE',
+              isNumeric: true,
+            ),
+            _buildTextField(
+              controller: wasteMNIController,
+              label: 'M&I',
+              icon: Icons.opacity,
+              hintText: 'Masukkan Waste M&I',
               isNumeric: true,
             ),
           ],
@@ -682,6 +869,12 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final finishedGoods =
+        context
+            .read<ValueProvider>()
+            .oilTypeLists
+            .where((element) => element.code == widget.report.oilType)
+            .toList();
     return Scaffold(
       backgroundColor: backgroundGrey,
       appBar: buildAppBar(),
@@ -696,7 +889,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                 Consumer<ValueProvider>(
                   builder: (context, provider, child) {
                     return DropdownButtonFormField<String>(
-                      value: selectedRefineryMachine,
+                      value: selectedWorkCenter,
                       items:
                           provider.workCenterLists.map((machine) {
                             return DropdownMenuItem<String>(
@@ -709,7 +902,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                           }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          selectedRefineryMachine = value;
+                          selectedWorkCenter = value;
                         });
                       },
                       decoration: InputDecoration(

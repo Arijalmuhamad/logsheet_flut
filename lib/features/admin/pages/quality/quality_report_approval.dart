@@ -19,15 +19,12 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
   void initState() {
     super.initState();
 
-    final plantCode =
-        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
-        "";
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<QualityReportRefineryProvider>(
-        context,
-        listen: false,
-      ).fetchAllPreparedTransactions(plantCode),
+      (_) => context
+          .read<QualityReportRefineryProvider>()
+          .fetchAllPreparedTransactions(plantCode),
     );
   }
 
@@ -35,21 +32,16 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quality Transaction Approval'),
+        title: Text('Quality Approval (F/RFA-001)'),
         actions: [
           IconButton(
             onPressed: () async {
               final plantCode =
-                  Provider.of<PlantProvider>(
-                    context,
-                    listen: false,
-                  ).currentPlant?.code ??
-                  "";
+                  context.read<PlantProvider>().currentPlant?.code ?? "";
 
-              Provider.of<QualityReportRefineryProvider>(
-                context,
-                listen: false,
-              ).fetchAllPreparedTransactions(plantCode);
+              context
+                  .read<QualityReportRefineryProvider>()
+                  .fetchAllPreparedTransactions(plantCode);
             },
             icon: Icon(Icons.replay_rounded),
           ),
@@ -76,10 +68,9 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                           ).currentPlant?.code ??
                           "";
 
-                      Provider.of<QualityReportRefineryProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllPreparedTransactions(plantCode);
+                      context
+                          .read<QualityReportRefineryProvider>()
+                          .fetchAllPreparedTransactions(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -91,23 +82,26 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
           final allReports = provider.approvedTransactions;
 
           // Group reports by date
-          final Map<String, List<QualityReportRefineryEntity>> groupedByDate =
+          final Map<String, List<QualityReportRefineryEntity>> groupedReports =
               {};
 
           for (var report in allReports) {
-            if (report.postingDate != null) {
+            if (report.postingDate != null &&
+                report.oilType != null &&
+                report.workCenter != null) {
               final dateKey = DateFormat(
                 'yyyy-MM-dd',
               ).format(report.postingDate!);
-              groupedByDate.putIfAbsent(dateKey, () => []).add(report);
+              final compositeKey =
+                  "$dateKey|${report.oilType}|${report.workCenter}";
+              groupedReports.putIfAbsent(compositeKey, () => []).add(report);
             }
           }
 
-          final List<String> dates = groupedByDate.keys.toList();
+          final List<String> groupKeys = groupedReports.keys.toList();
+          groupKeys.sort((a, b) => b.compareTo(a));
 
-          dates.sort((a, b) => b.compareTo(a));
-
-          if (dates.isEmpty) {
+          if (groupKeys.isEmpty) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -116,16 +110,12 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                   OutlinedButton(
                     onPressed: () {
                       final plantCode =
-                          Provider.of<PlantProvider>(
-                            context,
-                            listen: false,
-                          ).currentPlant?.code ??
+                          context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      Provider.of<QualityReportRefineryProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllPreparedTransactions(plantCode);
+                      context
+                          .read<QualityReportRefineryProvider>()
+                          .fetchAllPreparedTransactions(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -135,39 +125,56 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
           }
 
           return ListView.builder(
-            itemCount: dates.length,
+            itemCount: groupKeys.length,
             itemBuilder: (context, index) {
-              final dateKey = dates[index];
-              final reportsForDate = groupedByDate[dateKey];
+              final compositeKey = groupKeys[index];
+              final reportsForGroup = groupedReports[compositeKey];
 
+              final keyParts = compositeKey.split('|');
+              final date = keyParts[0];
+              final oilType = keyParts[1];
+              final workCenter = keyParts[2];
+
+              final reportsForShift1 =
+                  reportsForGroup?.where((r) => r.shift == 1).toList() ?? [];
               final bool isShift1Prepared =
-                  reportsForDate?.any(
-                    (r) => r.shift == 1 && r.preparedStatusShift1 == "Approved",
-                  ) ??
-                  false;
+                  reportsForShift1.isNotEmpty &&
+                  reportsForShift1.length >= 8 &&
+                  reportsForShift1.every(
+                    (r) => r.preparedStatusShift1 == "Approved",
+                  );
+
+              final reportsForShift2 =
+                  reportsForGroup?.where((r) => r.shift == 2).toList() ?? [];
               final bool isShift2Prepared =
-                  reportsForDate?.any(
-                    (r) => r.shift == 2 && r.preparedStatusShift2 == "Approved",
-                  ) ??
-                  false;
+                  reportsForShift2.isNotEmpty &&
+                  reportsForShift2.length >= 8 &&
+                  reportsForShift2.every(
+                    (r) => r.preparedStatusShift2 == "Approved",
+                  );
+
+              final reportsForShift3 =
+                  reportsForGroup?.where((r) => r.shift == 3).toList() ?? [];
               final bool isShift3Prepared =
-                  reportsForDate?.any(
-                    (r) => r.shift == 3 && r.preparedStatusShift3 == "Approved",
-                  ) ??
-                  false;
+                  reportsForShift3.isNotEmpty &&
+                  reportsForShift3.length >= 8 &&
+                  reportsForShift3.every(
+                    (r) => r.preparedStatusShift3 == "Approved",
+                  );
 
               final bool isAllReportPrepared =
                   isShift1Prepared && isShift2Prepared && isShift3Prepared;
 
               final bool isApprovedForDay =
-                  reportsForDate!.isNotEmpty &&
+                  reportsForGroup!.isNotEmpty &&
                   isAllReportPrepared &&
-                  reportsForDate.every((r) => r.checkedStatus == 'Approved');
+                  reportsForGroup.every((r) => r.checkedStatus == 'Approved');
               final isRejectedForDay =
                   isAllReportPrepared &&
-                  reportsForDate.any((r) => r.checkedStatus == 'Rejected');
+                  reportsForGroup.any((r) => r.checkedStatus == 'Rejected') &&
+                  reportsForGroup.every((r) => r.checkedStatus != null);
 
-              //Determine the card color
+              // Determine card color, icon, and status text based on the group's state
               Color cardColor = Colors.white;
               IconData icon = Icons.pending_rounded;
               Color iconColor = Colors.blue;
@@ -179,13 +186,13 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                 icon = Icons.check_circle_outlined;
                 iconColor = Colors.green;
                 statusText = 'Approved';
-                isClickable = false; // Not clickable after being approved
+                isClickable = true; // Not clickable after being approved
               } else if (isRejectedForDay) {
                 cardColor = Colors.red[50]!;
                 icon = Icons.cancel_rounded;
                 iconColor = Colors.red;
                 statusText = 'Rejected';
-                isClickable = false; // Not clickable after being rejected
+                isClickable = true; // Not clickable after being rejected
               } else if (!isAllReportPrepared) {
                 cardColor = Colors.grey[200]!;
                 icon = Icons.warning_amber_rounded;
@@ -201,22 +208,22 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                   child: ListTile(
                     leading: Icon(icon, color: iconColor),
                     title: Text(
-                      'Date: $dateKey',
+                      'Date: $date',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      'Status: $statusText',
-                      style: TextStyle(color: iconColor),
+                      'Oil Type: $oilType | Work Center: $workCenter\nStatus: $statusText',
+                      style: TextStyle(color: iconColor, height: 1.4),
                     ),
                     onTap:
-                        isAllReportPrepared
+                        isClickable
                             ? () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder:
                                       (context) => QualityApprovalDetailScreen(
-                                        reportEntities: reportsForDate,
-                                        reportIdentifier: dateKey,
+                                        reportEntities: reportsForGroup,
+                                        reportIdentifier: compositeKey,
                                       ),
                                 ),
                               );
@@ -224,10 +231,11 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                             : () {
                               if (!isClickable) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                  const SnackBar(
                                     content: Text(
                                       'Cannot approve. All three shifts are not yet submitted.',
                                     ),
+                                    duration: Duration(seconds: 2),
                                   ),
                                 );
                               }
@@ -238,71 +246,6 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
             },
           );
         },
-        // child: ListView.builder(
-        //   itemCount: datesToApprove.length,
-        //   itemBuilder: (context, index) {
-        //     final dateKey = datesToApprove[index];
-        //     final shiftsForDate = groupedByDateAndShift[dateKey]!;
-
-        //     final bool isComplete =
-        //         shiftsForDate.containsKey(1) &&
-        //         shiftsForDate.containsKey(2) &&
-        //         shiftsForDate.containsKey(3);
-
-        //     String subtitleText = 'Shifts submitted: ';
-        //     if (shiftsForDate.containsKey(1)) subtitleText += '1 ';
-        //     if (shiftsForDate.containsKey(2)) subtitleText += '2 ';
-        //     if (shiftsForDate.containsKey(3)) subtitleText += '3';
-
-        //     return Card(
-        //       color: isComplete ? Colors.green[50] : Colors.orange[50],
-        //       child: Padding(
-        //         padding: const EdgeInsets.all(8.0),
-        //         child: ListTile(
-        //           title: Row(
-        //             mainAxisAlignment: MainAxisAlignment.start,
-        //             children: [
-        //               Icon(Icons.calendar_today_rounded),
-        //               SizedBox(width: 4),
-        //               Text(dateKey),
-        //             ],
-        //           ),
-        //           subtitle: Text(subtitleText),
-        //           trailing:
-        //               isComplete
-        //                   ? Icon(Icons.check_circle, color: Colors.green)
-        //                   : Icon(Icons.warning, color: Colors.orange),
-        //           onTap: () {
-        //             if (isComplete) {
-        //               // Flatten all entities for the selected date to pass to the detail screen
-        //               final allEntitiesForDate =
-        //                   shiftsForDate.values
-        //                       .expand((element) => element)
-        //                       .toList();
-        //               Navigator.of(context).push(
-        //                 MaterialPageRoute(
-        //                   builder:
-        //                       (context) => ApprovalDetailScreen(
-        //                         reportEntities: allEntitiesForDate,
-        //                         reportIdentifier: dateKey,
-        //                       ),
-        //                 ),
-        //               );
-        //             } else {
-        //               ScaffoldMessenger.of(context).showSnackBar(
-        //                 SnackBar(
-        //                   content: Text(
-        //                     'Belum bisa approve. Semua Shift belum terisi/prepared.',
-        //                   ),
-        //                 ),
-        //               );
-        //             }
-        //           },
-        //         ),
-        //       ),
-        //     );
-        //   },
-        // ),
       ),
     );
   }

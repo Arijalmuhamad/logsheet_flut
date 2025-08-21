@@ -41,7 +41,7 @@ class _MaintenanceLampsGlassApprovalPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Lamps & Glass Approval")),
+      appBar: AppBar(title: const Text("L&G Approval (F/RFA-013)")),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,

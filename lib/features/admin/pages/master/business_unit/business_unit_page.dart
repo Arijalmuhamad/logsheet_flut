@@ -196,16 +196,11 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                           context: context,
                           builder:
                               (context) => AlertDialog(
-                                title: Text('Hapus ${businessUnit.buName}?'),
+                                title: Text('Delete ${businessUnit.buName}?'),
                                 content: Text(
-                                  'Apakah anda yakin ingin menghapus ${businessUnit.buName}?',
+                                  'Do you want to delete ${businessUnit.buName}?',
                                 ),
                                 actions: [
-                                  TextButton(
-                                    onPressed:
-                                        () => Navigator.pop(context, true),
-                                    child: const Text("Ya"),
-                                  ),
                                   TextButton(
                                     onPressed:
                                         () => Navigator.pop(context, false),
@@ -213,6 +208,11 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                                       "Tidak",
                                       style: TextStyle(color: Colors.grey),
                                     ),
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        () => Navigator.pop(context, true),
+                                    child: const Text("Ya"),
                                   ),
                                 ],
                               ),

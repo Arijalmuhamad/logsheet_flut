@@ -10,9 +10,11 @@ import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_glass_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
+import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/data/services/transaction/quality_report_refinery_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
+import 'package:logsheet_app/features/auth/auth_wrapper.dart';
 import 'package:logsheet_app/features/auth/login_page.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
@@ -144,6 +146,7 @@ class MyApp extends StatelessWidget {
     //   role: "ADM",
     //   isActive: "T",
     // );
+
     return MaterialApp(
       localizationsDelegates: const [
         GlobalWidgetsLocalizations.delegate,
@@ -153,10 +156,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Logsheet Automation',
       theme: AppTheme.lightTheme,
-      home: const LoginPage(),
+      // home: const LoginPage(),
       // home: const MaintenanceLampsGlassPage(userName: "ADMIN"),
       // home: ApprovalListScreen(),
       // home: AdminHomePage(userEntity: dummyEntity, userName: "ADMIN"),
+      // home: UserHomePage(userEntity: dummyEntity),
+      home: AuthWrapper(),
     );
   }
 }

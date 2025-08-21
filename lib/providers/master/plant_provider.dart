@@ -55,7 +55,7 @@ class PlantProvider with ChangeNotifier {
     }
   }
 
-  void fetchPlantsByBusinessUnit(String buCode) async {
+  Future<void> fetchPlantsByBusinessUnit(String buCode) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/fer_daily_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/fractination/fra_daily_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/filtration/fp_input.dart';
+import 'package:logsheet_app/features/admin/pages/filtration/logsheet_pretreatment_bleaching_filtration_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
@@ -64,6 +66,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
 
     if (confirm == true && mounted) {
+      final storage = StorageService();
+      await storage.deleteAllLoginData();
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -75,7 +80,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
-      appBar: buildAppBar(),
+      appBar: _buildAppBar(),
       drawer: _buildDrawer(context),
       body: buildBody(),
     );
@@ -116,20 +121,85 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 letterSpacing: 1.1,
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                getMySQLConnection();
-              },
-              child: Text("Test Database Connection"),
-            ),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     getMySQLConnection();
+            //   },
+            //   child: Text("Test Database Connection"),
+            // ),
           ],
         ),
       ),
     );
   }
 
-  AppBar buildAppBar() {
+  AppBar _buildAppBar() {
     return AppBar(title: const Text('Logsheet Automation'));
+  }
+
+  Widget _buildDrawerSubheader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Colors.grey.shade600,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          letterSpacing: 1.1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required GestureTapCallback onTap,
+    String? formCode,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF655F5B)),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontWeight:
+                  FontWeight.w600, // Slightly less bold for a cleaner look
+            ),
+          ),
+          if (formCode != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Material(
+                elevation: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: Colors.white,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Text(
+                      formCode,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      onTap: onTap,
+      dense: true, // Reduces vertical padding for a more compact list
+    );
   }
 
   // Function to build drawer
@@ -219,582 +289,199 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ],
             ),
           ),
-          ListTile(
-            leading: const Icon(
-              Icons.dashboard_outlined,
-              color: Color(0xFF655F5B),
-            ),
-            title: const Text(
-              'Dashboard',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w700,
-              ), // Neutral Gray
-            ),
+          _buildDrawerItem(
+            icon: Icons.dashboard_outlined,
+            title: 'Dashboard',
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Close drawer and stay on the home page
             },
           ),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.settings_applications_outlined,
-              color: Color(0xFF655F5B),
-            ),
-            title: Text(
-              'Master',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w700,
-              ), // Neutral Gray
-            ),
-            iconColor: Color(0xFFAB2F2B), // Brick Red
-            collapsedIconColor: Colors.grey,
-            children: <Widget>[
-              ListTile(
-                contentPadding: const EdgeInsets.only(left: 40.0),
-                leading: const Icon(Icons.business, color: Color(0xFF655F5B)),
-                title: const Text('Business Units'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => BusinessUnitPage()),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.only(left: 40.0),
-                leading: const Icon(Icons.forest, color: Color(0xFF655F5B)),
-                title: const Text('Plant'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => PlantPage()),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.only(left: 40.0),
-                leading: const Icon(Icons.person, color: Color(0xFF655F5B)),
-                title: const Text('Users'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      // builder: (_) => MstUserPage(userName: widget.userName),
-                      builder: (_) => UserPage(),
-                      settings: const RouteSettings(name: 'Users'),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.only(left: 40.0),
-                leading: const Icon(
-                  Icons.table_chart,
-                  color: Color(0xFF655F5B),
-                ),
-                title: const Text('Values'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => MstMastervaluePage(
-                            userName: widget.userEntity.username,
-                            userEntity: widget.userEntity,
-                          ),
-                      settings: const RouteSettings(name: 'MasterValues'),
-                    ),
-                  );
-                },
-              ),
-            ],
+          // -- Master Data Section --
+          _buildDrawerSubheader("Master Data"),
+          _buildDrawerItem(
+            icon: Icons.business,
+            title: 'Business Units',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BusinessUnitPage()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.forest,
+            title: 'Plant',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PlantPage()),
+              );
+            },
+          ),
+          _buildDrawerItem(
+            icon: Icons.person_outline,
+            title: 'Users',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => UserPage()),
+              );
+            },
           ),
 
+          // -- Transactions Section --
+          _buildDrawerSubheader("Transactions"),
           ExpansionTile(
             leading: const Icon(
               Icons.description_outlined,
               color: Color(0xFF655F5B),
             ),
-            title: Text(
-              'Transaction',
+            title: const Text(
+              'Quality',
               style: TextStyle(
                 color: Colors.black87,
-                fontWeight: FontWeight.w700,
-              ), // Neutral Gray
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            childrenPadding: const EdgeInsets.only(left: 10.0),
-
-            iconColor: Color(0xFFAB2F2B),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
             collapsedIconColor: Colors.grey,
             children: <Widget>[
-              // Submenu: Quality Refinery
-              ExpansionTile(
-                leading: const Icon(
-                  Icons.factory_outlined,
-                  color: Color(0xFF655F5B),
-                ),
-                title: const Text('Quality'),
-                childrenPadding: const EdgeInsets.only(left: 10.0),
-                children: [
-                  ListTile(
-                    leading: const Icon(
-                      Icons.check_rounded,
-                      color: Color(0xFF655F5B),
+              _buildDrawerItem(
+                icon: Icons.check_circle_outline,
+                title: 'Approval',
+                formCode: "(F/RFA-001)",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => QualityApprovalListScreen(),
                     ),
-                    title: const Text('Approval'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => QualityApprovalListScreen(),
-                          settings: const RouteSettings(
-                            name: 'QualityReportList',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.list, color: Color(0xFF655F5B)),
-                    title: const Text('Quality List'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => QualityReportList(),
-                          settings: const RouteSettings(
-                            name: 'QualityReportList',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // ListTile(
-                  //   leading: const Icon(
-                  //     Icons.input_outlined,
-                  //     color: Color(0xFF655F5B),
-                  //   ),
-                  //   title: const Text('Input'),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder:
-                  //             (_) => QualityReportRefineryPage(
-                  //               userName: widget.userEntity.username,
-                  //             ),
-                  //         settings: const RouteSettings(name: 'QualityInput'),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.receipt_long_rounded,
-                      color: Color(0xFF655F5B),
-                    ),
-                    title: const Text('Reports'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => QualityListPage(
-                                userName: widget.userEntity.username,
-                                role: widget.userEntity.role,
-                              ),
-                          settings: const RouteSettings(name: 'QualityReports'),
-                        ),
-                      );
-                    },
-                  ),
-                  // ListTile(
-                  //   leading: const Icon(
-                  //     Icons.info_outline,
-                  //     color: Color(0xFF655F5B),
-                  //   ),
-                  //   title: const Text('Status'),
-                  //   onTap: () {
-                  //     Navigator.pop(context);
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder:
-                  //             (_) => StatusPage(
-                  //               userName: widget.userEntity.username,
-                  //             ),
-                  //         settings: const RouteSettings(name: 'QualityStatus'),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
-                ],
+                  );
+                },
               ),
-              // Submenu: Filtration Performance
-              ExpansionTile(
-                leading: const Icon(
-                  Icons.water_damage_outlined,
-                  color: Color(0xFF655F5B),
-                ),
-                title: const Text('Logsheet'),
-                childrenPadding: const EdgeInsets.only(left: 10.0),
-                children: [
-                  ExpansionTile(
-                    leading: const Icon(
-                      Icons.water_damage_outlined,
-                      color: Color(0xFF655F5B),
-                    ),
-                    title: const Text("Pretreatment, Bleaching & Filtration"),
-                    childrenPadding: const EdgeInsets.only(left: 10.0),
-                    children: [
-                      ListTile(
-                        leading: const Icon(
-                          Icons.check_rounded,
-                          color: Color(0xFF655F5B),
-                        ),
-                        title: const Text('Approval'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => QualityApprovalListScreen(),
-                              settings: const RouteSettings(
-                                name: 'QualityReportList',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.input_outlined),
-                        title: const Text('Input'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => FiltrationPerformPage(
-                                    userName: widget.userEntity.username,
-                                  ),
-                              settings: const RouteSettings(
-                                name: 'FiltrationInput',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      ListTile(
-                        leading: const Icon(
-                          Icons.receipt_long_rounded,
-                          color: Color(0xFF655F5B),
-                        ),
-                        title: const Text('Reports'),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => QualityListPage(
-                                    userName: widget.userEntity.username,
-                                    role: widget.userEntity.role,
-                                  ),
-                              settings: const RouteSettings(
-                                name: 'QualityReports',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+              _buildDrawerItem(
+                icon: Icons.list_alt_outlined,
+                title: 'Quality List',
+                formCode: "(F/RFA-001)",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => QualityReportList()),
+                  );
+                },
               ),
-              // Submenu: Filtration Performance
-              // ExpansionTile(
-              //   leading: const Icon(
-              //     Icons.calendar_today,
-              //     color: Color(0xFF655F5B),
-              //   ),
-              //   title: const Text('Daily Production'),
-              //   childrenPadding: const EdgeInsets.only(left: 60.0),
-              //   children: [
-              //     ListTile(
-              //       leading: const Icon(Icons.filter_list),
-              //       title: const Text('Refinery'),
-              //       onTap: () {
-              //         Navigator.pop(context);
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //             builder:
-              //                 (_) => DailyProductionRefineryPage(
-              //                   userName: widget.userEntity.username,
-              //                 ),
-              //             settings: const RouteSettings(
-              //               name: 'FiltrationInput',
-              //             ),
-              //           ),
-              //         );
-              //       },
-              //     ),
-              //     ListTile(
-              //       leading: const Icon(Icons.factory),
-              //       title: const Text('Fractination'),
-              //       onTap: () {
-              //         Navigator.pop(context);
-              //         Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //             builder:
-              //                 (_) => DailyProductionFractinationPage(
-              //                   userName: widget.userEntity.username,
-              //                 ),
-              //             settings: const RouteSettings(
-              //               name: 'FiltrationInput',
-              //             ),
-              //           ),
-              //         );
-              //       },
-              //     ),
-              //   ],
-              // ),
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Reports',
+                formCode: "(F/RFA-001)",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => QualityListPage(
+                            userName: widget.userEntity.username,
+                            role: widget.userEntity.role,
+                          ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          ExpansionTile(
+            leading: const Icon(
+              Icons.water_damage_outlined,
+              color: Color(0xFF655F5B),
+            ),
+            title: const Text(
+              'Logsheet',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: <Widget>[
+              _buildDrawerItem(
+                icon: Icons.input_rounded,
+                title: 'Input',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => FiltrationPerformInputPage(
+                            userName: widget.userEntity.username,
+                          ),
+                    ),
+                  );
+                },
+              ),
+              // Add other Logsheet items here if needed
             ],
           ),
 
+          // -- Maintenance Section --
+          _buildDrawerSubheader("Maintenance"),
           ExpansionTile(
             leading: const Icon(
-              Icons.settings,
+              Icons.lightbulb_outline_rounded,
               color: Color(0xFF655F5B),
-            ), // Neutral Gray
+            ),
             title: const Text(
-              'Maintenance',
+              'Lamps & Glass',
               style: TextStyle(
                 color: Colors.black87,
-                fontWeight: FontWeight.w700,
-              ), // Neutral Gray
-            ),
-            childrenPadding: const EdgeInsets.only(left: 25.0),
-            iconColor: Color(0xFFAB2F2B), // Brick Red
-            collapsedIconColor: Colors.grey,
-            children: <Widget>[
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(
-              //     Icons.cleaning_services,
-              //     color: Color(0xFF655F5B),
-              //   ),
-              //   title: const Text('Cleaning'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceCleaningPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'Cleaning'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(
-              //     Icons.track_changes,
-              //     color: Color(0xFF655F5B),
-              //   ),
-              //   title: const Text('Dry Frac Monitor'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceDryFracPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'DryFracMonitor'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(Icons.event_note, color: Color(0xFF655F5B)),
-              //   title: const Text('Cleaning Schedule'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceSchedulePage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'CleaningSchedule'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(Icons.checklist, color: Color(0xFF655F5B)),
-              //   title: const Text('Daily Check'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceChecksheetPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'DailyCheck'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              ExpansionTile(
-                leading: const Icon(
-                  Icons.lightbulb_rounded,
-                  color: Color(0xFF655F5B),
-                ),
-                title: const Text('Lamps & Glass'),
-                children: [
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 40.0),
-                    leading: const Icon(
-                      Icons.check_rounded,
-                      color: Color(0xFF655F5B),
-                    ),
-                    title: const Text('Approval'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MaintenanceLampsGlassApprovalPage(),
-                          settings: const RouteSettings(
-                            name: 'QualityReportList',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 40.0),
-                    leading: const Icon(
-                      Icons.input_rounded,
-                      color: Color(0xFF655F5B),
-                    ),
-                    title: const Text('Input'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => MaintenanceLampsGlassInputPage(
-                                userName: widget.userEntity.username,
-                              ),
-                          settings: const RouteSettings(name: 'LampGlass'),
-                        ),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.only(left: 40.0),
-                    leading: const Icon(
-                      Icons.receipt_long_rounded,
-                      color: Color(0xFF655F5B),
-                    ),
-                    title: const Text('Report'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MaintenanceLampsGlassReportPage(),
-                          settings: const RouteSettings(name: 'LampGlass'),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                fontWeight: FontWeight.w600,
               ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(Icons.filter_alt, color: Color(0xFF655F5B)),
-              //   title: const Text('Niagara Filter'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceFilterPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'NiagaraFilter'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(
-              //     Icons.change_circle,
-              //     color: Color(0xFF655F5B),
-              //   ),
-              //   title: const Text('Change Prod.'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceChangeChecklistPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'ChangeProduct'),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ListTile(
-              //   contentPadding: const EdgeInsets.only(left: 40.0),
-              //   leading: const Icon(
-              //     Icons.play_circle_outline,
-              //     color: Color(0xFF655F5B),
-              //   ),
-              //   title: const Text('Startup Prod.'),
-              //   onTap: () {
-              //     Navigator.pop(context);
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //         builder:
-              //             (_) => MaintenanceStartupPage(
-              //               userName: widget.userEntity.username,
-              //             ),
-              //         settings: const RouteSettings(name: 'StartupProduct'),
-              //       ),
-              //     );
-              //   },
-              // ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: [
+              _buildDrawerItem(
+                icon: Icons.check_circle_outline,
+                title: 'Approval',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceLampsGlassApprovalPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.input_rounded,
+                title: 'Input',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceLampsGlassInputPage(
+                            userName: widget.userEntity.username,
+                          ),
+                    ),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceLampsGlassReportPage(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
 
@@ -990,18 +677,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
           //     // Navigasi ke halaman Settings
           //   },
           // ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Color(0xFFAB2F2B)),
-            title: const Text(
-              'Logout',
-              style: TextStyle(
-                color: Color(0xFFAB2F2B),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            onTap: _logout,
-          ),
+          // -- Footer Section --
+          const Divider(height: 24, thickness: 1, indent: 16, endIndent: 16),
+          _buildDrawerItem(icon: Icons.logout, title: 'Logout', onTap: _logout),
         ],
       ),
     );

@@ -1,6 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:mysql_client/mysql_client.dart';
@@ -83,12 +87,9 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     // User Provider
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final businessUnitProvider = Provider.of<BusinessUnitProvider>(
-      context,
-      listen: false,
-    );
-    final plantProvider = Provider.of<PlantProvider>(context, listen: false);
+    final userProvider = context.read<UserProvider>();
+    final businessUnitProvider = context.read<BusinessUnitProvider>();
+    final plantProvider = context.read<PlantProvider>();
 
     try {
       //login to the mysql database
@@ -114,6 +115,14 @@ class _LoginPageState extends State<LoginPage> {
 
           log("login plant in provider: ${plantProvider.currentPlant?.code}");
 
+          // Save to StorageService
+          _saveToStorageService(
+            user: user,
+            plant: selectedPlantEntity,
+            bu: selectedBusinessUnitEntity,
+            password: password,
+          );
+
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
@@ -138,6 +147,15 @@ class _LoginPageState extends State<LoginPage> {
           log("Founded Plant: ${selectedPlantEntity.name}");
 
           plantProvider.setCurrentPlant(selectedPlantEntity);
+
+          // Save to StorageService
+          _saveToStorageService(
+            user: user,
+            plant: selectedPlantEntity,
+            bu: selectedBusinessUnitEntity,
+            password: password,
+          );
+
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
@@ -295,7 +313,62 @@ class _LoginPageState extends State<LoginPage> {
                     // Business Unit
                     Consumer<BusinessUnitProvider>(
                       builder: (context, provider, child) {
+                        if (provider.isLoading) {
+                          // Return a disabled dropdown with a loading indicator or message
+                          return DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: null,
+                            items: [],
+                            onChanged: null, // Disable the dropdown
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Loading Business Unit...',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (provider.listBusinessUnits.isEmpty) {
+                          return TextFormField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Biz. Unit tidak ditemukan.',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Icon(Icons.warning_amber_rounded),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () {
+                                  context
+                                      .read<BusinessUnitProvider>()
+                                      .fetchAllBusinessUnits();
+                                },
+                              ),
+                            ),
+                          );
+                        }
                         return DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: selectedBusinessUnit,
                           items:
                               provider.listBusinessUnits.map((businessUnit) {
@@ -307,26 +380,19 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 );
                               }).toList(),
-                          onChanged: (value) {
+                          onChanged: (value) async {
                             setState(() {
                               selectedBusinessUnit = value;
-                              Provider.of<PlantProvider>(
-                                context,
-                                listen: false,
-                              ).clearPlants();
+                              context.read<PlantProvider>().clearPlants();
                               selectedPlant = null;
                             });
 
                             if (value != null) {
-                              Provider.of<PlantProvider>(
-                                context,
-                                listen: false,
-                              ).fetchPlantsByBusinessUnit(value);
+                              await context
+                                  .read<PlantProvider>()
+                                  .fetchPlantsByBusinessUnit(value);
                             } else {
-                              Provider.of<PlantProvider>(
-                                context,
-                                listen: false,
-                              ).clearPlants();
+                              context.read<PlantProvider>().clearPlants();
                             }
                           },
                           decoration: InputDecoration(
@@ -350,7 +416,60 @@ class _LoginPageState extends State<LoginPage> {
 
                     Consumer<PlantProvider>(
                       builder: (context, provider, child) {
+                        if (provider.isLoading) {
+                          // Return a disabled dropdown with a loading indicator or message
+                          return DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: null,
+                            items: [],
+                            onChanged: null, // Disable the dropdown
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Loading Plant...',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (provider.plantList.isEmpty) {
+                          return TextFormField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Plant tidak ditemukan.',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Icon(Icons.warning_amber_rounded),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () {
+                                  context.read<PlantProvider>().fetchAllPlant();
+                                },
+                              ),
+                            ),
+                          );
+                        }
                         return DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: selectedPlant,
                           items:
                               provider.plantList.map((plant) {
@@ -430,5 +549,21 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveToStorageService({
+    required UserEntity user,
+    required PlantEntity plant,
+    required BusinessUnitEntity bu,
+    required String password,
+  }) async {
+    log("LOGIN PAGE saveToStorageService: ${user.username}, $password");
+
+    final storage = StorageService();
+
+    await storage.saveUsername(user.username);
+    await storage.savePassword(password);
+    await storage.saveBusinessUnit(bu.buCode);
+    await storage.savePlant(plant.code);
   }
 }

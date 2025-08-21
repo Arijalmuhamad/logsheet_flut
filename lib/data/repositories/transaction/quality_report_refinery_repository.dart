@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/data/services/transaction/quality_report_refinery_mysql_service.dart';
 
 class QualityReportRefineryRepository {
@@ -11,6 +12,10 @@ class QualityReportRefineryRepository {
   // Insert Quality Refinery Report
   Future<bool> insert(QualityReportRefineryEntity entity) async {
     return await _mySQLService.insertQualityReportRefinery(entity);
+  }
+
+  Future<bool> deleteReport(String id) async {
+    return await _mySQLService.deleteReport(id);
   }
 
   // Fetch all Quality Refinery Report
@@ -78,5 +83,23 @@ class QualityReportRefineryRepository {
       remark,
       id,
     );
+  }
+
+  Future<List<int>> getReportedHours(
+    DateTime dateFilter,
+    String plantCode,
+  ) async {
+    return await _mySQLService.getReportedHours(dateFilter, plantCode);
+  }
+
+  Future<List<ReportNotificationDataEntity>>
+  getReadyForManagerApprovalReports() async {
+    log("In the Repository calling the mysql service");
+    final List<Map<String, dynamic>> reportData =
+        await _mySQLService.getReadyForManagerApprovalReports();
+    log("Done calling the mysql service, list length is ${reportData.length}");
+    return reportData
+        .map((maps) => ReportNotificationDataEntity.fromMap(maps))
+        .toList();
   }
 }

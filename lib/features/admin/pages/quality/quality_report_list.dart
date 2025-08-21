@@ -6,6 +6,7 @@ import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_en
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_input.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -20,26 +21,24 @@ class QualityReportList extends StatefulWidget {
 class _QualityReportListState extends State<QualityReportList> {
   @override
   void initState() {
-    final username =
-        Provider.of<UserProvider>(context, listen: false).currentUser?.username;
-    final role =
-        Provider.of<UserProvider>(context, listen: false).currentUser?.role;
-    final plantCode =
-        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
-        "";
+    final username = context.read<UserProvider>().currentUser?.username;
+    final role = context.read<UserProvider>().currentUser?.role;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
     WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => Provider.of<QualityReportRefineryProvider>(
-        context,
-        listen: false,
-      ).fetchAllReports(null, null, username ?? "", role ?? "", plantCode),
+      (timeStamp) => context
+          .read<QualityReportRefineryProvider>()
+          .fetchAllReports(null, null, username ?? "", role ?? "", plantCode),
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
     );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final username =
-        Provider.of<UserProvider>(context, listen: false).currentUser?.username;
+    final username = context.read<UserProvider>().currentUser?.username;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
@@ -65,38 +64,34 @@ class _QualityReportListState extends State<QualityReportList> {
   }
 
   AppBar _buildAppBar() => AppBar(
-    title: const Text("Quality List"),
+    title: const Text("Quality List (F/QCO-002)"),
     actions: [
-      IconButton(
-        onPressed: () {
-          final username =
-              Provider.of<UserProvider>(
-                context,
-                listen: false,
-              ).currentUser?.username;
-          final role =
-              Provider.of<UserProvider>(
-                context,
-                listen: false,
-              ).currentUser?.role;
-          final plantCode =
-              Provider.of<PlantProvider>(
-                context,
-                listen: false,
-              ).currentPlant?.code ??
-              "";
-          Provider.of<QualityReportRefineryProvider>(
-            context,
-            listen: false,
-          ).fetchAllReports(null, null, username ?? "", role ?? "", plantCode);
-        },
-        icon: Consumer<QualityReportRefineryProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoading) return const CircularProgressIndicator();
-            return const Icon(Icons.replay);
-          },
-        ),
-      ),
+      context.watch<QualityReportRefineryProvider>().isLoading
+          ? CircularProgressIndicator()
+          : IconButton(
+            onPressed: () {
+              final username =
+                  context.read<UserProvider>().currentUser?.username;
+              final role = context.read<UserProvider>().currentUser?.role;
+              final plantCode =
+                  context.read<PlantProvider>().currentPlant?.code ?? "";
+              context.read<QualityReportRefineryProvider>().fetchAllReports(
+                null,
+                null,
+                username ?? "",
+                role ?? "",
+                plantCode,
+              );
+            },
+            icon: Consumer<QualityReportRefineryProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const CircularProgressIndicator();
+                }
+                return const Icon(Icons.replay);
+              },
+            ),
+          ),
     ],
   );
 

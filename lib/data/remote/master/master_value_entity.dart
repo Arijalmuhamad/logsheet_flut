@@ -5,8 +5,11 @@ class MasterValueEntity {
   final String group;
   final int number;
   final String isActive;
+  final String? outputOilType;
   final String entryBy;
   final DateTime entryDate;
+  final String? updateBy;
+  final DateTime? updateDate;
 
   MasterValueEntity({
     required this.id,
@@ -15,8 +18,11 @@ class MasterValueEntity {
     required this.group,
     required this.number,
     required this.isActive,
+    required this.outputOilType,
     required this.entryBy,
     required this.entryDate,
+    required this.updateBy,
+    required this.updateDate,
   });
   factory MasterValueEntity.fromMap(Map<String, dynamic> map) {
     int? parseInt(dynamic value) {
@@ -34,14 +40,17 @@ class MasterValueEntity {
     }
 
     return MasterValueEntity(
-      id: map['id'],
-      code: map['code'],
-      name: map['name'],
-      group: map['group'],
+      id: map['id'] as String,
+      code: map['code'] as String,
+      name: map['name'] as String,
+      group: map['group'] as String,
       number: parseInt(map['number']) ?? 0,
-      isActive: map['isactive'],
+      isActive: map['isactive'] as String,
+      outputOilType: map['output_oil_type'] as String?,
       entryBy: map['entry_by'],
       entryDate: parseDateTime(map['entry_date']) ?? DateTime.now(),
+      updateBy: map['update_by'],
+      updateDate: parseDateTime(map['update_date']),
     );
   }
 

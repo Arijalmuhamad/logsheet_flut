@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
@@ -32,7 +34,7 @@ class _QualityApprovalDetailScreenState
     //   context,
     //   listen: false,
     // );
-
+    log(widget.reportIdentifier);
     // Group the entities by shift to display them
     final Map<int?, List<QualityReportRefineryEntity>> groupedByShift = {};
     for (var report in widget.reportEntities) {
@@ -52,9 +54,7 @@ class _QualityApprovalDetailScreenState
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Approve Reports for ${widget.reportIdentifier}'),
-      ),
+      appBar: AppBar(title: Text('Report: ${widget.reportIdentifier}')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -66,10 +66,10 @@ class _QualityApprovalDetailScreenState
               color: allTilesAreApproved ? Colors.green[100] : Colors.blue[100],
               child: Text(
                 allTilesAreApproved
-                    ? 'Status: All shifts are approved.'
+                    ? 'Status: Semua Shift telah diapproved.'
                     : anyTilesAreRejected
-                    ? "Status: Some reports are rejected."
-                    : 'Status: All shifts are complete and ready for approval.',
+                    ? "Status: Beberapa report direject."
+                    : 'Status: Semua shift siap diapprove.',
                 style: TextStyle(
                   color:
                       allTilesAreApproved
@@ -89,7 +89,7 @@ class _QualityApprovalDetailScreenState
                   final shiftNumber = sortedShifts[shiftIndex];
                   final entitiesForShift = groupedByShift[shiftNumber]!;
                   return ExpansionTile(
-                    title: Text('Shift $shiftNumber (8 hours)'),
+                    title: Text('Shift $shiftNumber (8 jam)'),
                     children:
                         entitiesForShift.map((report) {
                           final isApproved = report.checkedStatus == "Approved";
@@ -132,10 +132,7 @@ class _QualityApprovalDetailScreenState
                             trailing: Icon(trailingIcon, color: iconColor),
                             onTap: () {
                               final currentUser =
-                                  Provider.of<UserProvider>(
-                                    context,
-                                    listen: false,
-                                  ).currentUser;
+                                  context.read<UserProvider>().currentUser;
                               _buildBottomSheet(
                                 context,
                                 report,
@@ -208,6 +205,11 @@ class _QualityApprovalDetailScreenState
       return 'Submitted';
     }
 
+    // Helper to format dates or return a default string
+    String formatDate(DateTime? date) {
+      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : 'N/A';
+    }
+
     final isApproved = report.checkedStatus == 'Approved';
     final isRejected = report.checkedStatus == 'Rejected';
     return showModalBottomSheet(
@@ -241,7 +243,7 @@ class _QualityApprovalDetailScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Report Details - ${report.time != null ? DateFormat('HH:mm').format(report.time!) : 'N/A'}',
+                        'Detail Report - ${report.time != null ? DateFormat('HH:mm').format(report.time!) : 'N/A'}',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -269,28 +271,76 @@ class _QualityApprovalDetailScreenState
 
                   //
                   const Divider(height: 24),
+                  _buildDetailRow(
+                    'Tanggal Transaksi',
+                    report.transactionDate.toString(),
+                  ),
+                  _buildDetailRow(
+                    'Tanggal Posting',
+                    report.postingDate.toString(),
+                  ),
+                  _buildDetailRow('Shift', report.shift.toString()),
+                  const Divider(),
                   _buildDetailRow('Ticket ID', report.id),
                   _buildDetailRow('Work Center', report.workCenter ?? 'N/A'),
                   _buildDetailRow('Oil Type', report.oilType ?? 'N/A'),
+                  const Divider(),
+                  _buildDetailRow('Flow Rate', report.rmFlowRate.toString()),
                   _buildDetailRow('RM Temp', report.rmTemp.toString()),
                   _buildDetailRow('RM FFA', report.rmFFA.toString()),
                   _buildDetailRow('RM IV', report.rmIV.toString()),
                   _buildDetailRow('RM PV', report.rmPV.toString()),
                   _buildDetailRow('RM Dobi', report.rmDobi.toString()),
                   _buildDetailRow('RM M&I', report.rmMNI.toString()),
-                  _buildDetailRow('Bo Color', report.boColor ?? 'N/A'),
+                  _buildDetailRow('RM Totox', report.rmToTox.toString()),
+                  _buildDetailRow('RM Color R', report.rmColorR.toString()),
+                  _buildDetailRow('RM Color Y', report.rmColorY.toString()),
+                  _buildDetailRow('RM Color B', report.rmColorB.toString()),
+                  const Divider(),
+                  _buildDetailRow('Bo Color R', report.boColorR.toString()),
+                  _buildDetailRow('Bo Color Y', report.boColorY.toString()),
+                  _buildDetailRow('Bo Color B', report.boColorB.toString()),
                   _buildDetailRow('Bo Break Test', report.boBreakTest ?? 'N/A'),
+                  const Divider(),
                   _buildDetailRow('FG FFA', report.fgFFA.toString()),
                   _buildDetailRow('FG IV', report.fgIV.toString()),
                   _buildDetailRow('FG PV', report.fgPV.toString()),
-                  _buildDetailRow('FG M&I', report.fgMNI.toString()),
+                  _buildDetailRow('FG Moisture', report.fgMoisture.toString()),
+                  _buildDetailRow(
+                    'FG Impurities',
+                    report.fgImpurities.toString(),
+                  ),
                   _buildDetailRow('FG Color R', report.fgColorR.toString()),
                   _buildDetailRow('FG Color Y', report.fgColorY.toString()),
                   _buildDetailRow('FG Tank To', report.fgTankTo ?? 'N/A'),
+                  _buildDetailRow(
+                    'FG Tank Others Remarks',
+                    report.fgTankToOthersRemarks ?? 'N/A',
+                  ),
+                  const Divider(),
                   _buildDetailRow('BP FFA', report.bpFFA.toString()),
                   _buildDetailRow('BP M&I', report.bpMNI.toString()),
+                  _buildDetailRow('BP To Tank', report.bpToTank.toString()),
                   _buildDetailRow('WSBEQC', report.wSBEQC.toString()),
+                  _buildDetailRow('Waste M&I', report.wasteMNI.toString()),
+                  const Divider(),
                   _buildDetailRow('Remarks', report.remarks ?? 'N/A'),
+                  _buildDetailRow('Entry By', report.entryBy ?? 'N/A'),
+                  _buildDetailRow('Entry Date', formatDate(report.entryDate)),
+                  _buildDetailRow('Checked By', report.checkedBy ?? 'N/A'),
+                  _buildDetailRow(
+                    'Checked Date',
+                    formatDate(report.checkedDate),
+                  ),
+                  _buildDetailRow(
+                    'Checked Remarks',
+                    report.checkedStatusRemarks ?? 'N/A',
+                  ),
+                  _buildDetailRow('Updated By', report.updatedBy ?? 'N/A'),
+                  _buildDetailRow(
+                    'Updated Date',
+                    formatDate(report.updatedDate),
+                  ),
                   const SizedBox(height: 24),
                   if (!isApproved && !isRejected)
                     _buildApprovalButtonRow(context, report, username, role, (
@@ -338,15 +388,76 @@ class _QualityApprovalDetailScreenState
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () async {
-              // Handle Reject logic
-              await _handleAction(
-                context,
-                report,
-                username,
-                role,
-                'Rejected',
-                onStatusChange,
+              return showModalBottomSheet(
+                context: context,
+                builder:
+                    (context) => Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _remarkController,
+                            maxLines: 7,
+                            decoration: InputDecoration(
+                              labelText: "Remark untuk Reject",
+                              labelStyle: const TextStyle(
+                                color: Color(0xFF655F5B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                          SizedBox(height: 14),
+                          if (_remarkController.text.trim() == "")
+                            Text(
+                              "Mohon isi remark.",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: 55,
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        _remarkController.text.trim() == ""
+                                            ? null
+                                            : () async {
+                                              await _handleAction(
+                                                context,
+                                                report,
+                                                username,
+                                                role,
+                                                'Rejected',
+                                                onStatusChange,
+                                              );
+                                            },
+                                    icon: const Icon(Icons.close),
+                                    label: const Text('Reject'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
               );
+              // Handle Reject logic
+              // await _handleAction(
+              //   context,
+              //   report,
+              //   username,
+              //   role,
+              //   'Rejected'
+              //   onStatusChange,
+              // );
             },
             icon: const Icon(Icons.close),
             label: const Text('Reject'),
@@ -390,13 +501,8 @@ class _QualityApprovalDetailScreenState
     String status,
     Function(String) onStatusChange,
   ) async {
-    final provider = Provider.of<QualityReportRefineryProvider>(
-      context,
-      listen: false,
-    );
-    final plantCode =
-        Provider.of<PlantProvider>(context, listen: false).currentPlant?.code ??
-        "";
+    final provider = context.read<QualityReportRefineryProvider>();
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     await provider.sendApproveRejectReport(
       username,
@@ -412,8 +518,9 @@ class _QualityApprovalDetailScreenState
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Report ${report.id} successfully $status.'),
+        content: Text('Report ${report.id} berhasil di$status.'),
         backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+        duration: Duration(milliseconds: 500),
       ),
     );
 

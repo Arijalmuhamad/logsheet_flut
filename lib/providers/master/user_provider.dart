@@ -23,11 +23,19 @@ class UserProvider with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isCreateEditLoading = false;
+  bool get isCreateEditLoading => _isCreateEditLoading;
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void setCreateEditLoading(bool value) {
+    _isCreateEditLoading = value;
     notifyListeners();
   }
 
@@ -63,25 +71,25 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<bool> updateUser(UserEntity user) async {
-    _setLoading(true);
+    setCreateEditLoading(true);
     _setErrorMessage(null);
 
     try {
       final result = await _userRepository.updateUser(user);
 
       if (result) {
-        _setLoading(false);
+        setCreateEditLoading(false);
         _setErrorMessage(null);
         fetchAllUsers();
         return true;
       } else {
-        _setLoading(false);
+        setCreateEditLoading(false);
         _setErrorMessage('Failed to edit user.');
         return false;
       }
     } catch (e) {
       _setErrorMessage('Failed to edit user: $e');
-      _setLoading(false);
+      setCreateEditLoading(false);
       return false;
     }
   }
@@ -115,12 +123,12 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<bool?> registerUser(UserEntity user) async {
-    _setLoading(true);
+    setCreateEditLoading(true);
     _setErrorMessage(null);
 
     try {
       final response = await _userRepository.registerUser(user);
-      _setLoading(false);
+      setCreateEditLoading(false);
       _setErrorMessage(null);
 
       _listUsers.insert(0, user);
@@ -128,7 +136,7 @@ class UserProvider with ChangeNotifier {
 
       return response;
     } catch (e) {
-      _setLoading(false);
+      setCreateEditLoading(false);
       _setErrorMessage('Failed to register user: $e');
       return null;
     }
