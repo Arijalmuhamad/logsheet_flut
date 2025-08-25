@@ -62,10 +62,7 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                   OutlinedButton(
                     onPressed: () {
                       final plantCode =
-                          Provider.of<PlantProvider>(
-                            context,
-                            listen: false,
-                          ).currentPlant?.code ??
+                          context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
                       context
@@ -129,76 +126,75 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
             itemBuilder: (context, index) {
               final compositeKey = groupKeys[index];
               final reportsForGroup = groupedReports[compositeKey];
+              final firstReport = reportsForGroup!.first;
+              final postingDate = firstReport.postingDate!;
+              final dayOfWeek = postingDate.weekday;
 
               final keyParts = compositeKey.split('|');
               final date = keyParts[0];
               final oilType = keyParts[1];
               final workCenter = keyParts[2];
 
-              final reportsForShift1 =
-                  reportsForGroup?.where((r) => r.shift == 1).toList() ?? [];
-              final bool isShift1Prepared =
-                  reportsForShift1.isNotEmpty &&
-                  reportsForShift1.length >= 8 &&
-                  reportsForShift1.every(
-                    (r) => r.preparedStatusShift1 == "Approved",
-                  );
+              bool isReadyForApproval = false;
+              int requiredReports = 24;
 
-              final reportsForShift2 =
-                  reportsForGroup?.where((r) => r.shift == 2).toList() ?? [];
-              final bool isShift2Prepared =
-                  reportsForShift2.isNotEmpty &&
-                  reportsForShift2.length >= 8 &&
-                  reportsForShift2.every(
-                    (r) => r.preparedStatusShift2 == "Approved",
-                  );
+              if (dayOfWeek >= DateTime.friday) {
+                final shifts = reportsForGroup.map((r) => r.shift).toSet();
+                isReadyForApproval =
+                    reportsForGroup.length >= requiredReports &&
+                    shifts.contains(4) &&
+                    shifts.contains(5) &&
+                    reportsForGroup.every(
+                      (r) =>
+                          r.shift == 4
+                              ? r.preparedStatusShift4 == "Approved"
+                              : r.shift == 5
+                              ? r.preparedStatusShift5 == "Approved"
+                              : false,
+                    );
+              } else {
+                final shifts = reportsForGroup.map((r) => r.shift).toSet();
+                isReadyForApproval =
+                    reportsForGroup.length >= requiredReports &&
+                    shifts.contains(1) &&
+                    shifts.contains(2) &&
+                    shifts.contains(3) &&
+                    reportsForGroup.every(
+                      (r) =>
+                          r.shift == 1
+                              ? r.preparedStatusShift1 == "Approved"
+                              : r.shift == 2
+                              ? r.preparedStatusShift2 == "Approved"
+                              : r.shift == 3
+                              ? r.preparedStatusShift3 == "Approved"
+                              : false,
+                    );
+              }
 
-              final reportsForShift3 =
-                  reportsForGroup?.where((r) => r.shift == 3).toList() ?? [];
-              final bool isShift3Prepared =
-                  reportsForShift3.isNotEmpty &&
-                  reportsForShift3.length >= 8 &&
-                  reportsForShift3.every(
-                    (r) => r.preparedStatusShift3 == "Approved",
-                  );
-
-              final bool isAllReportPrepared =
-                  isShift1Prepared && isShift2Prepared && isShift3Prepared;
-
-              final bool isApprovedForDay =
-                  reportsForGroup!.isNotEmpty &&
-                  isAllReportPrepared &&
-                  reportsForGroup.every((r) => r.checkedStatus == 'Approved');
-              final isRejectedForDay =
-                  isAllReportPrepared &&
-                  reportsForGroup.any((r) => r.checkedStatus == 'Rejected') &&
-                  reportsForGroup.every((r) => r.checkedStatus != null);
+              final bool isApprovedForDay = reportsForGroup.every(
+                (r) => r.checkedStatus == 'Approved',
+              );
+              final bool isRejectedForDay = reportsForGroup.any(
+                (r) => r.checkedStatus == 'Rejected',
+              );
 
               // Determine card color, icon, and status text based on the group's state
               Color cardColor = Colors.white;
               IconData icon = Icons.pending_rounded;
               Color iconColor = Colors.blue;
               String statusText = 'Pending Approval';
-              bool isClickable = isAllReportPrepared;
 
               if (isApprovedForDay) {
                 cardColor = Colors.green[50]!;
                 icon = Icons.check_circle_outlined;
                 iconColor = Colors.green;
                 statusText = 'Approved';
-                isClickable = true; // Not clickable after being approved
+                // Not clickable after being approved
               } else if (isRejectedForDay) {
                 cardColor = Colors.red[50]!;
                 icon = Icons.cancel_rounded;
                 iconColor = Colors.red;
                 statusText = 'Rejected';
-                isClickable = true; // Not clickable after being rejected
-              } else if (!isAllReportPrepared) {
-                cardColor = Colors.grey[200]!;
-                icon = Icons.warning_amber_rounded;
-                iconColor = Colors.orange;
-                statusText = 'Incomplete shifts';
-                isClickable = false;
               }
 
               return Card(
@@ -216,7 +212,7 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                       style: TextStyle(color: iconColor, height: 1.4),
                     ),
                     onTap:
-                        isClickable
+                        isReadyForApproval
                             ? () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -229,16 +225,14 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                               );
                             }
                             : () {
-                              if (!isClickable) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Cannot approve. All three shifts are not yet submitted.',
-                                    ),
-                                    duration: Duration(seconds: 2),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Cannot approve. All three shifts are not yet submitted.',
                                   ),
-                                );
-                              }
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
                             },
                   ),
                 ),

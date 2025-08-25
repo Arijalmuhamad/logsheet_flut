@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
@@ -10,6 +13,7 @@ import 'package:logsheet_app/features/admin/pages/quality/quality_report_approva
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_data.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_list.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
@@ -27,6 +31,7 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   Timer? _alertTimer;
+  DataFormNoEntity? formQualityRefinery, formPretreatment;
 
   void _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -133,6 +138,21 @@ class _UserHomePageState extends State<UserHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    formQualityRefinery =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
+    formPretreatment =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration",
+            )
+            .first;
     final userRole = widget.userEntity.role;
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
@@ -316,7 +336,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (["MGR", "ADM"].contains(userRole)) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (F/QCO-002)',
+                    title: 'Approval (${formQualityRefinery!.code})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -329,7 +349,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'Quality List (F/QCO-002)',
+                  title: 'Quality List ${formQualityRefinery!.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -339,7 +359,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ),
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (F/QCO-002)',
+                  title: 'Reports (${formQualityRefinery!.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -356,68 +376,134 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
-
-          // Show Maintenance section for all roles (as per your original code)
-          _buildDrawerSubheader("Maintenance"),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.lightbulb_outline_rounded,
-              color: Color(0xFF655F5B),
-            ),
-            title: const Text(
-              'Lamps & Glass',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
+          if (["ADM", "LEAD", "OPR", "MGR"].contains(userRole)) ...[
+            _buildDrawerSubheader("Logsheet"),
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
               ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: [
-              // Show Approval only to Managers and Leads (you can adjust roles here)
-              if (["MGR", "LEAD", "ADM"].contains(userRole))
+              title: const Text(
+                'Pretreatment, Bleaching, Filtration',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                if (["MGR", "ADM"].contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formPretreatment!.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => QualityApprovalListScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 _buildDrawerItem(
-                  icon: Icons.check_circle_outline,
-                  title: 'Approval (F/RFA-013)',
+                  icon: Icons.list_alt_outlined,
+                  title: 'List ${formPretreatment!.code})',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => MaintenanceLampsGlassApprovalPage(),
+                        builder:
+                            (_) =>
+                                LogsheetPretreatmentBleachingFiltrationListPage(),
                       ),
                     );
                   },
                 ),
-              _buildDrawerItem(
-                icon: Icons.input_rounded,
-                title: 'Input (F/RFA-013)',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => MaintenanceLampsGlassInputPage(
-                            userName: user.username,
-                          ),
-                    ),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Report (F/RFA-013)',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceLampsGlassReportPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formPretreatment!.code})',
+                  onTap: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder:
+                    //         (_) => QualityListPage(
+                    //           userName: user.username,
+                    //           role: user.role,
+                    //         ),
+                    //   ),
+                    // );
+                  },
+                ),
+              ],
+            ),
+          ],
+
+          // Show Maintenance section for all roles (as per your original code)
+          // _buildDrawerSubheader("Maintenance"),
+          // ExpansionTile(
+          //   leading: const Icon(
+          //     Icons.lightbulb_outline_rounded,
+          //     color: Color(0xFF655F5B),
+          //   ),
+          //   title: const Text(
+          //     'Lamps & Glass',
+          //     style: TextStyle(
+          //       color: Colors.black87,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          //   childrenPadding: const EdgeInsets.only(left: 20.0),
+          //   iconColor: const Color(0xFFAB2F2B),
+          //   collapsedIconColor: Colors.grey,
+          //   children: [
+          //     // Show Approval only to Managers and Leads (you can adjust roles here)
+          //     if (["MGR", "LEAD", "ADM"].contains(userRole))
+          //       _buildDrawerItem(
+          //         icon: Icons.check_circle_outline,
+          //         title: 'Approval (F/RFA-013)',
+          //         onTap: () {
+          //           Navigator.push(
+          //             context,
+          //             MaterialPageRoute(
+          //               builder: (_) => MaintenanceLampsGlassApprovalPage(),
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //     _buildDrawerItem(
+          //       icon: Icons.input_rounded,
+          //       title: 'Input (F/RFA-013)',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder:
+          //                 (_) => MaintenanceLampsGlassInputPage(
+          //                   userName: user.username,
+          //                 ),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //     _buildDrawerItem(
+          //       icon: Icons.receipt_long_outlined,
+          //       title: 'Report (F/RFA-013)',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (_) => MaintenanceLampsGlassReportPage(),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ],
+          // ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFAB2F2B)),

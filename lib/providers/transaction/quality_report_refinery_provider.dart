@@ -19,6 +19,9 @@ class QualityReportRefineryProvider with ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  bool _isLoadingAlert = false;
+  bool get isLoadingAlert => _isLoadingAlert;
+
   List<QualityReportRefineryEntity> _reportsList = [];
   List<QualityReportRefineryEntity> get reportsList => _reportsList;
 
@@ -39,6 +42,11 @@ class QualityReportRefineryProvider with ChangeNotifier {
 
   void _setLoadingDelete(bool value) {
     _isLoadingDelete = value;
+    notifyListeners();
+  }
+
+  void _setLoadingAlert(bool value) {
+    _isLoadingAlert = value;
     notifyListeners();
   }
 
@@ -289,19 +297,19 @@ class QualityReportRefineryProvider with ChangeNotifier {
 
   Future<List<ReportNotificationDataEntity>>
   fetchReadyForManagerApprovalReports() async {
-    _setLoading(true);
+    _setLoadingAlert(true);
     _setErrorMessage(null);
     try {
       log("Fetching ready for manager approval list");
       _readyReportsList = await _repository.getReadyForManagerApprovalReports();
 
       log("${_readyReportsList.length} is ready to be approved.");
-      _setLoading(false);
+      _setLoadingAlert(false);
       return _readyReportsList;
     } catch (e) {
       log('Failed to fetch reported hours: $e');
       _setErrorMessage('Failed to fetch reported hours: $e');
-      _setLoading(false);
+      _setLoadingAlert(false);
       return [];
     }
   }

@@ -124,10 +124,7 @@ class QualityReportRefineryMysqlService {
             : "Not Connected to the database",
       );
 
-      final result = await connResult.connection!.execute(
-        sql,
-        sqlExecuteParams,
-      );
+      final result = await connection.execute(sql, sqlExecuteParams);
 
       // connResult.connection?.close();
 
@@ -379,14 +376,14 @@ class QualityReportRefineryMysqlService {
         return [];
       }
       final result = await connResult.connection!.execute(
-        'SELECT * FROM t_quality_report_refinery WHERE (prepared_status_shift1 = "Approved" OR prepared_status_shift2 = "Approved" OR prepared_status_shift3 = "Approved") AND plant = :plantCode;',
+        'SELECT * FROM t_quality_report_refinery WHERE (prepared_status_shift1 = "Approved" OR prepared_status_shift2 = "Approved" OR prepared_status_shift3 = "Approved" OR prepared_status_shift4 = "Approved" OR prepared_status_shift5 = "Approved") AND plant = :plantCode;',
         {"plantCode": plantCode},
       );
       log('Fetched ${result.rows.length} row.');
       connResult.connection?.close();
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching all users: $e');
+      log('Error fetching all prepared transactions: $e');
       return [];
     }
   }
@@ -509,6 +506,8 @@ class QualityReportRefineryMysqlService {
             WHEN (shift = 1 AND prepared_status_shift1 = 'Approved') THEN 1
             WHEN (shift = 2 AND prepared_status_shift2 = 'Approved') THEN 1
             WHEN (shift = 3 AND prepared_status_shift3 = 'Approved') THEN 1
+            WHEN (shift = 4 AND prepared_status_shift4 = 'Approved') THEN 1
+            WHEN (shift = 5 AND prepared_status_shift5 = 'Approved') THEN 1
             ELSE NULL
             END) = 24
           AND

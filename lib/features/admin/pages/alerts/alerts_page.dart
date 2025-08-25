@@ -33,7 +33,7 @@ class _AlertsPageState extends State<AlertsPage> {
       appBar: AppBar(title: const Text("Alerts")),
       body: Consumer<QualityReportRefineryProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
+          if (provider.isLoadingAlert) {
             return Center(child: const CircularProgressIndicator());
           }
 

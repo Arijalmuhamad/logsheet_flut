@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
@@ -27,12 +29,13 @@ class _QualityListPageState extends State<QualityListPage> {
 
   DateTime? _selectedDate;
   String? _tempSelectedShift;
-  final List<String> shifts = ["1", "2", "3"];
+  final List<String> shifts = ["1", "2", "3", "4", "5"];
 
   final List<String> _hours = List.generate(
     24,
     (index) => '${index.toString().padLeft(2, '0')}:00',
   );
+  DataFormNoEntity? formData;
 
   @override
   void initState() {
@@ -41,10 +44,6 @@ class _QualityListPageState extends State<QualityListPage> {
 
     final user = context.read<UserProvider>().currentUser;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
-    );
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => context.read<QualityReportRefineryProvider>().fetchAllReports(
@@ -476,13 +475,19 @@ class _QualityListPageState extends State<QualityListPage> {
   }
 
   AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       centerTitle: true,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-      title: const Text(
-        'Quality Report List (F/QCO-002)',
+      title: Text(
+        'Quality Report List (${formData!.code})',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,

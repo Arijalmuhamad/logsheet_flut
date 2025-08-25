@@ -19,6 +19,12 @@ class ValueMySQLService {
     } catch (e) {
       log('Error fetching all oil types from master value table: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
@@ -30,14 +36,19 @@ class ValueMySQLService {
         return [];
       }
       final result = await connResult.connection!.execute(
-        "SELECT * FROM m_mastervalue WHERE`group` =:to_tank",
-        {"to_tank": "TO_TANK"},
+        "SELECT * FROM m_tank",
       );
       log('Fetched ${result.rows.length} tank group(s) from master value.');
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('Error fetching all tank groups from master value table: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
@@ -57,6 +68,12 @@ class ValueMySQLService {
     } catch (e) {
       log('Error fetching all tank sources from master value table: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
@@ -78,6 +95,12 @@ class ValueMySQLService {
     } catch (e) {
       log('Error fetching all refinery machines from master value table: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 }

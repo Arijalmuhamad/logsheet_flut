@@ -3,21 +3,22 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and_glass_repository.dart';
 import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
+import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
 import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
 import 'package:logsheet_app/data/repositories/transaction/quality_report_refinery_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_glass_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
+import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
-import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/data/services/transaction/quality_report_refinery_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/auth_wrapper.dart';
-import 'package:logsheet_app/features/auth/login_page.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
@@ -54,6 +55,10 @@ void main() async {
         // Provider Maintenance Lamps And Glass MySQL Service
         Provider<MaintenanceLampsAndGlassMySQLService>(
           create: (context) => MaintenanceLampsAndGlassMySQLService(),
+        ),
+        // Provider Maintenance Lamps And Glass MySQL Service
+        Provider<DataFormNoMySQLService>(
+          create: (context) => DataFormNoMySQLService(),
         ),
 
         // Provide User Repository
@@ -93,6 +98,11 @@ void main() async {
                 context.read<MaintenanceLampsAndGlassMySQLService>(),
               ),
         ),
+        Provider<DataFormNoRepository>(
+          create:
+              (context) =>
+                  DataFormNoRepository(context.read<DataFormNoMySQLService>()),
+        ),
 
         // Provide The User Provider
         ChangeNotifierProvider(
@@ -124,6 +134,11 @@ void main() async {
               (context) => MaintenanceLampsAndGlassProvider(
                 context.read<MaintenanceLampsAndGlassRepository>(),
               ),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) =>
+                  DataFormNoProvider(context.read<DataFormNoRepository>()),
         ),
 
         //Provide Business Unit DAO

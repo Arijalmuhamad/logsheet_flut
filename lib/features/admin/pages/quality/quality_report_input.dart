@@ -7,9 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
@@ -35,6 +37,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   String? selectedTankSource;
   String? selectedPartSource;
 
+  // late Future<void> _fetchOilTypes;
   String? selectedOilType;
   String? selectedWorkCenter;
   int? selectedHour;
@@ -110,36 +113,14 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   final logger = Logger();
 
+  DataFormNoEntity? formData;
+
   @override
   void initState() {
     super.initState();
-    // _loadTankList();
-    // _loadPartList();
-
-    // Provider.of<ValueProvider>(context, listen: false).fetchOilTypes();
-    // Provider.of<ValueProvider>(context, listen: false).fetchTankSourceLists();
-    // Provider.of<ValueProvider>(
-    //   context,
-    //   listen: false,
-    // ).fetchRefineryMachineLists();
-
-    // _dataInitializationFuture = _initializeData();
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchTankSourceLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchToTankGroupLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ValueProvider>().fetchAllInitialData();
+    });
   }
 
   void _resetForm() {
@@ -345,11 +326,46 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   // Save Data
   bool isSaving = false;
 
+  void _showAlertDialog(BuildContext context) {
+    log("Show Dialog function");
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi Input"),
+          content: Text("Apakah data yang anda masukkan sudah sesuai?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await _saveQualityReport();
+                Navigator.of(context).pop();
+              },
+              child: Consumer<QualityReportRefineryProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return SizedBox(
+                      width: 4,
+                      height: 4,
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
+                  }
+                  return Text("Ya");
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _saveQualityReport() async {
-    if (isSaving) return;
-    setState(() {
-      isSaving = true;
-    });
     final reportProvider = context.read<QualityReportRefineryProvider>();
     final userProvider = context.read<UserProvider>();
     final plantProvider = context.read<PlantProvider>();
@@ -400,9 +416,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
           : double.parse(double.parse(text).toStringAsFixed(4));
     }
 
-    double parseDoubleString(String c) {
-      return c.isEmpty ? 0.0 : double.parse(double.parse(c).toStringAsFixed(2));
-    }
+    // double parseDoubleString(String c) {
+    //   return c.isEmpty ? 0.0 : double.parse(double.parse(c).toStringAsFixed(2));
+    // }
 
     // int? parseInt(String value) {
     //   final text = value.trim();
@@ -416,42 +432,24 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
       if (hour < 7) {
         final DateTime previousDay = now.subtract(const Duration(days: 1));
-        return DateTime(previousDay.year, previousDay.month, previousDay.day);
+        return DateTime(
+          previousDay.year,
+          previousDay.month,
+          previousDay.day,
+          previousDay.hour,
+          previousDay.minute,
+          previousDay.second,
+        );
       } else {
-        return DateTime(now.year, now.month, now.day);
+        return DateTime(
+          now.year,
+          now.month,
+          now.day,
+          now.hour,
+          now.minute,
+          now.second,
+        );
       }
-      // final DateTime resetTime = DateTime(
-      //   now.year,
-      //   now.month,
-      //   now.day,
-      //   7,
-      //   0,
-      //   0,
-      // );
-      // DateTime postingDate;
-
-      // if (now.isBefore(resetTime)) {
-      //   DateTime previousDay = now.subtract(const Duration(days: 1));
-      //   postingDate = DateTime(
-      //     previousDay.year,
-      //     previousDay.month,
-      //     previousDay.day,
-      //     previousDay.hour,
-      //     previousDay.minute,
-      //     previousDay.second,
-      //   );
-      // } else {
-      //   postingDate = DateTime(
-      //     now.year,
-      //     now.month,
-      //     now.day,
-      //     now.hour,
-      //     now.minute,
-      //     now.second,
-      //   );
-      // }
-
-      // return postingDate;
     }
 
     DateTime getTransactionDate() {
@@ -490,9 +488,6 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     }
 
     try {
-      // final rpocolorR = fgColorRController.text.trim();
-      // final rpocolorY = fgColorYController.text.trim();
-      // final rpomni = fgMNIController.text.trim();
       final time = DateFormat('HH:mm:ss').parse(formattedTime);
 
       final provider = context.read<QualityReportRefineryProvider>();
@@ -503,12 +498,21 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       if (bpToTankController.text.trim() != "") {
         selectedBpToTank = bpToTankController.text;
       }
+      final postingDate = getPostingDate();
+      final fullDateTimeForShift = DateTime(
+        postingDate.year,
+        postingDate.month,
+        postingDate.day,
+        selectedHour!,
+      );
+
+      log("Form ID: ${formData!.code}");
       final entity = QualityReportRefineryEntity(
         id: await buildTicketNumber(),
         transactionDate: getTransactionDate(),
-        postingDate: getPostingDate(),
+        postingDate: postingDate,
         time: time,
-        shift: getShiftBasedOnTime(time),
+        shift: getShiftBasedOnTimeAndDate(fullDateTimeForShift),
         rmFlowRate: parseDouble(rmFlowRateController),
         rmTankSource: tanksource,
         rmFFA: parseDouble(rmFFAController),
@@ -564,6 +568,16 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         workCenter: selectedWorkCenter,
         updatedBy: null,
         updatedDate: null,
+        preparedByShift4: null,
+        preparedDateShift4: null,
+        preparedStatusShift4: null,
+        preparedByShift5: null,
+        preparedDateShift5: null,
+        preparedStatusShift5: null,
+        formNo: formData!.code,
+        dateIssued: formData!.dateIssued,
+        revisionNo: formData!.revisionNo,
+        revisionDate: formData!.revisionDate,
       );
 
       bool? success;
@@ -574,10 +588,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       log("is success? $success");
 
       if (success) {
-        Provider.of<QualityReportRefineryProvider>(
-          context,
-          listen: false,
-        ).fetchAllReports(
+        context.read<QualityReportRefineryProvider>().fetchAllReports(
           null,
           null,
           userProvider.currentUser?.username ?? "",
@@ -1557,7 +1568,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                             ),
                           ),
                           onPressed:
-                              currentStep == 5 ? _saveQualityReport : _nextStep,
+                              currentStep == 5
+                                  ? () => _showAlertDialog(context)
+                                  : _nextStep,
                           label: Text(currentStep == 5 ? 'Save' : 'Next'),
                         ),
                       ),
@@ -1593,12 +1606,20 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   }
 
   AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
+
+    log("${formData!.code}");
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-      title: const Text(
-        'Quality Report - Quality Control',
+      title: Text(
+        'Quality Report - ${formData!.code}',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
@@ -1617,22 +1638,25 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  int getShiftBasedOnTime(DateTime time) {
+  int getShiftBasedOnTimeAndDate(DateTime time) {
     int hour = time.hour;
-    log("Hour: $hour");
-    if (hour >= 8 && hour <= 15) {
-      return 1;
-    } else if (hour >= 16 && hour <= 23) {
-      return 2;
+    int day = time.weekday;
+    log("Day: $day, Hour: $hour");
+
+    if (day >= DateTime.friday) {
+      if (hour >= 8 && hour < 20) {
+        return 4;
+      } else {
+        return 5;
+      }
     } else {
-      return 3;
+      if (hour >= 8 && hour <= 15) {
+        return 1;
+      } else if (hour >= 16 && hour <= 23) {
+        return 2;
+      } else {
+        return 3;
+      }
     }
   }
-
-  // Future<void> _initializeData() async {
-  //   final valueProvider = Provider.of<ValueProvider>(context, listen: false);
-  //   valueProvider.fetchOilTypes();
-  //   valueProvider.fetchTankSourceLists();
-  //   valueProvider.fetchRefineryMachineLists();
-  // }
 }

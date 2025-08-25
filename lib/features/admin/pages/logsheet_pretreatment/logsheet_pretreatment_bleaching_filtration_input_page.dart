@@ -5,8 +5,7 @@ import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 class FiltrationPerformInputPage extends StatefulWidget {
-  final String userName;
-  const FiltrationPerformInputPage({super.key, required this.userName});
+  const FiltrationPerformInputPage({super.key});
 
   @override
   State<FiltrationPerformInputPage> createState() =>
@@ -349,52 +348,50 @@ class _FiltrationPerformInputPageState
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.workCenterLists.isEmpty) {
-                  return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Loading Work Center...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                  );
-                }
+      body: _buildBody(context),
+    );
+  }
 
-                return DropdownButtonFormField(
-                  value: selectedWorkCenter,
-                  items:
-                      provider.workCenterLists.map((machine) {
-                        return DropdownMenuItem<String>(
-                          value: machine.code,
-                          child: Text("${machine.code} - ${machine.name}"),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedWorkCenter = value;
-                    });
-                  },
+  void _nextStep() {
+    // if (_validateCurrentStep()) {
+    if (currentStep < 5) setState(() => currentStep++);
+    // }
+  }
+
+  void _prevStep() {
+    if (currentStep > 0) setState(() => currentStep--);
+  }
+
+  void _goToStep(int step) {
+    if (step < currentStep) {
+      setState(() => currentStep = step);
+    } else {
+      // For jumping forward, validate current step
+      // if (_validateCurrentStep()) {
+      setState(() => currentStep = step);
+      // }
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Consumer<ValueProvider>(
+            builder: (context, provider, child) {
+              if (provider.workCenterLists.isEmpty) {
+                return DropdownButtonFormField<String>(
+                  value: null,
+                  items: [],
+                  onChanged: null,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -402,24 +399,33 @@ class _FiltrationPerformInputPageState
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: 'Pilih Work Center',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: SvgPicture.asset(
-                        'assets/icons/oil-refinery-tanks.svg',
-                        height: 24,
-                        width: 24,
+                    hintText: 'Loading Work Center...',
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
                   ),
                 );
-              },
-            ),
+              }
 
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: () => _showHourPicker(context),
-              child: InputDecorator(
+              return DropdownButtonFormField(
+                value: selectedWorkCenter,
+                items:
+                    provider.workCenterLists.map((machine) {
+                      return DropdownMenuItem<String>(
+                        value: machine.code,
+                        child: Text("${machine.code} - ${machine.name}"),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedWorkCenter = value;
+                  });
+                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFF0ECE9),
@@ -427,40 +433,24 @@ class _FiltrationPerformInputPageState
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: const Icon(
-                    Icons.access_time,
-                    color: Color(0xFF655F5B),
+                  hintText: 'Pilih Work Center',
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: SvgPicture.asset(
+                      'assets/icons/oil-refinery-tanks.svg',
+                      height: 24,
+                      width: 24,
+                    ),
                   ),
                 ),
-                child: Text(
-                  selectedHour != null
-                      ? '${selectedHour.toString().padLeft(2, '0')}:00'
-                      : 'Pilih jam input',
-                  style: TextStyle(
-                    color:
-                        selectedHour != null
-                            ? const Color(0xFF655F5B)
-                            : Colors.grey.shade600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedFilter,
-              items:
-                  filterOptions
-                      .map(
-                        (filter) => DropdownMenuItem(
-                          value: filter,
-                          child: Text(
-                            filter,
-                            style: const TextStyle(color: Color(0xFF655F5B)),
-                          ),
-                        ),
-                      )
-                      .toList(),
-              onChanged: (value) => setState(() => selectedFilter = value),
+              );
+            },
+          ),
+
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () => _showHourPicker(context),
+            child: InputDecorator(
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFFF0ECE9),
@@ -468,32 +458,128 @@ class _FiltrationPerformInputPageState
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                hintText: 'Pilih filter',
-                hintStyle: const TextStyle(color: Color(0xFF655F5B)),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: SvgPicture.asset(
-                    'assets/icons/filter-svgrepo-com.svg',
-                    height: 24,
-                    width: 24,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF655F5B),
-                      BlendMode.srcIn,
-                    ),
+                prefixIcon: const Icon(
+                  Icons.access_time,
+                  color: Color(0xFF655F5B),
+                ),
+              ),
+              child: Text(
+                selectedHour != null
+                    ? '${selectedHour.toString().padLeft(2, '0')}:00'
+                    : 'Pilih jam input',
+                style: TextStyle(
+                  color:
+                      selectedHour != null
+                          ? const Color(0xFF655F5B)
+                          : Colors.grey.shade600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: selectedFilter,
+            items:
+                filterOptions
+                    .map(
+                      (filter) => DropdownMenuItem(
+                        value: filter,
+                        child: Text(
+                          filter,
+                          style: const TextStyle(color: Color(0xFF655F5B)),
+                        ),
+                      ),
+                    )
+                    .toList(),
+            onChanged: (value) => setState(() => selectedFilter = value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF0ECE9),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              hintText: 'Pilih filter',
+              hintStyle: const TextStyle(color: Color(0xFF655F5B)),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SvgPicture.asset(
+                  'assets/icons/filter-svgrepo-com.svg',
+                  height: 24,
+                  width: 24,
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF655F5B),
+                    BlendMode.srcIn,
                   ),
                 ),
               ),
             ),
-            // _buildFilterForm(),
-            if (selectedWorkCenter != null && selectedHour != null) ...[
-              // Step indicator
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                // children: List.generate(6, (index) {}),
+          ),
+          // _buildFilterForm(),
+          if (selectedWorkCenter != null) ...[
+            // Step indicator
+            SizedBox(height: 40),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(8, (index) {
+                final isSelected = currentStep == index;
+                return InkWell(
+                  onTap: () => _goToStep(index),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? const Color(0xFFAB2F2B)
+                              : Colors.grey.shade300,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          color:
+                              isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF655F5B),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              color: Colors.white,
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      getStepTitle(),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E1E1E),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // _buildStepContent()
+                  ],
+                ),
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

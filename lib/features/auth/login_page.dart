@@ -6,6 +6,7 @@ import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:mysql_client/mysql_client.dart';
 import 'package:provider/provider.dart';
@@ -40,12 +41,11 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<BusinessUnitProvider>(
-            context,
-            listen: false,
-          ).fetchAllBusinessUnits(),
+      (_) => context.read<BusinessUnitProvider>().fetchAllBusinessUnits(),
     );
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<DataFormNoProvider>().fetchAll();
+    });
   }
 
   Future<void> _handleLogin() async {

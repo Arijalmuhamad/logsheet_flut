@@ -146,21 +146,9 @@ class _QualityEditPageState extends State<QualityEditPage> {
     remarkController.text = widget.report.remarks ?? '';
 
     // Fetch dropdown data similar to the input page
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchTankSourceLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchToTankGroupLists(),
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ValueProvider>().fetchAllInitialData();
+    });
   }
 
   @override
@@ -311,6 +299,16 @@ class _QualityEditPageState extends State<QualityEditPage> {
         updatedBy: userName ?? "Unknown",
         updatedDate: DateTime.now(),
         bpToTank: selectedBpToTankGroup,
+        preparedByShift4: widget.report.preparedByShift4,
+        preparedDateShift4: widget.report.preparedDateShift4,
+        preparedStatusShift4: widget.report.preparedStatusShift4,
+        preparedByShift5: widget.report.preparedByShift5,
+        preparedDateShift5: widget.report.preparedDateShift5,
+        preparedStatusShift5: widget.report.preparedStatusShift5,
+        formNo: widget.report.formNo,
+        dateIssued: widget.report.dateIssued,
+        revisionNo: widget.report.revisionNo,
+        revisionDate: widget.report.revisionDate,
       );
 
       bool? success;

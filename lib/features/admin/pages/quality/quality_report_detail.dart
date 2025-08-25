@@ -111,12 +111,23 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
 
   String _getShift(DateTime time) {
     int hour = time.hour;
-    if (hour >= 8 && hour < 16) {
-      return '1';
-    } else if (hour >= 16) {
-      return '2';
+    int day = time.weekday;
+    log("Day: $day, Hour: $hour");
+
+    if (day >= DateTime.friday) {
+      if (hour >= 8 && hour < 20) {
+        return '4';
+      } else {
+        return '5';
+      }
     } else {
-      return '3';
+      if (hour >= 8 && hour <= 15) {
+        return '1';
+      } else if (hour >= 16 && hour <= 23) {
+        return '2';
+      } else {
+        return '3';
+      }
     }
   }
 
@@ -219,6 +230,15 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final fullDateTimeForShift = DateTime(
+      widget.item.postingDate!.year,
+      widget.item.postingDate!.month,
+      widget.item.postingDate!.day,
+      widget.item.time!.hour,
+      widget.item.time!.minute,
+      widget.item.time!.second,
+    );
+    log("$fullDateTimeForShift");
     final user = context.read<UserProvider>().currentUser;
     final finishedGoods =
         context
@@ -235,14 +255,14 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
             : 'Finished Goods';
     String formattedDate =
         widget.item.transactionDate != null
-            ? DateFormat('dd MMMM yyyy').format(widget.item.transactionDate!)
+            ? DateFormat('dd MMMM yyyy').format(fullDateTimeForShift)
             : '-';
     String formattedTime =
         widget.item.time != null
             ? DateFormat('HH:mm').format(widget.item.time!)
             : '-';
     String shift =
-        widget.item.time != null ? _getShift(widget.item.time!) : '-';
+        widget.item.time != null ? _getShift(fullDateTimeForShift) : '-';
     String company = widget.item.company ?? '-';
     String plant = widget.item.plant ?? '-';
 

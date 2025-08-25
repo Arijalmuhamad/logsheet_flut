@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_input.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
@@ -19,20 +21,27 @@ class QualityReportList extends StatefulWidget {
 }
 
 class _QualityReportListState extends State<QualityReportList> {
+  DataFormNoEntity? formData;
+
   @override
   void initState() {
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => context
-          .read<QualityReportRefineryProvider>()
-          .fetchAllReports(null, null, username ?? "", role ?? "", plantCode),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      context.read<QualityReportRefineryProvider>().fetchAllReports(
+        null,
+        null,
+        username ?? "",
+        role ?? "",
+        plantCode,
+      );
+      context.read<ValueProvider>().fetchOilTypes();
+    });
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context.read<ValueProvider>().fetchOilTypes(),
-    );
+    // WidgetsBinding.instance.addPostFrameCallback(
+    //   (_) async =>
+    // );
     super.initState();
   }
 
@@ -63,37 +72,45 @@ class _QualityReportListState extends State<QualityReportList> {
     );
   }
 
-  AppBar _buildAppBar() => AppBar(
-    title: const Text("Quality List (F/QCO-002)"),
-    actions: [
-      context.watch<QualityReportRefineryProvider>().isLoading
-          ? CircularProgressIndicator()
-          : IconButton(
-            onPressed: () {
-              final username =
-                  context.read<UserProvider>().currentUser?.username;
-              final role = context.read<UserProvider>().currentUser?.role;
-              final plantCode =
-                  context.read<PlantProvider>().currentPlant?.code ?? "";
-              context.read<QualityReportRefineryProvider>().fetchAllReports(
-                null,
-                null,
-                username ?? "",
-                role ?? "",
-                plantCode,
-              );
-            },
-            icon: Consumer<QualityReportRefineryProvider>(
-              builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  return const CircularProgressIndicator();
-                }
-                return const Icon(Icons.replay);
+  AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
+    return AppBar(
+      title: Text("Quality List (${formData!.code})"),
+      actions: [
+        context.watch<QualityReportRefineryProvider>().isLoading
+            ? CircularProgressIndicator()
+            : IconButton(
+              onPressed: () {
+                final username =
+                    context.read<UserProvider>().currentUser?.username;
+                final role = context.read<UserProvider>().currentUser?.role;
+                final plantCode =
+                    context.read<PlantProvider>().currentPlant?.code ?? "";
+                context.read<QualityReportRefineryProvider>().fetchAllReports(
+                  null,
+                  null,
+                  username ?? "",
+                  role ?? "",
+                  plantCode,
+                );
               },
+              icon: Consumer<QualityReportRefineryProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const CircularProgressIndicator();
+                  }
+                  return const Icon(Icons.replay);
+                },
+              ),
             ),
-          ),
-    ],
-  );
+      ],
+    );
+  }
 
   Widget _buildBody() {
     return Consumer<QualityReportRefineryProvider>(

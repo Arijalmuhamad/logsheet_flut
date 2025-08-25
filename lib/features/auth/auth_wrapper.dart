@@ -6,6 +6,7 @@ import 'package:logsheet_app/features/admin/admin_home_page.dart';
 import 'package:logsheet_app/features/auth/login_page.dart';
 import 'package:logsheet_app/features/user/user_home_page.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) => _checkLoginStatus(),
     );
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<DataFormNoProvider>().fetchAll();
+    });
   }
 
   Future<void> _checkLoginStatus() async {
@@ -85,11 +89,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [CircularProgressIndicator()],
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo-kpn-1.png',
+              height: 100,
+              width: 100,
+            ),
+          ],
         ),
       ),
     );

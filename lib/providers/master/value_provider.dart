@@ -1,7 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/master/master_value_entity.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
+import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 
 class ValueProvider with ChangeNotifier {
@@ -12,20 +13,22 @@ class ValueProvider with ChangeNotifier {
   List<MasterValueEntity> _oilTypeLists = [];
   List<MasterValueEntity> get oilTypeLists => _oilTypeLists;
 
-  List<MasterValueEntity> _toTankGroupLists = [];
-  List<MasterValueEntity> get toTankGroupLists => _toTankGroupLists;
+  List<TankEntity> _toTankGroupLists = [];
+  List<TankEntity> get toTankGroupLists => _toTankGroupLists;
 
   List<MasterValueEntity> _workCenterLists = [];
   List<MasterValueEntity> get workCenterLists => _workCenterLists;
 
-  List<MasterValueEntity> _tankSourceLists = [];
-  List<MasterValueEntity> get tankSourceList => _tankSourceLists;
+  List<TankEntity> _tankSourceLists = [];
+  List<TankEntity> get tankSourceList => _tankSourceLists;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
+
+  // bool _initialDataFetched = false;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -37,7 +40,7 @@ class ValueProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchOilTypes() async {
+  void fetchOilTypes() async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -74,7 +77,7 @@ class ValueProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      _tankSourceLists = await _valueRepository.getAllTankSource().timeout(
+      _tankSourceLists = await _valueRepository.getAllToTankGroup().timeout(
         const Duration(seconds: 60),
       );
       notifyListeners();
@@ -97,6 +100,30 @@ class ValueProvider with ChangeNotifier {
       log("Refinery Machine list length: $_workCenterLists");
     } catch (e) {
       _setErrorMessage('Failed to fetch Refinery Machine list: $e');
+      _setLoading(false);
+    }
+  }
+
+  void fetchAllInitialData() async {
+    if (_workCenterLists.isNotEmpty &&
+        _tankSourceLists.isNotEmpty &&
+        _tankSourceLists.isNotEmpty &&
+        _oilTypeLists.isNotEmpty) {
+      return;
+    }
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      fetchWorkCenterLists();
+      fetchTankSourceLists();
+      fetchToTankGroupLists();
+      fetchOilTypes();
+      _setLoading(false);
+      _setErrorMessage(null);
+    } catch (e) {
+      _setErrorMessage('Failed to fetch initial data: $e');
+    } finally {
       _setLoading(false);
     }
   }

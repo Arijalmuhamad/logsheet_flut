@@ -1,4 +1,5 @@
-import 'package:logsheet_app/data/remote/master/master_value_entity.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
+import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 
 class ValueRepository {
@@ -14,22 +15,18 @@ class ValueRepository {
     return oilTypeLists.map((map) => MasterValueEntity.fromMap(map)).toList();
   }
 
-  Future<List<MasterValueEntity>> getAllToTankGroup() async {
+  Future<List<TankEntity>> getAllToTankGroup() async {
     final List<Map<String, dynamic>> toTankGroupLists =
         await _mySQLService.getAllToTankGroup();
 
-    return toTankGroupLists
-        .map((map) => MasterValueEntity.fromMap(map))
-        .toList();
+    return toTankGroupLists.map((map) => TankEntity.fromMap(map)).toList();
   }
 
-  Future<List<MasterValueEntity>> getAllTankSource() async {
+  Future<List<TankEntity>> getAllTankSource() async {
     final List<Map<String, dynamic>> tankSourceLists =
-        await _mySQLService.getAllTankSource();
+        await _mySQLService.getAllToTankGroup();
 
-    return tankSourceLists
-        .map((map) => MasterValueEntity.fromMap(map))
-        .toList();
+    return tankSourceLists.map((map) => TankEntity.fromMap(map)).toList();
   }
 
   Future<List<MasterValueEntity>> getAllWorkCenters() async {

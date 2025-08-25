@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/fer_daily_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_porduction/fractination/fra_daily_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/filtration/logsheet_pretreatment_bleaching_filtration_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
@@ -16,6 +17,7 @@ import 'package:logsheet_app/features/admin/pages/quality/quality_report_approva
 import 'package:logsheet_app/features/admin/pages/quality/quality_report_list.dart';
 import 'package:logsheet_app/features/admin/pages/master/master_mastervalue.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +41,8 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
+  DataFormNoEntity? formData;
+
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -77,7 +81,18 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(),
@@ -350,7 +365,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               _buildDrawerItem(
                 icon: Icons.check_circle_outline,
                 title: 'Approval',
-                formCode: "(F/RFA-001)",
+                formCode: "(${formData!.code})",
                 onTap: () {
                   Navigator.push(
                     context,
@@ -363,7 +378,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               _buildDrawerItem(
                 icon: Icons.list_alt_outlined,
                 title: 'Quality List',
-                formCode: "(F/RFA-001)",
+                formCode: "(${formData!.code})",
                 onTap: () {
                   Navigator.push(
                     context,
@@ -374,7 +389,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               _buildDrawerItem(
                 icon: Icons.receipt_long_outlined,
                 title: 'Reports',
-                formCode: "(F/RFA-001)",
+                formCode: "(${formData!.code})",
                 onTap: () {
                   Navigator.push(
                     context,
@@ -390,100 +405,100 @@ class _AdminHomePageState extends State<AdminHomePage> {
               ),
             ],
           ),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.water_damage_outlined,
-              color: Color(0xFF655F5B),
-            ),
-            title: const Text(
-              'Logsheet',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: <Widget>[
-              _buildDrawerItem(
-                icon: Icons.input_rounded,
-                title: 'Input',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => FiltrationPerformInputPage(
-                            userName: widget.userEntity.username,
-                          ),
-                    ),
-                  );
-                },
-              ),
-              // Add other Logsheet items here if needed
-            ],
-          ),
+          // ExpansionTile(
+          //   leading: const Icon(
+          //     Icons.water_damage_outlined,
+          //     color: Color(0xFF655F5B),
+          //   ),
+          //   title: const Text(
+          //     'Logsheet',
+          //     style: TextStyle(
+          //       color: Colors.black87,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          //   childrenPadding: const EdgeInsets.only(left: 20.0),
+          //   iconColor: const Color(0xFFAB2F2B),
+          //   collapsedIconColor: Colors.grey,
+          //   children: <Widget>[
+          //     _buildDrawerItem(
+          //       icon: Icons.input_rounded,
+          //       title: 'Input',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder:
+          //                 (_) => FiltrationPerformInputPage(
+          //                   userName: widget.userEntity.username,
+          //                 ),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //     // Add other Logsheet items here if needed
+          //   ],
+          // ),
 
           // -- Maintenance Section --
-          _buildDrawerSubheader("Maintenance"),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.lightbulb_outline_rounded,
-              color: Color(0xFF655F5B),
-            ),
-            title: const Text(
-              'Lamps & Glass',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: [
-              _buildDrawerItem(
-                icon: Icons.check_circle_outline,
-                title: 'Approval',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceLampsGlassApprovalPage(),
-                    ),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.input_rounded,
-                title: 'Input',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => MaintenanceLampsGlassInputPage(
-                            userName: widget.userEntity.username,
-                          ),
-                    ),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Report',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceLampsGlassReportPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+          // _buildDrawerSubheader("Maintenance"),
+          // ExpansionTile(
+          //   leading: const Icon(
+          //     Icons.lightbulb_outline_rounded,
+          //     color: Color(0xFF655F5B),
+          //   ),
+          //   title: const Text(
+          //     'Lamps & Glass',
+          //     style: TextStyle(
+          //       color: Colors.black87,
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          //   childrenPadding: const EdgeInsets.only(left: 20.0),
+          //   iconColor: const Color(0xFFAB2F2B),
+          //   collapsedIconColor: Colors.grey,
+          //   children: [
+          //     _buildDrawerItem(
+          //       icon: Icons.check_circle_outline,
+          //       title: 'Approval',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (_) => MaintenanceLampsGlassApprovalPage(),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //     _buildDrawerItem(
+          //       icon: Icons.input_rounded,
+          //       title: 'Input',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder:
+          //                 (_) => MaintenanceLampsGlassInputPage(
+          //                   userName: widget.userEntity.username,
+          //                 ),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //     _buildDrawerItem(
+          //       icon: Icons.receipt_long_outlined,
+          //       title: 'Report',
+          //       onTap: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (_) => MaintenanceLampsGlassReportPage(),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ],
+          // ),
 
           // ExpansionTile(
           //   leading: const Icon(Icons.bar_chart, color: Color(0xFF655F5B)),

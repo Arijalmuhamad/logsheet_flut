@@ -72,6 +72,14 @@ class QualityReportRefineryEntity {
   final String? preparedStatusShift3;
   final String? preparedStatusRemarksShift;
 
+  final String? preparedByShift4;
+  final DateTime? preparedDateShift4;
+  final String? preparedStatusShift4;
+
+  final String? preparedByShift5;
+  final DateTime? preparedDateShift5;
+  final String? preparedStatusShift5;
+
   final String? checkedBy;
   final DateTime? checkedDate;
   String? checkedStatus;
@@ -79,6 +87,11 @@ class QualityReportRefineryEntity {
 
   final String? updatedBy;
   final DateTime? updatedDate;
+
+  final String? formNo;
+  final DateTime? dateIssued;
+  final int? revisionNo;
+  final DateTime? revisionDate;
 
   QualityReportRefineryEntity({
     required this.oilType,
@@ -145,10 +158,21 @@ class QualityReportRefineryEntity {
     required this.preparedStatusRemarksShift,
     required this.checkedStatus,
     required this.checkedStatusRemarks,
+    required this.preparedByShift4,
+    required this.preparedDateShift4,
+    required this.preparedStatusShift4,
+    required this.preparedByShift5,
+    required this.preparedDateShift5,
+    required this.preparedStatusShift5,
 
     required this.workCenter,
     required this.updatedBy,
     required this.updatedDate,
+
+    required this.formNo,
+    required this.dateIssued,
+    required this.revisionNo,
+    required this.revisionDate,
   });
 
   factory QualityReportRefineryEntity.fromMap(Map<String, dynamic> map) {
@@ -222,7 +246,7 @@ class QualityReportRefineryEntity {
       fgColorR: parseDouble(map['fg_color_r']),
       fgColorY: parseDouble(map['fg_color_y']),
       fgColorB: parseDouble(map['fb_color_b']),
-      fgTankTo: map['fg_tank_to'] as String,
+      fgTankTo: map['fg_tank_to'] as String?,
       fgTankToOthersRemarks: map['fg_tank_to_others_remarks'] as String?,
       bpFFA: parseDouble(map['bp_ffa']),
       bpMNI: parseDouble(map['bp_m&i']),
@@ -234,20 +258,30 @@ class QualityReportRefineryEntity {
       entryDate: parseDateTime(map['entry_date']),
       preparedByShift1: map['prepared_by_shift1'] as String?,
       preparedDateShift1: parseDateTime(map['prepared_date_shift1']),
-      preparedStatusShift1: map['prepared_status_shift1'],
-      preparedByShift2: map['prepared_by_shift2'],
+      preparedStatusShift1: map['prepared_status_shift1'] as String?,
+      preparedByShift2: map['prepared_by_shift2'] as String?,
       preparedDateShift2: parseDateTime(map['prepared_date_shift2']),
-      preparedStatusShift2: map['prepared_status_shift2'],
-      preparedByShift3: map['prepared_by_shift3'],
+      preparedStatusShift2: map['prepared_status_shift2'] as String?,
+      preparedByShift3: map['prepared_by_shift3'] as String?,
       preparedDateShift3: parseDateTime(map['prepared_date_shift3']),
       preparedStatusShift3: map['prepared_status_shift3'],
       preparedStatusRemarksShift: map['status_remarks_shift'],
       checkedBy: map['checked_by'] as String?,
       checkedDate: parseDateTime(map['checked_date']),
-      checkedStatus: map['checked_status'],
+      checkedStatus: map['checked_status'] as String?,
       checkedStatusRemarks: map['checked_status_remarks'],
       updatedBy: map['updated_by'] as String?,
       updatedDate: parseDateTime(map['updated_date']),
+      preparedByShift4: map['prepared_by_shift4'] as String?,
+      preparedDateShift4: parseDateTime(map['prepared_date_shift4']),
+      preparedStatusShift4: map['prepared_status_shift4'],
+      preparedByShift5: map['prepared_by_shift5'] as String?,
+      preparedDateShift5: parseDateTime(map['prepared_date_shift5']),
+      preparedStatusShift5: map['prepared_status_shift5'],
+      formNo: map['form_no'] as String?,
+      dateIssued: parseDateTime(map['date_issued']),
+      revisionNo: parseInt(map['revision_no']),
+      revisionDate: parseDateTime(map['revision_date']),
     );
   }
 
@@ -312,12 +346,22 @@ class QualityReportRefineryEntity {
       'prepared_date_shift3': formatDate(preparedDateShift3),
       'prepared_status_shift3': preparedStatusShift3,
       'prepared_status_remarks_shift': preparedStatusRemarksShift,
+      'prepared_by_shift4': preparedByShift4,
+      'prepared_date_shift4': formatDate(preparedDateShift4),
+      'prepared_status_shift4': preparedStatusShift4,
+      'prepared_by_shift5': preparedByShift5,
+      'prepared_date_shift5': formatDate(preparedDateShift5),
+      'prepared_status_shift5': preparedStatusShift5,
       'checked_by': checkedBy,
       'checked_date': formatDate(checkedDate),
       'checked_status': checkedStatus,
       'checked_status_remarks': checkedStatusRemarks,
       'updated_by': updatedBy,
       'updated_date': updatedDate,
+      'form_no': formNo,
+      'date_issued': dateIssued,
+      'revision_no': revisionNo,
+      'revision_date': revisionDate,
     };
   }
 }
