@@ -4,9 +4,9 @@ import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 
 class UserProvider with ChangeNotifier {
-  final UserRepository _userRepository;
+  final UserRepository _repository;
 
-  UserProvider(this._userRepository);
+  UserProvider(this._repository);
 
   UserEntity? _currentUser;
   UserEntity? get currentUser => _currentUser;
@@ -48,7 +48,7 @@ class UserProvider with ChangeNotifier {
     _setLoading(true);
     _setErrorMessage(null);
     try {
-      _listUsers = await _userRepository.getAllUser();
+      _listUsers = await _repository.getAllUser();
 
       _setLoading(false);
     } catch (e) {
@@ -62,7 +62,7 @@ class UserProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      _listRoles = await _userRepository.getAllRoles();
+      _listRoles = await _repository.getAllRoles();
       _setLoading(false);
     } catch (e) {
       _setErrorMessage('Failed to fetch roles: $e');
@@ -75,7 +75,7 @@ class UserProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      final result = await _userRepository.updateUser(user);
+      final result = await _repository.updateUser(user);
 
       if (result) {
         setCreateEditLoading(false);
@@ -99,7 +99,7 @@ class UserProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      final result = await _userRepository.login(username, password);
+      final result = await _repository.login(username, password);
       if (result.errorMessage != null) {
         _setErrorMessage(result.errorMessage);
         _setLoading(false);
@@ -127,7 +127,7 @@ class UserProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      final response = await _userRepository.registerUser(user);
+      final response = await _repository.registerUser(user);
       setCreateEditLoading(false);
       _setErrorMessage(null);
 
@@ -152,7 +152,7 @@ class UserProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      final response = await _userRepository.deleteUser(userid);
+      final response = await _repository.deleteUser(userid);
       _setLoading(false);
       _setErrorMessage(null);
 

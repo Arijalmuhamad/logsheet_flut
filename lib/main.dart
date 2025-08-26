@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
+import 'package:logsheet_app/data/repositories/logsheet/pretreatment_bleaching_filtration_repository.dart';
 import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and_glass_repository.dart';
 import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
@@ -8,6 +9,7 @@ import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
 import 'package:logsheet_app/data/repositories/transaction/quality_report_refinery_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
+import 'package:logsheet_app/data/services/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
 import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_glass_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
@@ -16,6 +18,7 @@ import 'package:logsheet_app/data/services/transaction/quality_report_refinery_m
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/auth_wrapper.dart';
+import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
@@ -60,6 +63,9 @@ void main() async {
         Provider<DataFormNoMySQLService>(
           create: (context) => DataFormNoMySQLService(),
         ),
+        Provider<PretreatmentBleachingFiltrationMySQLService>(
+          create: (context) => PretreatmentBleachingFiltrationMySQLService(),
+        ),
 
         // Provide User Repository
         Provider<UserRepository>(
@@ -98,10 +104,17 @@ void main() async {
                 context.read<MaintenanceLampsAndGlassMySQLService>(),
               ),
         ),
+        // Provide Data Form No Repository
         Provider<DataFormNoRepository>(
           create:
               (context) =>
                   DataFormNoRepository(context.read<DataFormNoMySQLService>()),
+        ),
+        Provider<PretreatmentBleachingFiltrationRepository>(
+          create:
+              (context) => PretreatmentBleachingFiltrationRepository(
+                context.read<PretreatmentBleachingFiltrationMySQLService>(),
+              ),
         ),
 
         // Provide The User Provider
@@ -139,6 +152,12 @@ void main() async {
           create:
               (context) =>
                   DataFormNoProvider(context.read<DataFormNoRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) => PretreatmentBleachingFiltrationProvider(
+                context.read<PretreatmentBleachingFiltrationRepository>(),
+              ),
         ),
 
         //Provide Business Unit DAO

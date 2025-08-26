@@ -1,6 +1,17 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/data/remote/transactions/pretreatment_bleaching_filtration_entity.dart';
+import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -18,17 +29,18 @@ class _FiltrationPerformInputPageState
   int? selectedHour;
   int currentStep = 0;
   String? selectedWorkCenter;
-  final List<String> filterOptions = [
-    'Niagara Filter',
-    'Sleeve Filter',
-    'BPO - Cartridge Filter',
-  ];
+  DataFormNoEntity? formData;
+  // final List<String> filterOptions = [
+  //   'Niagara Filter',
+  //   'Sleeve Filter',
+  //   'BPO - Cartridge Filter',
+  // ];
 
-  final Map<String, List<String>> niagaraFilters = {
-    'FL621': ['pressure', 'step', 'clarity'],
-    'FL622': ['pressure', 'step', 'clarity'],
-    'FL623': ['pressure', 'step', 'clarity'],
-  };
+  // final Map<String, List<String>> niagaraFilters = {
+  //   'FL621': ['pressure', 'step', 'clarity'],
+  //   'FL622': ['pressure', 'step', 'clarity'],
+  //   'FL623': ['pressure', 'step', 'clarity'],
+  // };
 
   final Map<String, TextEditingController> pressureControllers = {};
   final Map<String, int> stepValues = {};
@@ -40,10 +52,41 @@ class _FiltrationPerformInputPageState
   final TextEditingController tekananSleeveController = TextEditingController();
 
   // Pretreatment
+  final TextEditingController ptFit001Controller = TextEditingController();
+  final TextEditingController ptE001aInletController = TextEditingController();
+  final TextEditingController ptFit0012Controller = TextEditingController();
+  final TextEditingController ptH3PO4Controller = TextEditingController();
+  final TextEditingController ptBEController = TextEditingController();
 
-  Future<void> _refreshPage() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-  }
+  // Bleach
+  final TextEditingController blVacumController = TextEditingController();
+  final TextEditingController blTInletController = TextEditingController();
+  final TextEditingController blTB602Controller = TextEditingController();
+  final TextEditingController blSpurgeController = TextEditingController();
+
+  // Pump
+  final TextEditingController pAController = TextEditingController();
+  final TextEditingController pBController = TextEditingController();
+  final TextEditingController pCController = TextEditingController();
+
+  // Filter Niagara
+  final TextEditingController fnF601Controller = TextEditingController();
+  final TextEditingController fnF602Controller = TextEditingController();
+  final TextEditingController fnF603Controller = TextEditingController();
+  final TextEditingController fnF604AController = TextEditingController();
+  final TextEditingController fnF604BController = TextEditingController();
+  final TextEditingController fnF604CController = TextEditingController();
+
+  // Filter Bag
+
+  final TextEditingController fcF605AController = TextEditingController();
+  final TextEditingController fcF605BController = TextEditingController();
+
+  // Clarity
+  final TextEditingController clarityController = TextEditingController();
+
+  // Remarks
+  final TextEditingController remarksController = TextEditingController();
 
   void _showHourPicker(BuildContext context) {
     int initialHour = selectedHour ?? TimeOfDay.now().hour;
@@ -107,230 +150,259 @@ class _FiltrationPerformInputPageState
     );
   }
 
-  Widget _buildNiagaraForm() {
-    List<Widget> inputs = [];
+  // Widget _buildNiagaraForm() {
+  //   List<Widget> inputs = [];
 
-    niagaraFilters.forEach((label, fields) {
-      pressureControllers.putIfAbsent(label, () => TextEditingController());
-      stepValues.putIfAbsent(label, () => 0);
-      clarityValues.putIfAbsent(label, () => false);
+  //   niagaraFilters.forEach((label, fields) {
+  //     pressureControllers.putIfAbsent(label, () => TextEditingController());
+  //     stepValues.putIfAbsent(label, () => 0);
+  //     clarityValues.putIfAbsent(label, () => false);
 
-      inputs.add(
-        Card(
-          color: Colors.white,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF655F5B),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: pressureControllers[label],
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Color(0xFF655F5B)),
-                  decoration: InputDecoration(
-                    labelText: 'Press (Bar)',
-                    labelStyle: const TextStyle(color: Color(0xFF655F5B)),
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Step (L/min)',
-                        style: TextStyle(color: Color(0xFF655F5B)),
-                      ),
-                      Slider(
-                        value: stepValues[label]!.toDouble(),
-                        min: 0,
-                        max: 9,
-                        divisions: 9,
-                        label: stepValues[label]!.toString(),
-                        activeColor: const Color(0xFFAB2F2B),
-                        onChanged: (double value) {
-                          setState(() {
-                            stepValues[label] = value.toInt();
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: clarityValues[label],
-                      activeColor: const Color(0xFFAB2F2B),
-                      onChanged: (value) {
-                        setState(() {
-                          clarityValues[label] = value ?? false;
-                        });
-                      },
-                    ),
-                    const Text(
-                      'Clarity OK',
-                      style: TextStyle(color: Color(0xFF655F5B)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    });
+  //     inputs.add(
+  //       Card(
+  //         color: Colors.white,
+  //         margin: const EdgeInsets.symmetric(vertical: 8),
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(16),
+  //         ),
+  //         elevation: 3,
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(16.0),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 label,
+  //                 style: const TextStyle(
+  //                   fontSize: 16,
+  //                   fontWeight: FontWeight.w600,
+  //                   color: Color(0xFF655F5B),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 12),
+  //               TextFormField(
+  //                 controller: pressureControllers[label],
+  //                 keyboardType: TextInputType.number,
+  //                 style: const TextStyle(color: Color(0xFF655F5B)),
+  //                 decoration: InputDecoration(
+  //                   labelText: 'Press (Bar)',
+  //                   labelStyle: const TextStyle(color: Color(0xFF655F5B)),
+  //                   filled: true,
+  //                   fillColor: const Color(0xFFF0ECE9),
+  //                   border: OutlineInputBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                     borderSide: BorderSide.none,
+  //                   ),
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: const EdgeInsets.only(top: 12.0),
+  //                 child: Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                   children: [
+  //                     const Text(
+  //                       'Step (L/min)',
+  //                       style: TextStyle(color: Color(0xFF655F5B)),
+  //                     ),
+  //                     Slider(
+  //                       value: stepValues[label]!.toDouble(),
+  //                       min: 0,
+  //                       max: 9,
+  //                       divisions: 9,
+  //                       label: stepValues[label]!.toString(),
+  //                       activeColor: const Color(0xFFAB2F2B),
+  //                       onChanged: (double value) {
+  //                         setState(() {
+  //                           stepValues[label] = value.toInt();
+  //                         });
+  //                       },
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               Row(
+  //                 children: [
+  //                   Checkbox(
+  //                     value: clarityValues[label],
+  //                     activeColor: const Color(0xFFAB2F2B),
+  //                     onChanged: (value) {
+  //                       setState(() {
+  //                         clarityValues[label] = value ?? false;
+  //                       });
+  //                     },
+  //                   ),
+  //                   const Text(
+  //                     'Clarity OK',
+  //                     style: TextStyle(color: Color(0xFF655F5B)),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     );
+  //   });
 
-    return Column(children: inputs);
-  }
+  //   return Column(children: inputs);
+  // }
 
-  Widget _buildFilterForm() {
-    if (selectedFilter == null) return const SizedBox.shrink();
+  // Widget _buildFilterForm() {
+  //   if (selectedFilter == null) return const SizedBox.shrink();
 
-    Widget formWidget;
+  //   Widget formWidget;
 
-    InputDecoration inputStyle(String label) => InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Color(0xFF655F5B)),
-      filled: true,
-      fillColor: const Color(0xFFF0ECE9),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-    );
+  //   InputDecoration inputStyle(String label) => InputDecoration(
+  //     labelText: label,
+  //     labelStyle: const TextStyle(color: Color(0xFF655F5B)),
+  //     filled: true,
+  //     fillColor: const Color(0xFFF0ECE9),
+  //     border: OutlineInputBorder(
+  //       borderRadius: BorderRadius.circular(12),
+  //       borderSide: BorderSide.none,
+  //     ),
+  //   );
 
-    switch (selectedFilter) {
-      case 'Niagara Filter':
-        formWidget = _buildNiagaraForm();
-        break;
-      case 'Sleeve Filter':
-        formWidget = Column(
-          children: [
-            TextFormField(
-              controller: cleanlinessController,
-              style: const TextStyle(color: Color(0xFF655F5B)),
-              decoration: inputStyle('Cleanliness Index'),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: tekananSleeveController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Color(0xFF655F5B)),
-              decoration: inputStyle('Tekanan (Bar)'),
-            ),
-          ],
-        );
-        break;
-      case 'BPO - Cartridge Filter':
-        formWidget = Column(
-          children: [
-            TextFormField(
-              controller: tekananAwalController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Color(0xFF655F5B)),
-              decoration: inputStyle('Tekanan Awal (Bar)'),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: tekananAkhirController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Color(0xFF655F5B)),
-              decoration: inputStyle('Tekanan Akhir (Bar)'),
-            ),
-          ],
-        );
-        break;
-      default:
-        formWidget = const SizedBox.shrink();
-    }
+  //   switch (selectedFilter) {
+  //     case 'Niagara Filter':
+  //       formWidget = _buildNiagaraForm();
+  //       break;
+  //     case 'Sleeve Filter':
+  //       formWidget = Column(
+  //         children: [
+  //           TextFormField(
+  //             controller: cleanlinessController,
+  //             style: const TextStyle(color: Color(0xFF655F5B)),
+  //             decoration: inputStyle('Cleanliness Index'),
+  //           ),
+  //           const SizedBox(height: 12),
+  //           TextFormField(
+  //             controller: tekananSleeveController,
+  //             keyboardType: TextInputType.number,
+  //             style: const TextStyle(color: Color(0xFF655F5B)),
+  //             decoration: inputStyle('Tekanan (Bar)'),
+  //           ),
+  //         ],
+  //       );
+  //       break;
+  //     case 'BPO - Cartridge Filter':
+  //       formWidget = Column(
+  //         children: [
+  //           TextFormField(
+  //             controller: tekananAwalController,
+  //             keyboardType: TextInputType.number,
+  //             style: const TextStyle(color: Color(0xFF655F5B)),
+  //             decoration: inputStyle('Tekanan Awal (Bar)'),
+  //           ),
+  //           const SizedBox(height: 12),
+  //           TextFormField(
+  //             controller: tekananAkhirController,
+  //             keyboardType: TextInputType.number,
+  //             style: const TextStyle(color: Color(0xFF655F5B)),
+  //             decoration: inputStyle('Tekanan Akhir (Bar)'),
+  //           ),
+  //         ],
+  //       );
+  //       break;
+  //     default:
+  //       formWidget = const SizedBox.shrink();
+  //   }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Card(
-        color: Colors.white,
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                selectedFilter ?? '',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF655F5B),
-                ),
-              ),
-              const SizedBox(height: 12),
-              formWidget,
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFAB2F2B),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Data ${selectedFilter!} berhasil disimpan!',
-                        ),
-                        backgroundColor: Colors.green.shade600,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text(
-                    'Save',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Padding(
+  //     padding: const EdgeInsets.only(top: 16),
+  //     child: Card(
+  //       color: Colors.white,
+  //       elevation: 8,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(20),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text(
+  //               selectedFilter ?? '',
+  //               style: const TextStyle(
+  //                 fontSize: 18,
+  //                 fontWeight: FontWeight.w600,
+  //                 color: Color(0xFF655F5B),
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
+  //             formWidget,
+  //             const SizedBox(height: 24),
+  //             SizedBox(
+  //               width: double.infinity,
+  //               child: ElevatedButton.icon(
+  //                 style: ElevatedButton.styleFrom(
+  //                   backgroundColor: const Color(0xFFAB2F2B),
+  //                   foregroundColor: Colors.white,
+  //                   shape: RoundedRectangleBorder(
+  //                     borderRadius: BorderRadius.circular(12),
+  //                   ),
+  //                   padding: const EdgeInsets.symmetric(vertical: 14),
+  //                 ),
+  //                 onPressed: () {
+  //                   ScaffoldMessenger.of(context).showSnackBar(
+  //                     SnackBar(
+  //                       content: Text(
+  //                         'Data ${selectedFilter!} berhasil disimpan!',
+  //                       ),
+  //                       backgroundColor: Colors.green.shade600,
+  //                     ),
+  //                   );
+  //                 },
+  //                 icon: const Icon(Icons.save),
+  //                 label: const Text(
+  //                   'Save',
+  //                   style: TextStyle(fontWeight: FontWeight.bold),
+  //                 ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
+    final controllers = [
+      cleanlinessController,
+      tekananAwalController,
+      tekananAkhirController,
+      tekananSleeveController,
+      ptFit001Controller,
+      ptE001aInletController,
+      ptFit0012Controller,
+      ptH3PO4Controller,
+      ptBEController,
+      blVacumController,
+      blTInletController,
+      blTB602Controller,
+      blSpurgeController,
+      pAController,
+      pBController,
+      pCController,
+      fnF601Controller,
+      fnF602Controller,
+      fnF603Controller,
+      fnF604AController,
+      fnF604BController,
+      fnF604CController,
+      fcF605AController,
+      fcF605BController,
+      clarityController,
+      remarksController,
+    ];
+
     for (var controller in pressureControllers.values) {
       controller.dispose();
     }
-    tekananAwalController.dispose();
-    tekananAkhirController.dispose();
-    tekananSleeveController.dispose();
-    cleanlinessController.dispose();
+    for (var c in controllers) {
+      c.dispose();
+    }
+
     super.dispose();
   }
 
@@ -354,7 +426,7 @@ class _FiltrationPerformInputPageState
 
   void _nextStep() {
     // if (_validateCurrentStep()) {
-    if (currentStep < 5) setState(() => currentStep++);
+    if (currentStep < 7) setState(() => currentStep++);
     // }
   }
 
@@ -373,6 +445,58 @@ class _FiltrationPerformInputPageState
     }
   }
 
+  void _refreshPage() async {
+    if (!mounted) return;
+    context.read<PretreatmentBleachingFiltrationProvider>().setLoadingReset(
+      true,
+    );
+
+    log("Refresh button clicked");
+    await Future.delayed(const Duration(milliseconds: 600));
+    setState(() {
+      log("Refreshing form state");
+      currentStep = 0;
+      selectedWorkCenter = null;
+      selectedHour = null;
+      final controllers = [
+        cleanlinessController,
+        tekananAwalController,
+        tekananAkhirController,
+        tekananSleeveController,
+        ptFit001Controller,
+        ptE001aInletController,
+        ptFit0012Controller,
+        ptH3PO4Controller,
+        ptBEController,
+        blVacumController,
+        blTInletController,
+        blTB602Controller,
+        blSpurgeController,
+        pAController,
+        pBController,
+        pCController,
+        fnF601Controller,
+        fnF602Controller,
+        fnF603Controller,
+        fnF604AController,
+        fnF604BController,
+        fnF604CController,
+        fcF605AController,
+        fcF605BController,
+        clarityController,
+        remarksController,
+      ];
+
+      for (var c in controllers) {
+        c.clear();
+      }
+    });
+    if (!mounted) return;
+    context.read<PretreatmentBleachingFiltrationProvider>().setLoadingReset(
+      false,
+    );
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(
       context,
@@ -380,18 +504,91 @@ class _FiltrationPerformInputPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Consumer<ValueProvider>(
-            builder: (context, provider, child) {
-              if (provider.workCenterLists.isEmpty) {
-                return DropdownButtonFormField<String>(
-                  value: null,
-                  items: [],
-                  onChanged: null,
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Transaction Date: ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.workCenterLists.isEmpty) {
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Work Center...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return DropdownButtonFormField(
+                    value: selectedWorkCenter,
+                    items:
+                        provider.workCenterLists.map((machine) {
+                          return DropdownMenuItem<String>(
+                            value: machine.code,
+                            child: Text("${machine.code} - ${machine.name}"),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedWorkCenter = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Pilih Work Center',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: SvgPicture.asset(
+                          'assets/icons/oil-refinery-tanks.svg',
+                          height: 24,
+                          width: 24,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () => _showHourPicker(context),
+                child: InputDecorator(
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -399,188 +596,158 @@ class _FiltrationPerformInputPageState
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: 'Loading Work Center...',
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                    prefixIcon: const Icon(
+                      Icons.access_time,
+                      color: Color(0xFF655F5B),
                     ),
                   ),
-                );
-              }
-
-              return DropdownButtonFormField(
-                value: selectedWorkCenter,
-                items:
-                    provider.workCenterLists.map((machine) {
-                      return DropdownMenuItem<String>(
-                        value: machine.code,
-                        child: Text("${machine.code} - ${machine.name}"),
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedWorkCenter = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFFF0ECE9),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: 'Pilih Work Center',
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: SvgPicture.asset(
-                      'assets/icons/oil-refinery-tanks.svg',
-                      height: 24,
-                      width: 24,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () => _showHourPicker(context),
-            child: InputDecorator(
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFFF0ECE9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(
-                  Icons.access_time,
-                  color: Color(0xFF655F5B),
-                ),
-              ),
-              child: Text(
-                selectedHour != null
-                    ? '${selectedHour.toString().padLeft(2, '0')}:00'
-                    : 'Pilih jam input',
-                style: TextStyle(
-                  color:
-                      selectedHour != null
-                          ? const Color(0xFF655F5B)
-                          : Colors.grey.shade600,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            value: selectedFilter,
-            items:
-                filterOptions
-                    .map(
-                      (filter) => DropdownMenuItem(
-                        value: filter,
-                        child: Text(
-                          filter,
-                          style: const TextStyle(color: Color(0xFF655F5B)),
-                        ),
-                      ),
-                    )
-                    .toList(),
-            onChanged: (value) => setState(() => selectedFilter = value),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF0ECE9),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              hintText: 'Pilih filter',
-              hintStyle: const TextStyle(color: Color(0xFF655F5B)),
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: SvgPicture.asset(
-                  'assets/icons/filter-svgrepo-com.svg',
-                  height: 24,
-                  width: 24,
-                  colorFilter: const ColorFilter.mode(
-                    Color(0xFF655F5B),
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // _buildFilterForm(),
-          if (selectedWorkCenter != null) ...[
-            // Step indicator
-            SizedBox(height: 40),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(8, (index) {
-                final isSelected = currentStep == index;
-                return InkWell(
-                  onTap: () => _goToStep(index),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
+                  child: Text(
+                    selectedHour != null
+                        ? '${selectedHour.toString().padLeft(2, '0')}:00'
+                        : 'Pilih jam input',
+                    style: TextStyle(
                       color:
-                          isSelected
-                              ? const Color(0xFFAB2F2B)
-                              : Colors.grey.shade300,
-                      shape: BoxShape.circle,
+                          selectedHour != null
+                              ? const Color(0xFF655F5B)
+                              : Colors.grey.shade600,
                     ),
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: TextStyle(
+                  ),
+                ),
+              ),
+              // const SizedBox(height: 16),
+              // DropdownButtonFormField<String>(
+              //   value: selectedFilter,
+              //   items:
+              //       filterOptions
+              //           .map(
+              //             (filter) => DropdownMenuItem(
+              //               value: filter,
+              //               child: Text(
+              //                 filter,
+              //                 style: const TextStyle(color: Color(0xFF655F5B)),
+              //               ),
+              //             ),
+              //           )
+              //           .toList(),
+              //   onChanged: (value) => setState(() => selectedFilter = value),
+              //   decoration: InputDecoration(
+              //     filled: true,
+              //     fillColor: const Color(0xFFF0ECE9),
+              //     border: OutlineInputBorder(
+              //       borderRadius: BorderRadius.circular(12),
+              //       borderSide: BorderSide.none,
+              //     ),
+              //     hintText: 'Pilih filter',
+              //     hintStyle: const TextStyle(color: Color(0xFF655F5B)),
+              //     prefixIcon: Padding(
+              //       padding: const EdgeInsets.all(12.0),
+              //       child: SvgPicture.asset(
+              //         'assets/icons/filter-svgrepo-com.svg',
+              //         height: 24,
+              //         width: 24,
+              //         colorFilter: const ColorFilter.mode(
+              //           Color(0xFF655F5B),
+              //           BlendMode.srcIn,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // _buildFilterForm(),
+              if (selectedWorkCenter != null && selectedHour != null) ...[
+                // Step indicator
+                SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(8, (index) {
+                    final isSelected = currentStep == index;
+                    return InkWell(
+                      onTap: () => _goToStep(index),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
                           color:
                               isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF655F5B),
-                          fontWeight: FontWeight.bold,
+                                  ? const Color(0xFFAB2F2B)
+                                  : Colors.grey.shade300,
+                          shape: BoxShape.circle,
                         ),
+                        child: Center(
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              color:
+                                  isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF655F5B),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  color: Colors.white,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          getStepTitle(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E1E1E),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildStepContent(),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _navigationButton(context),
+              ] else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: Text(
+                      'Silakan pilih Work Center dan Jam Input.',
+                      style: TextStyle(
+                        color: Colors.red.shade600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              color: Colors.white,
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      getStepTitle(),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E1E1E),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // _buildStepContent()
-                  ],
                 ),
-              ),
-            ),
-          ],
-        ],
-      ),
+            ],
+          ),
+        ),
+
+        Consumer<PretreatmentBleachingFiltrationProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoadingReset) {
+              return Container(
+                color: Colors.black26,
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -590,38 +757,562 @@ class _FiltrationPerformInputPageState
         return "Pretreatment";
       case 1:
         return "Bleacher";
-      case 3:
+      case 2:
         return "Pump";
-      case 4:
+      case 3:
         return "Niagara Filter";
-      case 5:
+      case 4:
         return "Filter Bag";
+      case 5:
+        return "Catridge Filter";
       case 6:
-        return "Catridge Filter";
+        return "Clarity";
       case 7:
-        return "Catridge Filter";
-      case 8:
         return "Remarks";
       default:
         return "Step";
     }
   }
 
-  // Widget _buildStepContent(){
+  double? parseDouble(TextEditingController c) {
+    final text = c.text.trim();
+    return text.isEmpty || text == "-"
+        ? null
+        : double.parse(double.parse(text).toStringAsFixed(4));
+  }
 
-  // }
+  DateTime getPostingDate() {
+    final DateTime now = DateTime.now();
+    final int hour = selectedHour ?? now.hour;
+
+    if (hour <= 7) {
+      final DateTime previousDay = now.subtract(const Duration(days: 1));
+      return DateTime(previousDay.year, previousDay.month, previousDay.day);
+    } else {
+      return DateTime(now.year, now.month, now.day);
+    }
+  }
+
+  DateTime getTransactionDate() {
+    return DateTime.now();
+  }
+
+  // Calculates the shift number based on the day and hour.
+  int getShiftBasedOnTimeAndDate(DateTime time) {
+    int hour = time.hour;
+    int day = time.weekday;
+    log("Day: $day, Hour: $hour");
+
+    // Friday has special shift timings
+    if (day >= DateTime.friday) {
+      if (hour >= 8 && hour < 20) {
+        return 4; // Shift 4 for Friday day
+      } else {
+        return 5; // Shift 5 for Friday night
+      }
+    } else {
+      // Regular weekday shifts
+      if (hour >= 8 && hour <= 15) {
+        return 1;
+      } else if (hour >= 16 && hour <= 23) {
+        return 2;
+      } else {
+        return 3;
+      }
+    }
+  }
+
+  // Shows a confirmation dialog before saving the data.
+  void _showAlertDialog(BuildContext context) {
+    log("Show Dialog function");
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Konfirmasi Input"),
+          content: const Text("Apakah data yang anda masukkan sudah sesuai?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close dialog first
+                _save(); // Then call the save function
+              },
+              child: Consumer<PretreatmentBleachingFiltrationProvider>(
+                builder: (context, provider, child) {
+                  // You'll need to add 'isLoading' to your provider for this indicator
+                  if (provider.isLoading) {
+                    return const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.0,
+                      ),
+                    );
+                  }
+                  return const Text("Ya");
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String> buildTicketNumber() async {
+    final provider = context.read<PretreatmentBleachingFiltrationProvider>();
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    if (plantCode.isEmpty) {
+      _showSnackBar("Error: Plant code is not available.");
+      return "";
+    }
+
+    final latestTicketIdFromProvider = await provider.fetchLatestId(plantCode);
+
+    if (latestTicketIdFromProvider == null ||
+        latestTicketIdFromProvider.length < 9) {
+      _showSnackBar(
+        "Error: Could not fetch the latest ticket number for this plant.",
+      );
+      log("ID from provider is null or invalid: $latestTicketIdFromProvider");
+      return "";
+    }
+
+    log("Latest Ticket ID: $latestTicketIdFromProvider");
+
+    // Increment the numeric part of the ID
+    int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
+
+    // Update the counter in the database via the provider
+    final updateSuccess = await provider.updateAutoNumber(plantCode, digit);
+
+    if (!updateSuccess) {
+      log("Failed to update the auto number counter.");
+      _showSnackBar("Error: Could not update the ticket number sequence.");
+      return "";
+    }
+
+    String lastDigit = digit.toString().padLeft(6, '0');
+    String ticketPrefix = latestTicketIdFromProvider.substring(0, 9);
+
+    log("New Ticket Number: ${ticketPrefix + lastDigit}");
+    return ticketPrefix + lastDigit;
+  }
+
+  void _save() async {
+    log("Save button logsheet pretreatment clicked");
+    final provider = context.read<PretreatmentBleachingFiltrationProvider>();
+    final userProvider = context.read<UserProvider>();
+    final buProvider = context.read<BusinessUnitProvider>();
+    final plantProvider = context.read<PlantProvider>();
+
+    if (selectedWorkCenter == null || selectedHour == null) {
+      _showSnackBar('Mohon lengkapi Work Center dan Jam Input.');
+      return;
+    }
+
+    try {
+      final postingDate = getPostingDate();
+      final transactionDate = getTransactionDate();
+      final formattedTime = '${selectedHour.toString().padLeft(2, '0')}:00:00';
+      final fullDateTimeForShift = DateTime(
+        postingDate.year,
+        postingDate.month,
+        postingDate.day,
+        selectedHour!,
+      );
+
+      final shift = getShiftBasedOnTimeAndDate(fullDateTimeForShift);
+
+      final businessUnitCode = buProvider.currentBusinessUnit?.buCode ?? "";
+      final plantCode = plantProvider.currentPlant?.code ?? "";
+      final currentUser = userProvider.currentUser;
+
+      final entity = PretreatmentBleachingFiltrationEntity(
+        id: await buildTicketNumber(),
+        company: businessUnitCode,
+        plant: plantCode,
+        transactionDate: transactionDate,
+        postingDate: postingDate,
+        refineryMachine: selectedWorkCenter,
+        time: DateFormat('HH:mm:ss').parse(formattedTime),
+        shift: shift,
+
+        //Pretreatment
+        ptFit001: parseDouble(ptFit001Controller),
+        ptE001aInlet: parseDouble(ptE001aInletController),
+        ptF0012: parseDouble(ptFit0012Controller),
+        ptH3po4: parseDouble(ptH3PO4Controller),
+        ptBe: parseDouble(ptBEController),
+
+        // Bleaching
+        blVacum: parseDouble(blVacumController),
+        blTInlet: parseDouble(blTInletController),
+        blTB602: parseDouble(blTB602Controller),
+        blSpurge: parseDouble(blSpurgeController),
+
+        // Pump
+        pA: parseDouble(pAController),
+        pB: parseDouble(pBController),
+        pC: parseDouble(pCController),
+        // Niagara Filter
+        fnF601: parseDouble(fnF601Controller),
+        fnF602: parseDouble(fnF602Controller),
+        fnF603: parseDouble(fnF603Controller),
+        fb604a: parseDouble(fnF604BController),
+        fb604b: parseDouble(fnF604BController),
+        fb604c: parseDouble(fnF604BController),
+
+        // Catridge Filters
+        fc605a: parseDouble(fcF605AController),
+        fc605b: parseDouble(fcF605BController),
+
+        clarity: clarityController.text,
+        remarks: remarksController.text,
+        entryBy: currentUser?.username,
+        entryDate: DateTime.now(),
+        preparedBy: null,
+        preparedDate: null,
+        checkedBy: null,
+        checkedDate: null,
+        formNo: formData?.code,
+        dateIssued: formData?.dateIssued,
+        revisionNo: formData?.revisionNo,
+        revisionDate: formData?.revisionDate,
+      );
+
+      bool? success;
+
+      log("attemp to insert");
+      success = await provider.insert(entity);
+
+      if (success) {
+        // fetch all reports
+
+        _showSnackBar('Input berhasil');
+        log('Insert successful');
+        if (mounted) Navigator.pop(context);
+      }
+    } catch (e) {
+      log("Gagal menyimpan laporan: $e");
+      _showSnackBar("Terjadi kesalahan: $e");
+    } finally {
+      //
+    }
+  }
+
+  Widget _buildStepContent() {
+    switch (currentStep) {
+      case 0:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: ptFit001Controller,
+              label: 'FIT001 (CPO)',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FIT001 (Tph)',
+            ),
+            _buildTextField(
+              controller: ptE001aInletController,
+              label: 'E001A INLET CPO',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai E001A INLET CPO (°C)',
+            ),
+            _buildTextField(
+              controller: ptFit0012Controller,
+              label: 'FIT001/2 Str.',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FIT001/2 Str. (bar)',
+            ),
+            _buildTextField(
+              controller: ptH3PO4Controller,
+              label: 'H3PO4',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai FFA (0.05-0.08)',
+            ),
+            _buildTextField(
+              controller: ptBEController,
+              label: 'BE',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai BE (0.6 - 1.5)',
+            ),
+          ],
+        );
+
+      case 1:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: blVacumController,
+              label: 'Vacum',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Vacum (mmHg)',
+            ),
+            _buildTextField(
+              controller: blTInletController,
+              label: 'T-Inlet',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai T-Inlet(°C)',
+            ),
+            _buildTextField(
+              controller: blTB602Controller,
+              label: 'T B602',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai T B602 (°C)',
+            ),
+            _buildTextField(
+              controller: blSpurgeController,
+              label: 'Spurge',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Spurge (bar)',
+            ),
+          ],
+        );
+      case 2:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: pAController,
+              label: 'Pump A',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Pump A (bar)',
+            ),
+            _buildTextField(
+              controller: pBController,
+              label: 'Pump B',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Pump B (bar)',
+            ),
+            _buildTextField(
+              controller: pCController,
+              label: 'Pump C',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai Pump C (bar)',
+            ),
+          ],
+        );
+      case 3:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: fnF601Controller,
+              label: 'F601',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F601 (bar)',
+            ),
+            _buildTextField(
+              controller: fnF602Controller,
+              label: 'F602',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F602 (bar)',
+            ),
+            _buildTextField(
+              controller: fnF603Controller,
+              label: 'F603',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F603 (bar)',
+            ),
+          ],
+        );
+      case 4:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: fnF604AController,
+              label: 'F604A',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F604A (bar)',
+            ),
+            _buildTextField(
+              controller: fnF604BController,
+              label: 'F604B',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F604B (bar)',
+            ),
+            _buildTextField(
+              controller: fnF604CController,
+              label: 'F604C',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F604C (bar)',
+            ),
+          ],
+        );
+      case 5:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: fcF605AController,
+              label: 'F605A',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F605A (bar)',
+            ),
+            _buildTextField(
+              controller: fcF605BController,
+              label: 'F605B',
+              icon: Icons.bubble_chart,
+              isNumeric: true,
+              hintText: 'Masukkan nilai F605B (bar)',
+            ),
+          ],
+        );
+      case 6:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: clarityController,
+              label: 'Clarity',
+              icon: Icons.bubble_chart,
+              hintText: 'Masukkan Clarity (Clear/Not Clear)',
+            ),
+          ],
+        );
+      case 7:
+        return Column(
+          children: [
+            _buildTextField(
+              controller: remarksController,
+              label: 'Remarks',
+              icon: Icons.bubble_chart,
+              hintText: 'Masukkan Remarks',
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // TextField Builder
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hintText,
+    bool isNumeric = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: TextField(
+        controller: controller,
+        keyboardType:
+            isNumeric
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
+        inputFormatters:
+            isNumeric
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                : [],
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hintText,
+          labelStyle: const TextStyle(
+            color: Color(0xFF655F5B),
+            fontWeight: FontWeight.w500,
+          ),
+          hintStyle: const TextStyle(color: Colors.grey),
+          prefixIcon: Icon(icon, color: Color(0xFF655F5B)),
+          filled: true,
+          fillColor: const Color(0xFFF0ECE9),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        style: const TextStyle(color: Color(0xFF655F5B), fontSize: 16),
+      ),
+    );
+  }
 
   AppBar _buildAppBar() {
+    try {
+      formData = context.read<DataFormNoProvider>().dataFormNoList.firstWhere(
+        (form) => form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration",
+      );
+    } catch (e) {
+      log(
+        "Form data for 'Logsheet_Pretreatment_Bleaching_Filtration' not found. Using defaults.",
+      );
+      // Handle case where form data might not be found
+      formData = null;
+    }
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-      title: const Text(
-        'Filtration Performance - Refinery',
+      title: Text(
+        'PBF - ${formData?.code}',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       actions: [
         IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshPage),
+      ],
+    );
+  }
+
+  Widget _navigationButton(BuildContext context) {
+    return Row(
+      children: [
+        if (currentStep > 0)
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.arrow_back),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade400,
+                foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _prevStep,
+              label: const Text('Back'),
+            ),
+          )
+        else
+          const Spacer(),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: Icon(currentStep == 7 ? Icons.save : Icons.arrow_forward),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAB2F2B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: currentStep == 7 ? _save : _nextStep,
+            label: Text(currentStep == 7 ? 'Save' : 'Next'),
+          ),
+        ),
       ],
     );
   }

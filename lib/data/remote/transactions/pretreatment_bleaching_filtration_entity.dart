@@ -1,4 +1,5 @@
-/// Represents a record from the 't_pretreatment_bleaching_filtration' table.
+import 'package:intl/intl.dart';
+
 class PretreatmentBleachingFiltrationEntity {
   /// id number
   final String id;
@@ -19,16 +20,19 @@ class PretreatmentBleachingFiltrationEntity {
   final String? refineryMachine;
 
   /// time shift
-  final String? time;
+  final DateTime? time;
+
+  // Shift
+  final int? shift;
 
   /// PreTreatment Fit 001 (CPO) - Tph
-  final String? ptFit001;
+  final double? ptFit001;
 
   /// PreTreatment E001A Inlet (CPO) - C
-  final String? ptE001aInlet;
+  final double? ptE001aInlet;
 
   /// PreTreatment F001/2 Str  - bar
-  final String? ptF0012;
+  final double? ptF0012;
 
   /// PreTreatment H3PO4 - %  ( Dosing )
   final double? ptH3po4;
@@ -112,40 +116,41 @@ class PretreatmentBleachingFiltrationEntity {
 
   const PretreatmentBleachingFiltrationEntity({
     required this.id,
-    this.company,
-    this.plant,
-    this.transactionDate,
-    this.postingDate,
-    this.refineryMachine,
-    this.time,
-    this.ptFit001,
-    this.ptE001aInlet,
-    this.ptF0012,
-    this.ptH3po4,
-    this.ptBe,
-    this.blVacum,
-    this.blTInlet,
-    this.blTB602,
-    this.blSpurge,
-    this.pA,
-    this.pB,
-    this.pC,
-    this.fnF601,
-    this.fnF602,
-    this.fnF603,
-    this.fb604a,
-    this.fb604b,
-    this.fb604c,
-    this.fc605a,
-    this.fc605b,
-    this.clarity,
-    this.remarks,
-    this.entryBy,
-    this.entryDate,
-    this.preparedBy,
-    this.preparedDate,
-    this.checkedBy,
-    this.checkedDate,
+    required this.company,
+    required this.plant,
+    required this.transactionDate,
+    required this.postingDate,
+    required this.refineryMachine,
+    required this.time,
+    required this.shift,
+    required this.ptFit001,
+    required this.ptE001aInlet,
+    required this.ptF0012,
+    required this.ptH3po4,
+    required this.ptBe,
+    required this.blVacum,
+    required this.blTInlet,
+    required this.blTB602,
+    required this.blSpurge,
+    required this.pA,
+    required this.pB,
+    required this.pC,
+    required this.fnF601,
+    required this.fnF602,
+    required this.fnF603,
+    required this.fb604a,
+    required this.fb604b,
+    required this.fb604c,
+    required this.fc605a,
+    required this.fc605b,
+    required this.clarity,
+    required this.remarks,
+    required this.entryBy,
+    required this.entryDate,
+    required this.preparedBy,
+    required this.preparedDate,
+    required this.checkedBy,
+    required this.checkedDate,
     required this.formNo,
     required this.dateIssued,
     required this.revisionNo,
@@ -179,23 +184,25 @@ class PretreatmentBleachingFiltrationEntity {
       return null;
     }
 
+    DateTime? parseTime(dynamic value) {
+      if (value is String) return DateFormat('HH:mm:ss').parse(value);
+      if (value is DateTime) return value;
+      if (value == null) return null;
+      return null;
+    }
+
     return PretreatmentBleachingFiltrationEntity(
       id: map['id'] as String,
-      company: map['company'] != null ? map['company'] as String : null,
-      plant: map['plant'] != null ? map['plant'] as String : null,
+      company: map['company'] as String?,
+      plant: map['plant'] as String?,
       transactionDate: tryParseDateTime(map['transaction_date']),
       postingDate: tryParseDateTime(map['posting_date']),
-      refineryMachine:
-          map['refinery_machine'] != null
-              ? map['refinery_machine'] as String
-              : null,
-      time: map['time'] != null ? map['time'] as String : null,
-      ptFit001: map['pt_fit001'] != null ? map['pt_fit001'] as String : null,
-      ptE001aInlet:
-          map['pt_e001a_inlet'] != null
-              ? map['pt_e001a_inlet'] as String
-              : null,
-      ptF0012: map['pt_f0012'] != null ? map['pt_f0012'] as String : null,
+      refineryMachine: map['refinery_machine'] as String?,
+      time: parseTime(map['time']),
+      shift: parseInt(map['shift']),
+      ptFit001: tryParseDouble(map['pt_fit001']),
+      ptE001aInlet: tryParseDouble(map['pt_e001a_inlet']),
+      ptF0012: tryParseDouble(map['pt_f0012']),
       ptH3po4: tryParseDouble(map['pt_h3po4']),
       ptBe: tryParseDouble(map['pt_be']),
       blVacum: tryParseDouble(map['bl_vacum']),
@@ -213,14 +220,13 @@ class PretreatmentBleachingFiltrationEntity {
       fb604c: tryParseDouble(map['fb_604c']),
       fc605a: tryParseDouble(map['fc_605a']),
       fc605b: tryParseDouble(map['fc_605b']),
-      clarity: map['clarity'] != null ? map['clarity'] as String : null,
-      remarks: map['remarks'] != null ? map['remarks'] as String : null,
-      entryBy: map['entry_by'] != null ? map['entry_by'] as String : null,
+      clarity: map['clarity'] as String?,
+      remarks: map['remarks'] as String?,
+      entryBy: map['entry_by'] as String?,
       entryDate: tryParseDateTime(map['entry_date']),
-      preparedBy:
-          map['prepared_by'] != null ? map['prepared_by'] as String : null,
+      preparedBy: map['prepared_by'] as String?,
       preparedDate: tryParseDateTime(map['prepared_date']),
-      checkedBy: map['checked_by'] != null ? map['checked_by'] as String : null,
+      checkedBy: map['checked_by'] as String?,
       checkedDate: tryParseDateTime(map['checked_date']),
       formNo: map['form_no'] as String?,
       dateIssued: tryParseDateTime(map['date_issued']),
@@ -233,6 +239,8 @@ class PretreatmentBleachingFiltrationEntity {
   ///
   /// This is useful for serializing the object to be stored in a database or sent as JSON.
   Map<String, dynamic> toMap() {
+    String? formatTime(DateTime? time) =>
+        time != null ? DateFormat('HH:mm:ss').format(time) : null;
     return <String, dynamic>{
       'id': id,
       'company': company,
@@ -240,7 +248,8 @@ class PretreatmentBleachingFiltrationEntity {
       'transaction_date': transactionDate?.toIso8601String(),
       'posting_date': postingDate?.toIso8601String(),
       'refinery_machine': refineryMachine,
-      'time': time,
+      'time': formatTime(time),
+      'shift': shift,
       'pt_fit001': ptFit001,
       'pt_e001a_inlet': ptE001aInlet,
       'pt_f0012': ptF0012,

@@ -430,7 +430,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
       final int hour = selectedHour ?? now.hour;
 
-      if (hour < 7) {
+      if (hour <= 7) {
         final DateTime previousDay = now.subtract(const Duration(days: 1));
         return DateTime(
           previousDay.year,
@@ -1143,20 +1143,6 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       case 4:
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "SBE",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B),
-                  ),
-                ),
-              ),
-            ),
             _buildTextField(
               controller: WSBEQCController,
               label: 'SBE',
@@ -1174,20 +1160,6 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       case 5:
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Remark",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B),
-                  ),
-                ),
-              ),
-            ),
             _buildTextField(
               controller: remarkController,
               label: 'Remark',
@@ -1518,64 +1490,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
                   const SizedBox(height: 16),
 
                   // Navigation Buttons
-                  Row(
-                    children: [
-                      if (currentStep > 0)
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.arrow_back),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.shade400,
-                              foregroundColor: Colors.black87,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: _prevStep,
-                            label: const Text('Back'),
-                          ),
-                        )
-                      else
-                        const Spacer(),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Consumer<QualityReportRefineryProvider>(
-                            builder: (context, provider, child) {
-                              if (provider.isLoading) {
-                                return SizedBox(
-                                  width: 12,
-                                  height: 12,
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                );
-                              }
-                              return Icon(
-                                currentStep == 5
-                                    ? Icons.save
-                                    : Icons.arrow_forward,
-                              );
-                            },
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFAB2F2B),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed:
-                              currentStep == 5
-                                  ? () => _showAlertDialog(context)
-                                  : _nextStep,
-                          label: Text(currentStep == 5 ? 'Save' : 'Next'),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _navigationButton(context),
                   const SizedBox(height: 16),
                 ] else
                   Padding(
@@ -1602,6 +1517,61 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _navigationButton(BuildContext context) {
+    return Row(
+      children: [
+        if (currentStep > 0)
+          Expanded(
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.arrow_back),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade400,
+                foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: _prevStep,
+              label: const Text('Back'),
+            ),
+          )
+        else
+          const Spacer(),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton.icon(
+            icon: Consumer<QualityReportRefineryProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: const CircularProgressIndicator(color: Colors.white),
+                  );
+                }
+                return Icon(
+                  currentStep == 5 ? Icons.save : Icons.arrow_forward,
+                );
+              },
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAB2F2B),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed:
+                currentStep == 5 ? () => _showAlertDialog(context) : _nextStep,
+            label: Text(currentStep == 5 ? 'Save' : 'Next'),
+          ),
+        ),
+      ],
     );
   }
 
