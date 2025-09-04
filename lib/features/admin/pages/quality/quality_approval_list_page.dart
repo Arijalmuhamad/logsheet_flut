@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_screen.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_page.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityApprovalListScreen extends StatefulWidget {
-  const QualityApprovalListScreen({super.key});
+class QualityApprovalListScreenPage extends StatefulWidget {
+  const QualityApprovalListScreenPage({super.key});
 
   @override
-  State<QualityApprovalListScreen> createState() =>
-      _QualityApprovalListScreenState();
+  State<QualityApprovalListScreenPage> createState() =>
+      _QualityApprovalListScreenPageState();
 }
 
-class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
+class _QualityApprovalListScreenPageState
+    extends State<QualityApprovalListScreenPage> {
+  DataFormNoEntity? formQualityRefinery;
+
   @override
   void initState() {
     super.initState();
@@ -22,32 +27,25 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context
-          .read<QualityReportRefineryProvider>()
-          .fetchAllPreparedTransactions(plantCode),
+      (_) => context.read<QualityRefineryProvider>().fetchReportsForManager(
+        plantCode,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    formQualityRefinery =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) => form.isMenu == "Quality_Report" && form.isActive == "T",
+            )
+            .first;
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Quality Approval (F/RFA-001)'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              final plantCode =
-                  context.read<PlantProvider>().currentPlant?.code ?? "";
-
-              context
-                  .read<QualityReportRefineryProvider>()
-                  .fetchAllPreparedTransactions(plantCode);
-            },
-            icon: Icon(Icons.replay_rounded),
-          ),
-        ],
-      ),
-      body: Consumer<QualityReportRefineryProvider>(
+      appBar: _buildAppBar(context),
+      body: Consumer<QualityRefineryProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -66,8 +64,8 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                           "";
 
                       context
-                          .read<QualityReportRefineryProvider>()
-                          .fetchAllPreparedTransactions(plantCode);
+                          .read<QualityRefineryProvider>()
+                          .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -79,8 +77,7 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
           final allReports = provider.approvedTransactions;
 
           // Group reports by date
-          final Map<String, List<QualityReportRefineryEntity>> groupedReports =
-              {};
+          final Map<String, List<QualityRefineryEntity>> groupedReports = {};
 
           for (var report in allReports) {
             if (report.postingDate != null &&
@@ -111,8 +108,8 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                           "";
 
                       context
-                          .read<QualityReportRefineryProvider>()
-                          .fetchAllPreparedTransactions(plantCode);
+                          .read<QualityRefineryProvider>()
+                          .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -147,9 +144,9 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                     reportsForGroup.every(
                       (r) =>
                           r.shift == 4
-                              ? r.preparedStatusShift4 == "Approved"
+                              ? r.preparedStatus == "Approved"
                               : r.shift == 5
-                              ? r.preparedStatusShift5 == "Approved"
+                              ? r.preparedStatus == "Approved"
                               : false,
                     );
               } else {
@@ -162,11 +159,11 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                     reportsForGroup.every(
                       (r) =>
                           r.shift == 1
-                              ? r.preparedStatusShift1 == "Approved"
+                              ? r.preparedStatus == "Approved"
                               : r.shift == 2
-                              ? r.preparedStatusShift2 == "Approved"
+                              ? r.preparedStatus == "Approved"
                               : r.shift == 3
-                              ? r.preparedStatusShift3 == "Approved"
+                              ? r.preparedStatus == "Approved"
                               : false,
                     );
               }
@@ -180,9 +177,16 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
 
               // Determine card color, icon, and status text based on the group's state
               Color cardColor = Colors.white;
-              IconData icon = Icons.pending_rounded;
-              Color iconColor = Colors.blue;
-              String statusText = 'Pending Approval';
+              IconData icon = Icons.hourglass_bottom_rounded;
+              Color iconColor = Colors.grey[700]!;
+              String statusText = 'Shift Belum Lengkap';
+
+              if (isReadyForApproval) {
+                cardColor = Colors.white;
+                icon = Icons.pending_rounded;
+                iconColor = Colors.blue;
+                statusText = 'Pending Approval';
+              }
 
               if (isApprovedForDay) {
                 cardColor = Colors.green[50]!;
@@ -227,9 +231,7 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
                             : () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Cannot approve. All three shifts are not yet submitted.',
-                                  ),
+                                  content: Text('Semua Shift belum Lengkap.'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );
@@ -241,6 +243,25 @@ class _QualityApprovalListScreenState extends State<QualityApprovalListScreen> {
           );
         },
       ),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text('Quality Approval (${formQualityRefinery?.code})'),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            final plantCode =
+                context.read<PlantProvider>().currentPlant?.code ?? "";
+
+            context.read<QualityRefineryProvider>().fetchReportsForManager(
+              plantCode,
+            );
+          },
+          icon: Icon(Icons.replay_rounded),
+        ),
+      ],
     );
   }
 }

@@ -44,7 +44,7 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchAllUsers() async {
+  Future<void> fetchAllUsers() async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
@@ -57,7 +57,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  void fetchAllRoles() async {
+  Future<void> fetchAllRoles() async {
     _setLoading(true);
     _setErrorMessage(null);
 

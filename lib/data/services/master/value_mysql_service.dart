@@ -5,6 +5,7 @@ import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 class ValueMySQLService {
   Future<List<Map<String, dynamic>>> getAllOilType() async {
     try {
+      // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all oil type.');
@@ -30,6 +31,7 @@ class ValueMySQLService {
 
   Future<List<Map<String, dynamic>>> getAllToTankGroup() async {
     try {
+      // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all tank group.');
@@ -54,6 +56,7 @@ class ValueMySQLService {
 
   Future<List<Map<String, dynamic>>> getAllTankSource() async {
     try {
+      // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all tank source.');
@@ -79,6 +82,7 @@ class ValueMySQLService {
 
   Future<List<Map<String, dynamic>>> getAllWorkCenters() async {
     try {
+      // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all Work Centers.');

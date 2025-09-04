@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/logsheet/pretreatment_bleaching_filtration_entity.dart';
-import 'package:logsheet_app/data/repositories/logsheet/pretreatment_bleaching_filtration_repository.dart';
+import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
+import 'package:logsheet_app/data/repositories/logsheet/deodorizing_filtration_repository.dart';
 
-class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
-  final PretreatmentBleachingFiltrationRepository _repository;
+class DeodorizingFiltrationProvider extends ChangeNotifier {
+  final DeodorizingFiltrationRepository _repository;
 
-  PretreatmentBleachingFiltrationProvider(this._repository);
+  DeodorizingFiltrationProvider(this._repository);
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -26,16 +26,13 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
   bool _isLoadingDelete = false;
   bool get isLoadingDelete => _isLoadingDelete;
 
-  List<PretreatmentBleachingFiltrationEntity> _pretreatmentList = [];
-  List<PretreatmentBleachingFiltrationEntity> get pretreatmentList =>
-      _pretreatmentList;
-  List<PretreatmentBleachingFiltrationEntity> _filteredTickets = [];
-  List<PretreatmentBleachingFiltrationEntity> get filteredTickets =>
-      _filteredTickets;
+  List<DeodorizingFiltrationEntity> _deodorizingList = [];
+  List<DeodorizingFiltrationEntity> get deodorizingList => _deodorizingList;
+  List<DeodorizingFiltrationEntity> _filteredTickets = [];
+  List<DeodorizingFiltrationEntity> get filteredTickets => _filteredTickets;
 
-  List<PretreatmentBleachingFiltrationEntity> _reportsForManager = [];
-  List<PretreatmentBleachingFiltrationEntity> get reportsForManager =>
-      _reportsForManager;
+  List<DeodorizingFiltrationEntity> _reportsForManager = [];
+  List<DeodorizingFiltrationEntity> get reportsForManager => _reportsForManager;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -67,11 +64,13 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     _setErrorMessage(null);
     try {
       _latestId = await _repository.getLatestTicketId(plantCode);
-      log("(PBE Provider) latest ID = $_latestId");
+      log("(Deodorizing Filtration Provider) latest ID = $_latestId");
       return _latestId;
     } catch (e) {
       _setLoading(false);
-      _setErrorMessage('(PBE Provider) Failed to get latest id: $e');
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to get latest id: $e',
+      );
       return null;
     }
   }
@@ -89,13 +88,15 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       log(result.toString());
       return result;
     } catch (e) {
-      _setErrorMessage('(PBE Provider) Failed to update autonumber: $e');
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to update autonumber: $e',
+      );
       _setLoading(false);
       return false;
     }
   }
 
-  Future<bool> insert(PretreatmentBleachingFiltrationEntity entity) async {
+  Future<bool> insert(DeodorizingFiltrationEntity entity) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -110,19 +111,21 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
         return result;
       } else {
         _setLoading(false);
-        _setErrorMessage('(PBE Provider) Failed to insert report.');
+        _setErrorMessage(
+          '(Deodorizing Filtration Provider) Failed to insert report.',
+        );
         return false;
       }
     } catch (e) {
       _setLoading(false);
-      _setErrorMessage('(PBE Provider) Failed to insert report: $e');
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to insert report: $e',
+      );
       return false;
     }
   }
 
-  Future<bool> updateTicket(
-    PretreatmentBleachingFiltrationEntity entity,
-  ) async {
+  Future<bool> updateTicket(DeodorizingFiltrationEntity entity) async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -146,16 +149,22 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
 
     try {
       final response = await _repository.deleteTicket(id);
-      log("Pretreatment Provider deleteTicketById response: $response");
+      log(
+        "(Deodorizing Filtration Provider) deleteTicketById response: $response",
+      );
       _setLoadingDelete(false);
 
-      _pretreatmentList.removeWhere((e) => e.id == id);
+      _deodorizingList.removeWhere((e) => e.id == id);
 
       return response;
     } catch (e) {
       _setLoadingDelete(false);
-      _setErrorMessage('(PBE Provider) Failed to delete report: $e');
-      log("(PBE Provider) Pretreatment Provider: $e");
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to delete report: $e',
+      );
+      log(
+        "(Deodorizing Filtration Provider) Deodorizing Filtration Provider: $e",
+      );
 
       return false;
     }
@@ -173,7 +182,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      _pretreatmentList = await _repository.getAllTicket(
+      _deodorizingList = await _repository.getAllTicket(
         dateFilter,
         time,
         username,
@@ -181,7 +190,9 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
         plantCode,
       );
       notifyListeners();
-      log("pretreatment ticket list length is ${_pretreatmentList.length}");
+      log(
+        "deodorizing filtration ticket list length is ${_deodorizingList.length}",
+      );
 
       // switch (role) {
       //   case "LEAD":
@@ -217,7 +228,9 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       _setErrorMessage(null);
     } catch (e) {
       _setLoading(false);
-      _setErrorMessage('(PBE Provider) Failed to insert report: $e');
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to insert report: $e',
+      );
     }
   }
 
@@ -229,7 +242,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       _setLoading(false);
     } catch (e) {
       _setErrorMessage(
-        '(PBE Provider) Failed to fetch reports for manager: $e',
+        '(Deodorizing Filtration Provider) Failed to fetch reports for manager: $e',
       );
       _setLoading(false);
     }
@@ -249,7 +262,9 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     _setErrorMessage(null);
 
     try {
-      log("Sending Approval or Rejection for report");
+      log(
+        "(Deodorizing Filtration Provider) Sending Approval or Rejection for report",
+      );
       final result = await _repository.sendApproveRejectReport(
         username,
         status,
@@ -263,7 +278,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       return result;
     } catch (e) {
       _setErrorMessage(
-        '(PBE Provider) Failed to send approval or rejection report: $e',
+        '(Deodorizing Filtration Provider) Failed to send approval or rejection report: $e',
       );
       _setLoading(false);
       return false;
@@ -287,7 +302,9 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       _setLoadingFilterTicket(false);
       notifyListeners();
     } catch (e) {
-      _setErrorMessage('(PBE Provider) Failed fetch filtered PBE ticket: $e');
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed fetch filtered PBE ticket: $e',
+      );
       _setLoading(false);
     }
   }

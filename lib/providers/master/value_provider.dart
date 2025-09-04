@@ -40,7 +40,7 @@ class ValueProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchOilTypes() async {
+  Future<void> fetchOilTypes() async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -49,14 +49,14 @@ class ValueProvider with ChangeNotifier {
         const Duration(seconds: 60),
       );
       notifyListeners();
-      log("oil type list length: $_oilTypeLists");
+      log("(ValueProvider) oil type list length: $_oilTypeLists");
     } catch (e) {
-      _setErrorMessage('Failed to fetch Oil Type: $e');
+      _setErrorMessage('(ValueProvider) Failed to fetch Oil Type: $e');
       _setLoading(false);
     }
   }
 
-  void fetchToTankGroupLists() async {
+  Future<void> fetchToTankGroupLists() async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -65,14 +65,14 @@ class ValueProvider with ChangeNotifier {
         const Duration(seconds: 60),
       );
       notifyListeners();
-      log("To Tank Group list length: $_toTankGroupLists");
+      log("(ValueProvider) To Tank Group list length: $_toTankGroupLists");
     } catch (e) {
-      _setErrorMessage('Failed to fetch Tank Group list: $e');
+      _setErrorMessage('(ValueProvider) Failed to fetch Tank Group list: $e');
       _setLoading(false);
     }
   }
 
-  void fetchTankSourceLists() async {
+  Future<void> fetchTankSourceLists() async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -81,14 +81,14 @@ class ValueProvider with ChangeNotifier {
         const Duration(seconds: 60),
       );
       notifyListeners();
-      log("Tank Source list length: $_tankSourceLists");
+      log("(ValueProvider) Tank Source list length: $_tankSourceLists");
     } catch (e) {
-      _setErrorMessage('Failed to fetch Tank Source list: $e');
+      _setErrorMessage('(ValueProvider) Failed to fetch Tank Source list: $e');
       _setLoading(false);
     }
   }
 
-  void fetchWorkCenterLists() async {
+  Future<void> fetchWorkCenterLists() async {
     _setLoading(true);
     _setErrorMessage(null);
 
@@ -97,28 +97,28 @@ class ValueProvider with ChangeNotifier {
         const Duration(seconds: 60),
       );
       notifyListeners();
-      log("Refinery Machine list length: $_workCenterLists");
+      log("(ValueProvider) Refinery Machine list length: $_workCenterLists");
     } catch (e) {
-      _setErrorMessage('Failed to fetch Refinery Machine list: $e');
+      _setErrorMessage(
+        '(ValueProvider) Failed to fetch Refinery Machine list: $e',
+      );
       _setLoading(false);
     }
   }
 
-  void fetchAllInitialData() async {
-    if (_workCenterLists.isNotEmpty &&
-        _tankSourceLists.isNotEmpty &&
-        _tankSourceLists.isNotEmpty &&
-        _oilTypeLists.isNotEmpty) {
-      return;
-    }
+  Future<void> fetchAllInitialData() async {
+    // if (_workCenterLists.isEmpty ||
+    //     _tankSourceLists.isEmpty ||
+    //     _toTankGroupLists.isEmpty ||
+    //     _oilTypeLists.isEmpty) {
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      fetchWorkCenterLists();
-      fetchTankSourceLists();
-      fetchToTankGroupLists();
-      fetchOilTypes();
+      await fetchWorkCenterLists();
+      await fetchTankSourceLists();
+      await fetchToTankGroupLists();
+      await fetchOilTypes();
       _setLoading(false);
       _setErrorMessage(null);
     } catch (e) {
@@ -126,5 +126,43 @@ class ValueProvider with ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+    // }
   }
+
+  // Future<void> fetchAllInitialData() async {
+  //   // Guard clause to prevent fetching if data already exists or is already loading.
+  //   if (_isLoading ||
+  //       (_workCenterLists.isNotEmpty &&
+  //           _tankSourceLists.isNotEmpty &&
+  //           _toTankGroupLists.isNotEmpty &&
+  //           _oilTypeLists.isNotEmpty)) {
+  //     return;
+  //   }
+
+  //   _setLoading(true);
+  //   _setErrorMessage(null);
+
+  //   try {
+  //     _workCenterLists = await _valueRepository.getAllWorkCenters().timeout(
+  //       const Duration(seconds: 5),
+  //     );
+  //     _tankSourceLists = await _valueRepository.getAllTankSource().timeout(
+  //       const Duration(seconds: 5),
+  //     );
+
+  //     _toTankGroupLists = await _valueRepository.getAllToTankGroup().timeout(
+  //       const Duration(seconds: 5),
+  //     );
+
+  //     _oilTypeLists = await _valueRepository.getAllOilTypes().timeout(
+  //       const Duration(seconds: 5),
+  //     );
+  //   } catch (e) {
+  //     _setErrorMessage('(ValueProvider) Failed to fetch initial data: $e');
+  //     log('(ValueProvider) Failed to fetch initial data: $e');
+  //   } finally {
+  //     // This will now correctly be called only after all fetches are complete or have failed.
+  //     _setLoading(false);
+  //   }
+  // }
 }

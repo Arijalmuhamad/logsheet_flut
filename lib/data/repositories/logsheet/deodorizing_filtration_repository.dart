@@ -1,18 +1,18 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/data/remote/logsheet/pretreatment_bleaching_filtration_entity.dart';
-import 'package:logsheet_app/data/services/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
+import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
+import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
 
-class PretreatmentBleachingFiltrationRepository {
-  final PretreatmentBleachingFiltrationMySQLService _mySQLService;
+class DeodorizingFiltrationRepository {
+  final DeodorizingFiltrationMySQLService _mySQLService;
 
-  PretreatmentBleachingFiltrationRepository(this._mySQLService);
+  DeodorizingFiltrationRepository(this._mySQLService);
 
-  Future<bool> insert(PretreatmentBleachingFiltrationEntity entity) async {
+  Future<bool> insert(DeodorizingFiltrationEntity entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<List<PretreatmentBleachingFiltrationEntity>> getAllTicket(
+  Future<List<DeodorizingFiltrationEntity>> getAllTicket(
     DateTime? dateFilter,
     String? time,
     String username,
@@ -24,16 +24,16 @@ class PretreatmentBleachingFiltrationRepository {
         .getAllTickets(dateFilter, time, username, role, plantCode);
 
     log("fetched from mysql: ${logsheetData.length}");
-    final List<PretreatmentBleachingFiltrationEntity> listFromMap =
+    final List<DeodorizingFiltrationEntity> listFromMap =
         logsheetData
-            .map((map) => PretreatmentBleachingFiltrationEntity.fromMap(map))
+            .map((map) => DeodorizingFiltrationEntity.fromMap(map))
             .toList();
 
     log("converted: ${listFromMap.length.toString()}");
     return listFromMap;
   }
 
-  Future<bool> update(PretreatmentBleachingFiltrationEntity entity) async {
+  Future<bool> update(DeodorizingFiltrationEntity entity) async {
     return await _mySQLService.updateTicket(entity);
   }
 
@@ -67,19 +67,19 @@ class PretreatmentBleachingFiltrationRepository {
     );
   }
 
-  Future<List<PretreatmentBleachingFiltrationEntity>> getReportsForManager(
+  Future<List<DeodorizingFiltrationEntity>> getReportsForManager(
     String plantCode,
   ) async {
     final List<Map<String, dynamic>> logsheetData = await _mySQLService
         .getReportsForManager(plantCode);
-    final List<PretreatmentBleachingFiltrationEntity> listFromMap =
+    final List<DeodorizingFiltrationEntity> listFromMap =
         logsheetData
-            .map((map) => PretreatmentBleachingFiltrationEntity.fromMap(map))
+            .map((map) => DeodorizingFiltrationEntity.fromMap(map))
             .toList();
     return listFromMap;
   }
 
-  Future<List<PretreatmentBleachingFiltrationEntity>> getFilteredTickets(
+  Future<List<DeodorizingFiltrationEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
     String? shift,
@@ -87,9 +87,9 @@ class PretreatmentBleachingFiltrationRepository {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
         .getTickets(dateFilter, plantCode, shift: shift);
 
-    List<PretreatmentBleachingFiltrationEntity> filteredTicketListFromMap =
+    List<DeodorizingFiltrationEntity> filteredTicketListFromMap =
         filteredTicketList
-            .map((map) => PretreatmentBleachingFiltrationEntity.fromMap(map))
+            .map((map) => DeodorizingFiltrationEntity.fromMap(map))
             .toList();
 
     return filteredTicketListFromMap;

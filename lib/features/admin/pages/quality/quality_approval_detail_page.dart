@@ -2,14 +2,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityApprovalDetailScreen extends StatefulWidget {
-  final List<QualityReportRefineryEntity> reportEntities;
+  final List<QualityRefineryEntity> reportEntities;
   final String reportIdentifier;
 
   const QualityApprovalDetailScreen({
@@ -36,7 +36,7 @@ class _QualityApprovalDetailScreenState
     // );
     log(widget.reportIdentifier);
     // Group the entities by shift to display them
-    final Map<int?, List<QualityReportRefineryEntity>> groupedByShift = {};
+    final Map<int?, List<QualityRefineryEntity>> groupedByShift = {};
     for (var report in widget.reportEntities) {
       if (!groupedByShift.containsKey(report.shift)) {
         groupedByShift[report.shift] = [];
@@ -183,7 +183,7 @@ class _QualityApprovalDetailScreenState
 
   Future<dynamic> _buildBottomSheet(
     BuildContext context,
-    QualityReportRefineryEntity report,
+    QualityRefineryEntity report,
     String username,
     String role,
   ) {
@@ -321,26 +321,50 @@ class _QualityApprovalDetailScreenState
                   _buildDetailRow('BP FFA', report.bpFFA.toString()),
                   _buildDetailRow('BP M&I', report.bpMNI.toString()),
                   _buildDetailRow('BP To Tank', report.bpToTank.toString()),
-                  _buildDetailRow('WSBEQC', report.wSBEQC.toString()),
+                  _buildDetailRow('OC', report.wSBEQC.toString()),
                   _buildDetailRow('Waste M&I', report.wasteMNI.toString()),
                   const Divider(),
                   _buildDetailRow('Remarks', report.remarks ?? 'N/A'),
                   _buildDetailRow('Entry By', report.entryBy ?? 'N/A'),
                   _buildDetailRow('Entry Date', formatDate(report.entryDate)),
+                  const Divider(),
+                  _buildDetailRow('Prepared By', report.preparedBy ?? 'N/A'),
+                  _buildDetailRow(
+                    'Prepared Status',
+                    report.preparedStatus ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Prepared Status Remarks',
+                    report.preparedStatusRemarks ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Prepared Date',
+                    formatDate(report.preparedDate),
+                  ),
+                  const Divider(),
                   _buildDetailRow('Checked By', report.checkedBy ?? 'N/A'),
+                  _buildDetailRow(
+                    'Checked Status',
+                    report.checkedStatus ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Checked Status Remarks',
+                    report.checkedStatusRemarks ?? 'N/A',
+                  ),
                   _buildDetailRow(
                     'Checked Date',
                     formatDate(report.checkedDate),
                   ),
-                  _buildDetailRow(
-                    'Checked Remarks',
-                    report.checkedStatusRemarks ?? 'N/A',
-                  ),
+                  const Divider(),
                   _buildDetailRow('Updated By', report.updatedBy ?? 'N/A'),
                   _buildDetailRow(
                     'Updated Date',
                     formatDate(report.updatedDate),
                   ),
+                  const Divider(),
+                  _buildDetailRow('Form No', report.formNo ?? 'N/A'),
+                  _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
+                  _buildDetailRow('Revision No', report.revisionNo.toString()),
                   const SizedBox(height: 24),
                   if (!isApproved && !isRejected)
                     _buildApprovalButtonRow(context, report, username, role, (
@@ -378,7 +402,7 @@ class _QualityApprovalDetailScreenState
 
   Widget _buildApprovalButtonRow(
     BuildContext context,
-    QualityReportRefineryEntity report,
+    QualityRefineryEntity report,
     String username,
     String role,
     Function(String) onStatusChange,
@@ -495,13 +519,13 @@ class _QualityApprovalDetailScreenState
 
   Future<void> _handleAction(
     BuildContext context,
-    QualityReportRefineryEntity report,
+    QualityRefineryEntity report,
     String username,
     String role,
     String status,
     Function(String) onStatusChange,
   ) async {
-    final provider = context.read<QualityReportRefineryProvider>();
+    final provider = context.read<QualityRefineryProvider>();
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     await provider.sendApproveRejectReport(
@@ -509,7 +533,7 @@ class _QualityApprovalDetailScreenState
       status,
       role,
       report.shift!,
-      _remarkController.text,
+      _remarkController.text == "" ? null : _remarkController.text,
       report.id,
       role,
       plantCode,

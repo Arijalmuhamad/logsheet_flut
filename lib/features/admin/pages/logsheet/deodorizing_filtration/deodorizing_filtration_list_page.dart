@@ -2,69 +2,65 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_detail.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_input.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_input_page.dart';
+import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityReportList extends StatefulWidget {
-  const QualityReportList({super.key});
+class DeodorizingFiltrationListPage extends StatefulWidget {
+  const DeodorizingFiltrationListPage({super.key});
 
   @override
-  State<QualityReportList> createState() => _QualityReportListState();
+  State<DeodorizingFiltrationListPage> createState() =>
+      _DeodorizingFiltrationListPageState();
 }
 
-class _QualityReportListState extends State<QualityReportList> {
-  DataFormNoEntity? formData;
+class _DeodorizingFiltrationListPageState
+    extends State<DeodorizingFiltrationListPage> {
+  DataFormNoEntity? formQualityRefinery;
 
   @override
   void initState() {
+    super.initState();
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      context.read<QualityReportRefineryProvider>().fetchAllReports(
-        null,
-        null,
-        username ?? "",
-        role ?? "",
-        plantCode,
-      );
-      context.read<ValueProvider>().fetchOilTypes();
-    });
-
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) async =>
-    // );
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) => context
+          .read<DeodorizingFiltrationProvider>()
+          .fetchAllTicket(null, null, username ?? "", role ?? "", plantCode),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final username = context.read<UserProvider>().currentUser?.username;
+    formQualityRefinery =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Logsheet_Deodorizing_Filtration")
+            .first;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol tambah report diklik");
+          log("Tombol tambah Deodorizing Filtration dilick");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => QualityReportRefineryPage(
-                    userName: username ?? "Unknown",
-                  ),
+              builder: (context) => DeodorizingFiltrationInputPage(),
             ),
           );
         },
-        label: const Text("Tambah Quality Report"),
+        label: const Text("Tambah Ticket"),
         icon: Icon(Icons.add),
         backgroundColor: Color(0xFFB91C1C),
         foregroundColor: Colors.white,
@@ -72,53 +68,21 @@ class _QualityReportListState extends State<QualityReportList> {
     );
   }
 
-  AppBar _buildAppBar() {
-    formData =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
-            .first;
-    return AppBar(
-      title: Text("Quality List (${formData!.code})"),
-      actions: [
-        context.watch<QualityReportRefineryProvider>().isLoading
-            ? CircularProgressIndicator()
-            : IconButton(
-              onPressed: () {
-                final username =
-                    context.read<UserProvider>().currentUser?.username;
-                final role = context.read<UserProvider>().currentUser?.role;
-                final plantCode =
-                    context.read<PlantProvider>().currentPlant?.code ?? "";
-                context.read<QualityReportRefineryProvider>().fetchAllReports(
-                  null,
-                  null,
-                  username ?? "",
-                  role ?? "",
-                  plantCode,
-                );
-              },
-              icon: Consumer<QualityReportRefineryProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  return const Icon(Icons.replay);
-                },
-              ),
-            ),
-      ],
-    );
-  }
+  AppBar _buildAppBar() =>
+      AppBar(title: Text("Deodorizing List (${formQualityRefinery?.code})"));
 
   Widget _buildBody() {
-    return Consumer<QualityReportRefineryProvider>(
+    return Consumer<DeodorizingFiltrationProvider>(
       builder: (context, provider, child) {
+        List<DeodorizingFiltrationEntity> filteredList =
+            provider.deodorizingList
+                .where(
+                  (e) => e.preparedStatus == null && e.checkedStatus == null,
+                )
+                .toList();
         if (provider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }
-
         if (provider.errorMessage != null) {
           return Center(
             child: Padding(
@@ -133,17 +97,23 @@ class _QualityReportListState extends State<QualityReportList> {
                   ),
                   OutlinedButton(
                     onPressed: () {
+                      final username =
+                          context.read<UserProvider>().currentUser?.username;
+                      final role =
+                          context.read<UserProvider>().currentUser?.role;
                       final plantCode =
-                          Provider.of<PlantProvider>(
-                            context,
-                            listen: false,
-                          ).currentPlant?.code ??
+                          context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      Provider.of<QualityReportRefineryProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllPreparedTransactions(plantCode);
+                      context
+                          .read<DeodorizingFiltrationProvider>()
+                          .fetchAllTicket(
+                            null,
+                            null,
+                            username ?? "",
+                            role ?? "",
+                            plantCode,
+                          );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -152,7 +122,8 @@ class _QualityReportListState extends State<QualityReportList> {
             ),
           );
         }
-        if (provider.reportsList.isEmpty) {
+
+        if (filteredList.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -165,17 +136,24 @@ class _QualityReportListState extends State<QualityReportList> {
                   ),
                   OutlinedButton(
                     onPressed: () {
+                      final username =
+                          context.read<UserProvider>().currentUser?.username ??
+                          "";
+                      final role =
+                          context.read<UserProvider>().currentUser?.role ?? "";
                       final plantCode =
-                          Provider.of<PlantProvider>(
-                            context,
-                            listen: false,
-                          ).currentPlant?.code ??
+                          context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      Provider.of<QualityReportRefineryProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllPreparedTransactions(plantCode);
+                      context
+                          .read<DeodorizingFiltrationProvider>()
+                          .fetchAllTicket(
+                            null,
+                            null,
+                            username,
+                            role,
+                            plantCode,
+                          );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -186,21 +164,27 @@ class _QualityReportListState extends State<QualityReportList> {
         }
 
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 8, vertical: 4),
           child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 88),
-            itemCount: provider.reportsList.length,
+            itemCount: filteredList.length,
             itemBuilder: (context, index) {
-              final report = provider.reportsList[index];
+              final item = filteredList[index];
+              log(
+                "list from provider length ${provider.deodorizingList.length}",
+              );
               return Card(
                 child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => QualityDetailPage(item: report),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => DeodorizingFiltrationDetailPage(
+                                item: item,
+                                isDisplayed: true,
+                              ),
+                        ),
                       ),
-                    );
-                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
@@ -214,7 +198,7 @@ class _QualityReportListState extends State<QualityReportList> {
                           children: [
                             Expanded(
                               child: Text(
-                                report.id,
+                                item.id,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -228,11 +212,11 @@ class _QualityReportListState extends State<QualityReportList> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(report),
+                                color: _getStatusColor(item),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                _getStatusText(report),
+                                _getStatusText(item),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -255,7 +239,7 @@ class _QualityReportListState extends State<QualityReportList> {
                             Text(
                               DateFormat(
                                 'yyyy-MM-dd',
-                              ).format(report.transactionDate!),
+                              ).format(item.transactionDate!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -269,7 +253,7 @@ class _QualityReportListState extends State<QualityReportList> {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              DateFormat('HH:mm').format(report.time!),
+                              DateFormat('HH:mm').format(item.time!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -283,7 +267,7 @@ class _QualityReportListState extends State<QualityReportList> {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              "Shift ${report.shift}",
+                              "Shift ${item.shift}",
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -302,7 +286,7 @@ class _QualityReportListState extends State<QualityReportList> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Entried by: ${report.entryBy}',
+                              'Entried by: ${item.entryBy}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -322,7 +306,7 @@ class _QualityReportListState extends State<QualityReportList> {
     );
   }
 
-  String _getStatusText(QualityReportRefineryEntity report) {
+  String _getStatusText(DeodorizingFiltrationEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -330,21 +314,17 @@ class _QualityReportListState extends State<QualityReportList> {
     if (report.checkedStatus == "Rejected") {
       return "Rejected";
     }
-    if (report.preparedStatusShift1 == "Approved" ||
-        report.preparedStatusShift2 == "Approved" ||
-        report.preparedStatusShift3 == "Approved") {
+    if (report.preparedStatus != null) {
       return "Prepared ${report.shift}";
     }
 
-    if (report.preparedStatusShift1 == "Rejected" ||
-        report.preparedStatusShift2 == "Rejected" ||
-        report.preparedStatusShift3 == "Rejected") {
+    if (report.preparedStatus == "Rejected") {
       return "Rejected";
     }
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityReportRefineryEntity report) {
+  Color _getStatusColor(DeodorizingFiltrationEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }
@@ -353,15 +333,11 @@ class _QualityReportListState extends State<QualityReportList> {
       return Colors.red;
     }
 
-    if (report.preparedStatusShift1 == "Approved" ||
-        report.preparedStatusShift2 == "Approved" ||
-        report.preparedStatusShift3 == "Approved") {
+    if (report.preparedStatus == "Approved") {
       return Colors.orangeAccent;
     }
 
-    if (report.preparedStatusShift1 == "Rejected" ||
-        report.preparedStatusShift2 == "Rejected" ||
-        report.preparedStatusShift3 == "Rejected") {
+    if (report.preparedStatus == "Rejected") {
       return Colors.red;
     }
     return Colors.grey;

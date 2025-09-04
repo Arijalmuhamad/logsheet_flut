@@ -30,7 +30,7 @@ class _AddUserPageState extends State<AddUserPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<UserProvider>().fetchAllRoles(),
+      (_) async => await context.read<UserProvider>().fetchAllRoles(),
     );
 
     if (widget.editingUser != null) {

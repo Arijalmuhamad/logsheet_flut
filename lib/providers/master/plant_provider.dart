@@ -39,7 +39,7 @@ class PlantProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchAllPlant() async {
+  Future<void> fetchAllPlant() async {
     _setLoading(true);
     _setErrorMessage(null);
     try {

@@ -18,7 +18,7 @@ class _UserPageState extends State<UserPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Provider.of<UserProvider>(context, listen: false).fetchAllUsers(),
+      (_) async => await context.read<UserProvider>().fetchAllUsers(),
     );
   }
 
@@ -68,11 +68,8 @@ class _UserPageState extends State<UserPage> {
                     textAlign: TextAlign.center,
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Provider.of<UserProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllUsers();
+                    onPressed: () async {
+                      await userProvider.fetchAllUsers();
                     },
                     child: const Text("Refresh"),
                   ),
@@ -94,11 +91,8 @@ class _UserPageState extends State<UserPage> {
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Provider.of<UserProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllUsers();
+                    onPressed: () async {
+                      await userProvider.fetchAllUsers();
                     },
                     child: const Text("Refresh"),
                   ),

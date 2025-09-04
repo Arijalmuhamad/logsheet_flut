@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/pretreatment_bleaching_filtration_entity.dart';
+import 'package:logsheet_app/data/remote/logsheet/pretreatment_bleaching_filtration_entity.dart';
 import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
@@ -99,51 +99,53 @@ class _FiltrationPerformInputPageState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return SizedBox(
-          height: 300,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  'Pilih Jam Input',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B),
+        return SafeArea(
+          child: SizedBox(
+            height: 300,
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Pilih Jam Input',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF655F5B),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 40,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: initialHour,
-                  ),
-                  onSelectedItemChanged: (int value) {
-                    selectedHour = value;
-                  },
-                  children: List.generate(
-                    24,
-                    (index) => Center(
-                      child: Text(
-                        '${index.toString().padLeft(2, '0')}:00',
-                        style: const TextStyle(color: Color(0xFF655F5B)),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 40,
+                    scrollController: FixedExtentScrollController(
+                      initialItem: initialHour,
+                    ),
+                    onSelectedItemChanged: (int value) {
+                      selectedHour = value;
+                    },
+                    children: List.generate(
+                      24,
+                      (index) => Center(
+                        child: Text(
+                          '${index.toString().padLeft(2, '0')}:00',
+                          style: const TextStyle(color: Color(0xFF655F5B)),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.pop(context);
-                },
-                child: const Text(
-                  'Pilih',
-                  style: TextStyle(color: Color(0xFFAB2F2B)),
+                TextButton(
+                  onPressed: () {
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Pilih',
+                    style: TextStyle(color: Color(0xFFAB2F2B)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -848,8 +850,8 @@ class _FiltrationPerformInputPageState
                   // You'll need to add 'isLoading' to your provider for this indicator
                   if (provider.isLoading) {
                     return const SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 12,
+                      height: 12,
                       child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2.0,
@@ -977,12 +979,24 @@ class _FiltrationPerformInputPageState
 
         clarity: clarityController.text,
         remarks: remarksController.text,
+        flag: "T",
+
         entryBy: currentUser?.username,
         entryDate: DateTime.now(),
+
         preparedBy: null,
         preparedDate: null,
+        preparedStatus: null,
+        preparedStatusRemarks: null,
+
+        updatedBy: null,
+        updatedDate: null,
+
         checkedBy: null,
         checkedDate: null,
+        checkedStatus: null,
+        checkedStatusRemarks: null,
+
         formNo: formData?.code,
         dateIssued: formData?.dateIssued,
         revisionNo: formData?.revisionNo,
@@ -996,6 +1010,18 @@ class _FiltrationPerformInputPageState
 
       if (success) {
         // fetch all reports
+        if (!mounted) return;
+        final username = context.read<UserProvider>().currentUser?.username;
+        final role = context.read<UserProvider>().currentUser?.role;
+        final plantCode =
+            context.read<PlantProvider>().currentPlant?.code ?? "";
+        provider.fetchAllTicket(
+          null,
+          null,
+          username ?? "",
+          role ?? "",
+          plantCode,
+        );
 
         _showSnackBar('Input berhasil');
         log('Insert successful');
@@ -1309,7 +1335,8 @@ class _FiltrationPerformInputPageState
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: currentStep == 7 ? _save : _nextStep,
+            onPressed:
+                currentStep == 7 ? () => _showAlertDialog(context) : _nextStep,
             label: Text(currentStep == 7 ? 'Save' : 'Next'),
           ),
         ),

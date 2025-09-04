@@ -1,0 +1,607 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
+import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:provider/provider.dart';
+
+class DeodorizingFiltrationApprovalDetailPage extends StatefulWidget {
+  const DeodorizingFiltrationApprovalDetailPage({
+    super.key,
+    required this.reportEntities,
+    required this.reportIdentifier,
+  });
+  final List<DeodorizingFiltrationEntity> reportEntities;
+  final String reportIdentifier;
+
+  @override
+  State<DeodorizingFiltrationApprovalDetailPage> createState() =>
+      DeodorizingFiltrationApprovalDetailPageState();
+}
+
+class DeodorizingFiltrationApprovalDetailPageState
+    extends State<DeodorizingFiltrationApprovalDetailPage> {
+  final _remarkController = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    log(widget.reportIdentifier);
+    final Map<int?, List<DeodorizingFiltrationEntity>> groupedByShift = {};
+
+    for (var report in widget.reportEntities) {
+      if (!groupedByShift.containsKey(report.shift)) {
+        groupedByShift[report.shift] = [];
+      }
+      groupedByShift[report.shift]!.add(report);
+    }
+
+    final sortedShifts = groupedByShift.keys.toList()..sort();
+
+    final allTilesAreApproved = widget.reportEntities.every(
+      (report) => report.checkedStatus == 'Approved',
+    );
+
+    final anyTilesAreRejected = widget.reportEntities.every(
+      (report) => report.checkedStatus == 'Rejected',
+    );
+    return Scaffold(
+      appBar: AppBar(title: Text('Report: ${widget.reportIdentifier}')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              width: double.infinity,
+              color: allTilesAreApproved ? Colors.green[100] : Colors.blue[100],
+              child: Text(
+                allTilesAreApproved
+                    ? 'Status: Semua Shift telah diapproved.'
+                    : anyTilesAreRejected
+                    ? 'Status: Beberapa report direject.'
+                    : 'Status: Semua shift siap diapprove.',
+                style: TextStyle(
+                  color:
+                      allTilesAreApproved
+                          ? Colors.green[800]
+                          : anyTilesAreRejected
+                          ? Colors.red[800]
+                          : Colors.blue[800],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: sortedShifts.length,
+                itemBuilder: (context, shiftIndex) {
+                  final shiftNumber = sortedShifts[shiftIndex];
+                  final entitiesForShift = groupedByShift[shiftNumber]!;
+                  return ExpansionTile(
+                    title: Text('Shift $shiftNumber (8 jam)'),
+                    children:
+                        entitiesForShift.map((report) {
+                          final isApproved = report.checkedStatus == "Approved";
+                          final isRejected = report.checkedStatus == "Rejected";
+
+                          IconData trailingIcon;
+                          Color iconColor;
+                          if (isApproved) {
+                            trailingIcon = Icons.check_rounded;
+                            iconColor = Colors.green;
+                          } else if (isRejected) {
+                            trailingIcon = Icons.check_rounded;
+                            iconColor = Colors.green;
+                          } else {
+                            trailingIcon = Icons.arrow_forward_ios;
+                            iconColor = Colors.grey;
+                          }
+
+                          return ListTile(
+                            title: Row(
+                              children: [
+                                const Icon(Icons.schedule_rounded),
+                                Text(
+                                  '${report.time != null ? '${report.time!.hour}:00' : 'N/A'} - ',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Text(
+                                  report.id,
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              'Work Center: ${report.refineryMachine} | Plant: ${report.plant} \n',
+                            ),
+                            trailing: Icon(trailingIcon, color: iconColor),
+                            onTap: () {
+                              final currentUser =
+                                  context.read<UserProvider>().currentUser;
+                              _buildBottomSheet(
+                                context,
+                                report,
+                                currentUser?.username ?? "",
+                                currentUser?.role ?? "",
+                              );
+                            },
+                          );
+                        }).toList(),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<dynamic> _buildBottomSheet(
+    BuildContext context,
+    DeodorizingFiltrationEntity report,
+    String username,
+    String role,
+  ) {
+    Color getStatusColor(String? status) {
+      if (status == 'Approved') {
+        return Colors.green;
+      }
+      if (status == 'Rejected') return Colors.red;
+      if (status == 'Prepared') {
+        return Colors.blue;
+      }
+      return Colors.grey;
+    }
+
+    String getStatusText(String? status) {
+      if (status == 'Approved') return 'Approved';
+      if (status == 'Rejected') return 'Rejected';
+      if (status == 'Prepared') return 'Prepared';
+      return 'Submitted';
+    }
+
+    // Helper to format dates or return a default string
+    String formatDate(DateTime? date) {
+      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : 'N/A';
+    }
+
+    final isApproved = report.checkedStatus == 'Approved';
+    final isRejected = report.checkedStatus == 'Rejected';
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadiusGeometry.vertical(top: Radius.circular(25)),
+      ),
+      builder:
+          (context) => Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      height: 5,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Detail Report - ${report.time != null ? DateFormat('HH:mm').format(report.time!) : 'N/A'}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: getStatusColor(report.checkedStatus),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          getStatusText(report.checkedStatus),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  //
+                  const Divider(height: 24),
+                  _buildDetailRow(
+                    'Tanggal Transaksi',
+                    report.transactionDate.toString(),
+                  ),
+                  _buildDetailRow(
+                    'Tanggal Posting',
+                    report.postingDate.toString(),
+                  ),
+                  _buildDetailRow('Shift', report.shift.toString()),
+                  const Divider(),
+                  _buildDetailRow('Ticket ID', report.id),
+                  _buildDetailRow(
+                    'Work Center',
+                    report.refineryMachine ?? 'N/A',
+                  ),
+                  _buildDetailRow('Company', report.company ?? 'N/A'),
+
+                  const Divider(),
+
+                  _buildDetailRow('Ticket ID', report.id),
+                  _buildDetailRow(
+                    'Tanggal Transaksi',
+                    formatDate(report.transactionDate),
+                  ),
+                  _buildDetailRow(
+                    'Tanggal Posting',
+                    formatDate(report.postingDate),
+                  ),
+                  _buildDetailRow('Shift', report.shift?.toString() ?? 'N/A'),
+                  _buildDetailRow(
+                    'Jam',
+                    report.time != null
+                        ? DateFormat('HH:mm').format(report.time!)
+                        : 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Work Center',
+                    report.refineryMachine ?? 'N/A',
+                  ),
+                  _buildDetailRow('Plant', report.plant ?? 'N/A'),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'FIT 701 (BPO) - tph',
+                    report.fit701Bpo?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'D701 (Vacum) - cmHg',
+                    report.d701Vacum?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'D701 (T D701) - °C',
+                    report.d701Td701?.toString() ?? 'N/A',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'E702 - °C',
+                    report.e702?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Thermopac - Inlet',
+                    report.thermopacInlet?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Thermopac - Outlet',
+                    report.thermopacOutlet?.toString() ?? 'N/A',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'D702 - Inlet - °C',
+                    report.d702Inlet?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'D702 - Outlet - °C',
+                    report.d702Outlet?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'D702 - Vacum - mbar',
+                    report.d702Vacum?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Sparging A - bar',
+                    report.spargingA ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Sparging B - bar',
+                    report.spargingB ?? 'N/A',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'E 730 Inlet - °C',
+                    report.e730Inlet ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Steam Inlet - bar',
+                    report.steamInlet ?? 'N/A',
+                  ),
+                  _buildDetailRow('Pish 706 - bar', report.pish706 ?? 'N/A'),
+                  _buildDetailRow('TIWH 706 - °C', report.tiwh706 ?? 'N/A'),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'F702 A - bar',
+                    report.f702A?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'F702 B - bar',
+                    report.f702B?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'F702 C - bar',
+                    report.f702C?.toString() ?? 'N/A',
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildDetailRow(
+                    'FIT 704 (RPO) - tph',
+                    report.fit704Rpo?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'E 704 - °C',
+                    report.e704?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'FIT 705 (PFAD) - bar',
+                    report.fit705Pfad?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'E705 - °C',
+                    report.e705?.toString() ?? 'N/A',
+                  ),
+                  _buildDetailRow('Clarity', report.clarity ?? 'N/A'),
+                  _buildDetailRow('Remarks', report.remarks ?? 'N/A'),
+
+                  const SizedBox(height: 16),
+
+                  // Section: Signatories
+                  _buildDetailRow(
+                    'Diinput oleh',
+                    '${report.entryBy ?? 'N/A'} pada ${formatDate(report.entryDate)}',
+                  ),
+                  _buildDetailRow(
+                    'Disiapkan oleh',
+                    '${report.preparedBy ?? 'N/A'} pada ${formatDate(report.preparedDate)}',
+                  ),
+                  _buildDetailRow(
+                    'Status (Prepared)',
+                    report.preparedStatus ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Remarks (Prepared)',
+                    report.preparedStatusRemarks ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Diperiksa oleh',
+                    '${report.checkedBy ?? 'N/A'} pada ${formatDate(report.checkedDate)}',
+                  ),
+                  _buildDetailRow(
+                    'Status (Checked)',
+                    report.checkedStatus ?? 'N/A',
+                  ),
+                  _buildDetailRow(
+                    'Diupdate oleh',
+                    '${report.updatedBy ?? 'N/A'} pada ${formatDate(report.updatedDate)}',
+                  ),
+
+                  _buildDetailRow(
+                    'Remark (Checked)',
+                    report.checkedStatusRemarks ?? 'N/A',
+                  ),
+                  const SizedBox(height: 24),
+                  _buildDetailRow('Form No', report.formNo ?? 'N/A'),
+                  _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
+                  _buildDetailRow('Revision No', report.revisionNo.toString()),
+                  _buildDetailRow(
+                    'Revision Date',
+                    formatDate(report.revisionDate),
+                  ),
+                  const SizedBox(height: 24),
+                  if (!isApproved && !isRejected)
+                    _buildApprovalButtonRow(context, report, username, role, (
+                      status,
+                    ) {
+                      // Update the state of the individual item
+                      setState(() {
+                        report.checkedStatus = status;
+                      });
+                    }),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(flex: 3, child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApprovalButtonRow(
+    BuildContext context,
+    DeodorizingFiltrationEntity report,
+    String username,
+    String role,
+    Function(String) onStatusChange,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              return showModalBottomSheet(
+                context: context,
+                builder:
+                    (context) => Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _remarkController,
+                            maxLines: 7,
+                            decoration: InputDecoration(
+                              labelText: "Remark untuk Reject",
+                              labelStyle: const TextStyle(
+                                color: Color(0xFF655F5B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              hintStyle: const TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                          SizedBox(height: 14),
+                          if (_remarkController.text.trim() == "")
+                            Text(
+                              "Mohon isi remark.",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: 55,
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        _remarkController.text.trim() == ""
+                                            ? null
+                                            : () async {
+                                              await _handleAction(
+                                                context,
+                                                report,
+                                                username,
+                                                role,
+                                                'Rejected',
+                                                onStatusChange,
+                                              );
+                                            },
+                                    icon: const Icon(Icons.close),
+                                    label: const Text('Reject'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+              );
+              // Handle Reject logic
+              // await _handleAction(
+              //   context,
+              //   report,
+              //   username,
+              //   role,
+              //   'Rejected'
+              //   onStatusChange,
+              // );
+            },
+            icon: const Icon(Icons.close),
+            label: const Text('Reject'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              // Handle Approve logic
+              await _handleAction(
+                context,
+                report,
+                username,
+                role,
+                'Approved',
+                onStatusChange,
+              );
+            },
+            icon: const Icon(Icons.check),
+            label: const Text('Approve'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAction(
+    BuildContext context,
+    DeodorizingFiltrationEntity report,
+    String username,
+    String role,
+    String status,
+    Function(String) onStatusChange,
+  ) async {
+    final provider = context.read<DeodorizingFiltrationProvider>();
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    await provider.sendApproveRejectReport(
+      username,
+      status,
+      role,
+      report.shift!,
+      _remarkController.text == "" ? null : _remarkController.text,
+      report.id,
+      role,
+      plantCode,
+    );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Report ${report.id} berhasil di$status.'),
+        backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+        duration: Duration(milliseconds: 500),
+      ),
+    );
+
+    // Call the callback to update the UI
+    onStatusChange(status);
+
+    Navigator.of(context).pop(); // Dismiss the bottom sheet
+  }
+}

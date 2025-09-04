@@ -12,30 +12,44 @@ getMySQLConnection() async {
     log('Reusing existing MySQL connection');
     return (connection: _connection, error: null);
   }
-  final conn = await MySQLConnection.createConnection(
-    // AWS
-    // host: dotenv.env['DB_HOST'],
-    // userName: dotenv.env['DB_USER']!,
-    // password: dotenv.env['DB_PASSWORD']!,
-    // databaseName: dotenv.env['DB_NAME'],
-    // port: int.parse(dotenv.env['DB_PORT']!),
-
+  final isAWS = "F"; // "T" if use aws RDS
+  final MySQLConnection? conn;
+  if (isAWS == "T") {
+    conn = await MySQLConnection.createConnection(
+      // AWS
+      host: dotenv.env['DB_HOST'],
+      userName: dotenv.env['DB_USER']!,
+      password: dotenv.env['DB_PASSWORD']!,
+      databaseName: dotenv.env['DB_NAME'],
+      port: int.parse(dotenv.env['DB_PORT']!),
+      secure: true,
+    ).timeout(
+      Duration(seconds: 30),
+      onTimeout: () {
+        throw TimeoutException(
+          'Koneksi ke database gagal: Waktu koneksi habis. Pastikan perangkat Anda terhubung ke jaringan yang benar dan IP database dapat dijangkau.',
+        );
+      },
+    );
+  } else {
     // KPN
-    host: dotenv.env['DB_HOST_KPN'],
-    userName: dotenv.env['DB_USER_KPN']!,
-    password: dotenv.env['DB_PASSWORD_KPN']!,
-    databaseName: dotenv.env['DB_NAME_KPN'],
-    port: int.parse(dotenv.env['DB_PORT_KPN']!),
-    secure: false,
-  ).timeout(
-    Duration(seconds: 30),
-    onTimeout: () {
-      throw TimeoutException(
-        'Koneksi ke database gagal: Waktu koneksi habis. Pastikan perangkat Anda terhubung ke jaringan yang benar dan IP database dapat dijangkau.',
-      );
-    },
-  );
-
+    conn = await MySQLConnection.createConnection(
+      // AWS
+      host: dotenv.env['DB_HOST_KPN'],
+      userName: dotenv.env['DB_USER_KPN']!,
+      password: dotenv.env['DB_PASSWORD_KPN']!,
+      databaseName: dotenv.env['DB_NAME_KPN'],
+      port: int.parse(dotenv.env['DB_PORT_KPN']!),
+      secure: false,
+    ).timeout(
+      Duration(seconds: 30),
+      onTimeout: () {
+        throw TimeoutException(
+          'Koneksi ke database gagal: Waktu koneksi habis. Pastikan perangkat Anda terhubung ke jaringan yang benar dan IP database dapat dijangkau.',
+        );
+      },
+    );
+  }
   try {
     await conn.connect();
     _connection = conn;

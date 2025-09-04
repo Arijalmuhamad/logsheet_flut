@@ -23,11 +23,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => _checkLoginStatus(),
-    );
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context.read<DataFormNoProvider>().fetchAll();
+      Future.delayed(Duration(milliseconds: 100));
+      if (!mounted) return;
+      await _checkLoginStatus();
     });
   }
 

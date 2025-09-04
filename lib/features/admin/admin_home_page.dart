@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
-import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/fer_daily_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_porduction/fractination/fra_daily_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/business_unit/business_unit_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/plant/plant_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/user/user_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_approval.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_list.dart';
-import 'package:logsheet_app/features/admin/pages/master/master_mastervalue.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_list_page.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import '../auth/login_page.dart';
-import 'pages/quality/quality_report_data.dart';
+import 'pages/quality/quality_report_list_page.dart';
 
 // import 'pages/quality_report/quality_report_main.dart';
 
@@ -370,7 +361,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => QualityApprovalListScreen(),
+                      builder: (_) => QualityApprovalListScreenPage(),
                     ),
                   );
                 },
@@ -395,7 +386,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (_) => QualityListPage(
+                          (_) => QualityReportListPage(
                             userName: widget.userEntity.username,
                             role: widget.userEntity.role,
                           ),

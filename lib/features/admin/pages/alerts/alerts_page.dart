@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_screen.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:provider/provider.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -21,9 +21,9 @@ class _AlertsPageState extends State<AlertsPage> {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context
-          .read<QualityReportRefineryProvider>()
-          .fetchAllPreparedTransactions(plantCode),
+      (_) => context.read<QualityRefineryProvider>().fetchReportsForManager(
+        plantCode,
+      ),
     );
   }
 
@@ -31,7 +31,7 @@ class _AlertsPageState extends State<AlertsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Alerts")),
-      body: Consumer<QualityReportRefineryProvider>(
+      body: Consumer<QualityRefineryProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingAlert) {
             return Center(child: const CircularProgressIndicator());
@@ -54,7 +54,7 @@ class _AlertsPageState extends State<AlertsPage> {
                 onTap: () {
                   final reportIdentifier = "$postingDate|$workCenter|$oilType";
 
-                  final List<QualityReportRefineryEntity> reportEntities =
+                  final List<QualityRefineryEntity> reportEntities =
                       provider.approvedTransactions
                           .where(
                             (report) =>

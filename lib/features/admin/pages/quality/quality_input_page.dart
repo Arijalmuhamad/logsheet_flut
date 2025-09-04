@@ -1,4 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
@@ -8,29 +7,28 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:logsheet_app/core/database/app_database.dart';
 import '../../../../providers/master/user_provider.dart';
 
-class QualityReportRefineryPage extends StatefulWidget {
+class QualityRefineryInputPage extends StatefulWidget {
   final String userName;
 
-  const QualityReportRefineryPage({super.key, required this.userName});
+  const QualityRefineryInputPage({super.key, required this.userName});
 
   @override
-  State<QualityReportRefineryPage> createState() =>
-      _QualityReportRefineryPageState();
+  State<QualityRefineryInputPage> createState() =>
+      _QualityRefineryInputPageState();
 }
 
-class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
+class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
   // Database & DAO
 
   // Data dropdown & kontrol
@@ -105,7 +103,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
 
   // W SBE QC
   // ignore: non_constant_identifier_names
-  final TextEditingController WSBEQCController = TextEditingController();
+  final TextEditingController WOCQCController = TextEditingController();
   final TextEditingController wasteMNIController = TextEditingController();
 
   // Remark
@@ -118,12 +116,20 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ValueProvider>().fetchAllInitialData();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<ValueProvider>().fetchAllInitialData();
+    // });
+
+    rmFlowRateController.addListener(() {
+      log('FlowRate changed: ${rmFlowRateController.text}');
+    });
+
+    rmTempController.addListener(() {
+      log('Temp changed: ${rmTempController.text}');
     });
   }
 
-  void _resetForm() {
+  Future<void> _resetForm() async {
     selectedTankSource = null;
     selectedPartSource = null;
     selectedHour = null;
@@ -180,11 +186,13 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     bpToTankController.clear();
 
     //WSBEQC
-    WSBEQCController.clear();
+    WOCQCController.clear();
     wasteMNIController.clear();
 
     // Remarks
     remarkController.clear();
+
+    await context.read<ValueProvider>().fetchAllInitialData();
   }
 
   @override
@@ -219,7 +227,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       bpFFAController, bpMNIController, bpToTankController,
 
       //WSBEQC
-      WSBEQCController, wasteMNIController,
+      WOCQCController, wasteMNIController,
       // Remarks
       remarkController,
     ];
@@ -296,7 +304,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   Future<void> _refreshPage() async {
     setState(() => isLoading = true);
     await Future.delayed(const Duration(milliseconds: 600));
-    _resetForm();
+    await _resetForm();
     currentStep = 0;
     setState(() => isLoading = false);
   }
@@ -344,9 +352,10 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
             ElevatedButton(
               onPressed: () async {
                 await _saveQualityReport();
+                if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
-              child: Consumer<QualityReportRefineryProvider>(
+              child: Consumer<QualityRefineryProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return SizedBox(
@@ -366,7 +375,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
   }
 
   Future<void> _saveQualityReport() async {
-    final reportProvider = context.read<QualityReportRefineryProvider>();
+    final reportProvider = context.read<QualityRefineryProvider>();
     final userProvider = context.read<UserProvider>();
     final plantProvider = context.read<PlantProvider>();
     log('Save report button clicked.');
@@ -474,7 +483,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
       int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
       final update = await context
-          .read<QualityReportRefineryProvider>()
+          .read<QualityRefineryProvider>()
           .updateAutoNumber(plantCode, digit);
       String lastDigit = digit.toString().padLeft(6, '0');
       if (lastDigit == "") {
@@ -490,7 +499,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     try {
       final time = DateFormat('HH:mm:ss').parse(formattedTime);
 
-      final provider = context.read<QualityReportRefineryProvider>();
+      final provider = context.read<QualityRefineryProvider>();
 
       final currentUser = context.read<UserProvider>().currentUser;
 
@@ -507,14 +516,15 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       );
 
       log("Form ID: ${formData!.code}");
-      final entity = QualityReportRefineryEntity(
+      final entity = QualityRefineryEntity(
         id: await buildTicketNumber(),
         transactionDate: getTransactionDate(),
         postingDate: postingDate,
         time: time,
         shift: getShiftBasedOnTimeAndDate(fullDateTimeForShift),
-        rmFlowRate: parseDouble(rmFlowRateController),
         rmTankSource: tanksource,
+        rmFlowRate: parseDouble(rmFlowRateController),
+        rmTemp: parseDouble(rmTempController),
         rmFFA: parseDouble(rmFFAController),
         rmIV: parseDouble(rmIVController),
         rmPV: parseDouble(rmPVController),
@@ -540,40 +550,29 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         bpFFA: parseDouble(bpFFAController),
         bpMNI: parseDouble(bpMNIController),
         bpToTank: selectedBpToTank,
-        wSBEQC: parseDouble(WSBEQCController),
+        wSBEQC: parseDouble(WOCQCController),
         wasteMNI: parseDouble(wasteMNIController),
         remarks: (remarkController.text),
         checkedBy: null,
         checkedDate: null,
-        preparedByShift1: null,
-        preparedDateShift1: null,
+        preparedBy: null,
+        preparedDate: null,
+        preparedStatusRemarks: null,
         company: businessUnitCode,
         plant: plantCode,
+        flag: "T",
         entryBy: currentUser?.username,
         entryDate: DateTime.now(),
         oilType: selectedOilType,
         fgTankTo: selectedToTankGroup,
-        rmTemp: parseDouble(rmTempController),
+
         fgPV: parseDouble(fgPVController),
-        preparedStatusShift1: null,
-        preparedByShift2: null,
-        preparedDateShift2: null,
-        preparedStatusShift2: null,
-        preparedByShift3: null,
-        preparedDateShift3: null,
-        preparedStatusShift3: null,
-        preparedStatusRemarksShift: null,
+        preparedStatus: null,
         checkedStatus: null,
         checkedStatusRemarks: null,
         workCenter: selectedWorkCenter,
         updatedBy: null,
         updatedDate: null,
-        preparedByShift4: null,
-        preparedDateShift4: null,
-        preparedStatusShift4: null,
-        preparedByShift5: null,
-        preparedDateShift5: null,
-        preparedStatusShift5: null,
         formNo: formData!.code,
         dateIssued: formData!.dateIssued,
         revisionNo: formData!.revisionNo,
@@ -583,12 +582,12 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
       bool? success;
 
       log('attempt to insert');
-      success = await provider.insert(entity);
+      success = await provider.insertTicket(entity);
 
       log("is success? $success");
 
       if (success) {
-        context.read<QualityReportRefineryProvider>().fetchAllReports(
+        context.read<QualityRefineryProvider>().fetchAllTickets(
           null,
           null,
           userProvider.currentUser?.username ?? "",
@@ -625,66 +624,68 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return SizedBox(
-          height: 300,
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  'Pilih Jam Input',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFF655F5B),
+        return SafeArea(
+          child: SizedBox(
+            height: 300,
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Pilih Jam Input',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF655F5B),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  itemExtent: 40,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: initialHour,
-                  ),
-                  onSelectedItemChanged: (int value) {
-                    selectedHour = value;
-                  },
-                  children: List.generate(
-                    24,
-                    (index) => Center(
-                      child: Text(
-                        '${index.toString().padLeft(2, '0')}:00',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF655F5B),
+                Expanded(
+                  child: CupertinoPicker(
+                    itemExtent: 40,
+                    scrollController: FixedExtentScrollController(
+                      initialItem: initialHour,
+                    ),
+                    onSelectedItemChanged: (int value) {
+                      selectedHour = value;
+                    },
+                    children: List.generate(
+                      24,
+                      (index) => Center(
+                        child: Text(
+                          '${index.toString().padLeft(2, '0')}:00',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF655F5B),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {}); // Refresh UI
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFAB2F2B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {}); // Refresh UI
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFAB2F2B),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    child: const Text('Pilih', style: TextStyle(fontSize: 16)),
                   ),
-                  child: const Text('Pilih', style: TextStyle(fontSize: 16)),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -1144,10 +1145,10 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         return Column(
           children: [
             _buildTextField(
-              controller: WSBEQCController,
-              label: 'SBE',
+              controller: WOCQCController,
+              label: 'OC',
               icon: Icons.high_quality,
-              hintText: 'Masukkan Waste SBE',
+              hintText: 'Masukkan OC',
             ),
             _buildTextField(
               controller: wasteMNIController,
@@ -1179,343 +1180,429 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Transaction Date: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Refinery Dropdown
-                Consumer<ValueProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.workCenterLists.isEmpty) {
-                      // Return a disabled dropdown with a loading indicator or message
-                      return DropdownButtonFormField<String>(
-                        value: null,
-                        items: [],
-                        onChanged: null, // Disable the dropdown
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF0ECE9),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          hintText: 'Loading Work Center...',
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return DropdownButtonFormField<String>(
-                      value: selectedWorkCenter,
-                      items:
-                          provider.workCenterLists.map((machine) {
-                            return DropdownMenuItem<String>(
-                              value: machine.code,
-                              child: Text(
-                                "${machine.code} | ${machine.name}",
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedWorkCenter = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF0ECE9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'Pilih Work Center',
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: SvgPicture.asset(
-                            'assets/icons/oil-refinery-tanks.svg',
-                            height: 24,
-                            width: 24,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-
-                // Oil Type Dropdown
-                Consumer<ValueProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.oilTypeLists.isEmpty) {
-                      // Return a disabled dropdown with a loading indicator or message
-                      return DropdownButtonFormField<String>(
-                        value: null,
-                        items: [],
-                        onChanged: null, // Disable the dropdown
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF0ECE9),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          hintText: 'Loading Oil Types...',
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return DropdownButtonFormField<String>(
-                      value: selectedOilType,
-                      items:
-                          provider.oilTypeLists.map((oil) {
-                            return DropdownMenuItem<String>(
-                              value: oil.code,
-                              child: Text(
-                                oil.code,
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedOilType = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF0ECE9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'Pilih Oil Type',
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Icon(Icons.oil_barrel_rounded),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-
-                // Tank Source Dropdown
-                Consumer<ValueProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.tankSourceList.isEmpty) {
-                      // Return a disabled dropdown with a loading indicator or message
-                      return DropdownButtonFormField<String>(
-                        value: null,
-                        items: [],
-                        onChanged: null, // Disable the dropdown
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF0ECE9),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          hintText: 'Loading Tank Source...',
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                    return DropdownButtonFormField<String>(
-                      value: selectedTankSource,
-                      isExpanded: true,
-                      items:
-                          provider.tankSourceList.map((tank) {
-                            return DropdownMenuItem<String>(
-                              value: tank.code,
-                              child: Text(
-                                tank.code,
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedTankSource = value);
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF0ECE9),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'Pilih tank source',
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: SvgPicture.asset(
-                            'assets/icons/oil-refinery-tanks.svg',
-                            height: 24,
-                            width: 24,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-
-                // Jam Input
-                InkWell(
-                  onTap: () => _showHourPicker(context),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: const Icon(Icons.access_time),
-                    ),
-                    child: Text(
-                      selectedHour != null
-                          ? '${selectedHour.toString().padLeft(2, '0')}:00'
-                          : 'Pilih jam input',
-                      style: TextStyle(
-                        color:
-                            selectedHour != null
-                                ? const Color(0xFF655F5B)
-                                : Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                if (selectedHour != null &&
-                    selectedWorkCenter != null &&
-                    selectedOilType != null &&
-                    selectedTankSource != null) ...[
-                  // Step Indicator
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(6, (index) {
-                      final isSelected = currentStep == index;
-                      return InkWell(
-                        onTap: () => _goToStep(index),
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 6),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color:
-                                isSelected
-                                    ? const Color(0xFFAB2F2B)
-                                    : Colors.grey.shade300,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color:
-                                    isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF655F5B),
-                                fontWeight: FontWeight.bold,
+                    children: [
+                      Text(
+                        "Transaction Date: ",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Refinery Dropdown
+                  Consumer<ValueProvider>(
+                    builder: (context, provider, child) {
+                      if (provider.isLoading) {
+                        // Return a disabled dropdown with a loading indicator or message
+                        return DropdownButtonFormField<String>(
+                          value: null,
+                          items: [],
+                          onChanged: null, // Disable the dropdown
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Loading Work Center...',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
+                            ),
+                          ),
+                        );
+                      }
+                      if (provider.workCenterLists.isEmpty) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Work Center tidak ditemukan.',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Icon(Icons.warning_amber_rounded),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () {
+                                context
+                                    .read<ValueProvider>()
+                                    .fetchWorkCenterLists();
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                      return DropdownButtonFormField<String>(
+                        value: selectedWorkCenter,
+                        items:
+                            provider.workCenterLists.map((machine) {
+                              return DropdownMenuItem<String>(
+                                value: machine.code,
+                                child: Text(
+                                  "${machine.code} | ${machine.name}",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedWorkCenter = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Pilih Work Center',
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: SvgPicture.asset(
+                              'assets/icons/oil-refinery-tanks.svg',
+                              height: 24,
+                              width: 24,
                             ),
                           ),
                         ),
                       );
-                    }),
+                    },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
 
-                  // Step Form
-                  Card(
-                    color: Colors.white,
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            getStepTitle(),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1E1E1E),
+                  // Oil Type Dropdown
+                  Consumer<ValueProvider>(
+                    builder: (context, provider, child) {
+                      if (provider.isLoading) {
+                        // Return a disabled dropdown with a loading indicator or message
+                        return DropdownButtonFormField<String>(
+                          value: null,
+                          items: [],
+                          onChanged: null, // Disable the dropdown
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Loading Oil Types...',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          _buildStepContent(),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                        );
+                      }
 
-                  // Navigation Buttons
-                  _navigationButton(context),
-                  const SizedBox(height: 16),
-                ] else
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: Center(
+                      if (provider.oilTypeLists.isEmpty) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Oil Types tidak ditemukan.',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Icon(Icons.warning_amber_rounded),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () {
+                                context.read<ValueProvider>().fetchOilTypes();
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                      return DropdownButtonFormField<String>(
+                        value: selectedOilType,
+                        items:
+                            provider.oilTypeLists.map((oil) {
+                              return DropdownMenuItem<String>(
+                                value: oil.code,
+                                child: Text(
+                                  oil.code,
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedOilType = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Pilih Oil Type',
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Icon(Icons.oil_barrel_rounded),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Tank Source Dropdown
+                  Consumer<ValueProvider>(
+                    builder: (context, provider, child) {
+                      if (provider.isLoading) {
+                        // Return a disabled dropdown with a loading indicator or message
+                        return DropdownButtonFormField<String>(
+                          value: null,
+                          items: [],
+                          onChanged: null, // Disable the dropdown
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Loading Tank Source...',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (provider.tankSourceList.isEmpty) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Tank Sources tidak ditemukan.',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Icon(Icons.warning_amber_rounded),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () {
+                                context
+                                    .read<ValueProvider>()
+                                    .fetchTankSourceLists();
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                      return DropdownButtonFormField<String>(
+                        value: selectedTankSource,
+                        isExpanded: true,
+                        items:
+                            provider.tankSourceList.map((tank) {
+                              return DropdownMenuItem<String>(
+                                value: tank.code,
+                                child: Text(
+                                  tank.code,
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() => selectedTankSource = value);
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Pilih tank source',
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: SvgPicture.asset(
+                              'assets/icons/oil-refinery-tanks.svg',
+                              height: 24,
+                              width: 24,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Jam Input
+                  InkWell(
+                    onTap: () => _showHourPicker(context),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.access_time),
+                      ),
                       child: Text(
-                        'Silakan pilih Part terlebih dahulu.',
+                        selectedHour != null
+                            ? '${selectedHour.toString().padLeft(2, '0')}:00'
+                            : 'Pilih jam input',
                         style: TextStyle(
-                          color: Colors.red.shade600,
-                          fontWeight: FontWeight.w500,
+                          color:
+                              selectedHour != null
+                                  ? const Color(0xFF655F5B)
+                                  : Colors.grey.shade600,
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
-          ),
+                  const SizedBox(height: 24),
 
-          // Loading Overlay
-          if (isLoading)
-            Container(
-              color: Colors.black26,
-              child: const Center(child: CircularProgressIndicator()),
+                  if (selectedHour != null &&
+                      selectedWorkCenter != null &&
+                      selectedOilType != null &&
+                      selectedTankSource != null) ...[
+                    // Step Indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(6, (index) {
+                        final isSelected = currentStep == index;
+                        return InkWell(
+                          onTap: () => _goToStep(index),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color:
+                                  isSelected
+                                      ? const Color(0xFFAB2F2B)
+                                      : Colors.grey.shade300,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : const Color(0xFF655F5B),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Step Form
+                    Card(
+                      color: Colors.white,
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              getStepTitle(),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1E1E1E),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildStepContent(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Navigation Buttons
+                    _navigationButton(context),
+                    const SizedBox(height: 16),
+                  ] else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: Text(
+                          'Silakan pilih Part terlebih dahulu.',
+                          style: TextStyle(
+                            color: Colors.red.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-        ],
+
+            // Loading Overlay
+            if (isLoading)
+              Container(
+                color: Colors.black26,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1544,7 +1631,7 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton.icon(
-            icon: Consumer<QualityReportRefineryProvider>(
+            icon: Consumer<QualityRefineryProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
                   return SizedBox(
@@ -1580,7 +1667,9 @@ class _QualityReportRefineryPageState extends State<QualityReportRefineryPage> {
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
+            .where(
+              (form) => form.isMenu == "Quality_Report" && form.isActive == "T",
+            )
             .first;
 
     log("${formData!.code}");

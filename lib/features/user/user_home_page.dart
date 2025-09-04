@@ -3,20 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_list_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_approval.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_data.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_list.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_list_page.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:provider/provider.dart';
 import '../auth/login_page.dart';
 
@@ -31,9 +32,9 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   Timer? _alertTimer;
-  DataFormNoEntity? formQualityRefinery, formPretreatment;
+  DataFormNoEntity? formQualityRefinery, formPretreatment, formDeodorizing;
 
-  void _logout() async {
+  Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder:
@@ -62,6 +63,9 @@ class _UserHomePageState extends State<UserHomePage> {
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
       );
+
+      final storage = StorageService();
+      await storage.deleteAllLoginData();
     }
   }
 
@@ -109,8 +113,9 @@ class _UserHomePageState extends State<UserHomePage> {
     if (userProvider.currentUser?.role == "MGR") {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await context
-            .read<QualityReportRefineryProvider>()
+            .read<QualityRefineryProvider>()
             .fetchReadyForManagerApprovalReports();
+        if (!mounted) return;
       });
     }
 
@@ -124,7 +129,7 @@ class _UserHomePageState extends State<UserHomePage> {
       final userProvider = context.read<UserProvider>();
       if (userProvider.currentUser?.role == "MGR") {
         context
-            .read<QualityReportRefineryProvider>()
+            .read<QualityRefineryProvider>()
             .fetchReadyForManagerApprovalReports();
       }
     }
@@ -142,7 +147,9 @@ class _UserHomePageState extends State<UserHomePage> {
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
+            .where(
+              (form) => form.isMenu == "Quality_Report" && form.isActive == "T",
+            )
             .first;
     formPretreatment =
         context
@@ -153,8 +160,16 @@ class _UserHomePageState extends State<UserHomePage> {
                   form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration",
             )
             .first;
+
+    formDeodorizing =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Logsheet_Deodorizing_Filtration")
+            .first;
     final userRole = widget.userEntity.role;
     return Scaffold(
+      drawerEnableOpenDragGesture: true,
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -166,7 +181,7 @@ class _UserHomePageState extends State<UserHomePage> {
         ),
         actions: [
           if (widget.userEntity.role == "MGR")
-            Consumer<QualityReportRefineryProvider>(
+            Consumer<QualityRefineryProvider>(
               builder: (context, provider, child) {
                 return IconButton(
                   onPressed: () {
@@ -341,7 +356,7 @@ class _UserHomePageState extends State<UserHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => QualityApprovalListScreen(),
+                          builder: (_) => QualityApprovalListScreenPage(),
                         ),
                       );
                     },
@@ -365,7 +380,7 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => QualityListPage(
+                            (_) => QualityReportListPage(
                               userName: user.username,
                               role: user.role,
                             ),
@@ -403,7 +418,9 @@ class _UserHomePageState extends State<UserHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => QualityApprovalListScreen(),
+                          builder:
+                              (_) =>
+                                  PretreatmentBleachingFiltrationApprovalListPage(),
                         ),
                       );
                     },
@@ -427,14 +444,82 @@ class _UserHomePageState extends State<UserHomePage> {
                   icon: Icons.receipt_long_outlined,
                   title: 'Reports (${formPretreatment!.code})',
                   onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                LogsheetPretreatmentBleachingFiltrationReportListsPage(
+                                  userName: user.username,
+                                  role: user.role,
+                                ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+          // Deodorizing Filtration Logsheet
+          if (["ADM", "LEAD", "OPR", "MGR"].contains(userRole)) ...[
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: const Text(
+                'Deodorizing Filtration',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                if (["MGR", "ADM"].contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formDeodorizing!.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => DeodorizingFiltrationApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List ${formDeodorizing!.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DeodorizingFiltrationListPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDeodorizing!.code})',
+                  onTap: () {
+                    // TODO: CREATE REPORT LIST
                     // Navigator.push(
                     //   context,
                     //   MaterialPageRoute(
                     //     builder:
-                    //         (_) => QualityListPage(
-                    //           userName: user.username,
-                    //           role: user.role,
-                    //         ),
+                    //         (_) =>
+                    //             LogsheetPretreatmentBleachingFiltrationReportListsPage(
+                    //               userName: user.username,
+                    //               role: user.role,
+                    //             ),
                     //   ),
                     // );
                   },

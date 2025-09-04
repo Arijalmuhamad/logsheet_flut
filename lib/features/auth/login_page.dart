@@ -40,10 +40,9 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<BusinessUnitProvider>().fetchAllBusinessUnits(),
-    );
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<BusinessUnitProvider>().fetchAllBusinessUnits();
+      if (!mounted) return;
       await context.read<DataFormNoProvider>().fetchAll();
     });
   }
@@ -93,7 +92,6 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       //login to the mysql database
-
       final user = await userProvider.loginUser(username, password);
 
       if (user != null) {
@@ -116,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
           log("login plant in provider: ${plantProvider.currentPlant?.code}");
 
           // Save to StorageService
-          _saveToStorageService(
+          await _saveToStorageService(
             user: user,
             plant: selectedPlantEntity,
             bu: selectedBusinessUnitEntity,
@@ -149,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
           plantProvider.setCurrentPlant(selectedPlantEntity);
 
           // Save to StorageService
-          _saveToStorageService(
+          await _saveToStorageService(
             user: user,
             plant: selectedPlantEntity,
             bu: selectedBusinessUnitEntity,
@@ -358,8 +356,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               suffixIcon: IconButton(
                                 icon: const Icon(Icons.refresh),
-                                onPressed: () {
-                                  context
+                                onPressed: () async {
+                                  await context
                                       .read<BusinessUnitProvider>()
                                       .fetchAllBusinessUnits();
                                 },
@@ -461,8 +459,10 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               suffixIcon: IconButton(
                                 icon: const Icon(Icons.refresh),
-                                onPressed: () {
-                                  context.read<PlantProvider>().fetchAllPlant();
+                                onPressed: () async {
+                                  await context
+                                      .read<PlantProvider>()
+                                      .fetchAllPlant();
                                 },
                               ),
                             ),

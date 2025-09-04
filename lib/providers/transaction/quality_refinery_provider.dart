@@ -1,14 +1,14 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/repositories/transaction/quality_report_refinery_repository.dart';
+import 'package:logsheet_app/data/repositories/quality_refinery/quality_refinery_repository.dart';
 
-class QualityReportRefineryProvider with ChangeNotifier {
+class QualityRefineryProvider with ChangeNotifier {
   final QualityReportRefineryRepository _repository;
 
-  QualityReportRefineryProvider(this._repository);
+  QualityRefineryProvider(this._repository);
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -16,18 +16,23 @@ class QualityReportRefineryProvider with ChangeNotifier {
   bool _isLoadingDelete = false;
   bool get isLoadingDelete => _isLoadingDelete;
 
+  bool _isLoadingFilterTicket = false;
+  bool get isLoadingFilterReport => _isLoadingFilterTicket;
+
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
-  List<QualityReportRefineryEntity> _reportsList = [];
-  List<QualityReportRefineryEntity> get reportsList => _reportsList;
+  List<QualityRefineryEntity> _reportsList = [];
+  List<QualityRefineryEntity> get reportsList => _reportsList;
 
-  List<QualityReportRefineryEntity> _approvedTransactions = [];
-  List<QualityReportRefineryEntity> get approvedTransactions =>
-      _approvedTransactions;
+  List<QualityRefineryEntity> _filteredTickets = [];
+  List<QualityRefineryEntity> get filteredTickets => _filteredTickets;
+
+  List<QualityRefineryEntity> _approvedTransactions = [];
+  List<QualityRefineryEntity> get approvedTransactions => _approvedTransactions;
 
   List<ReportNotificationDataEntity> _readyReportsList = [];
   List<ReportNotificationDataEntity> get readyReportsList => _readyReportsList;
@@ -37,6 +42,11 @@ class QualityReportRefineryProvider with ChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setLoadingFilterTicket(bool value) {
+    _isLoadingFilterTicket = value;
     notifyListeners();
   }
 
@@ -74,7 +84,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insert(QualityReportRefineryEntity entity) async {
+  Future<bool> insertTicket(QualityRefineryEntity entity) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -100,11 +110,12 @@ class QualityReportRefineryProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> deleteReportById(String id) async {
+  Future<bool> deleteTicketById(String id) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
     try {
-      final response = await _repository.deleteReport(id);
+      final response = await _repository.deleteTicket(id);
+      log("Quality Refinery Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 
       _reportsList.removeWhere((element) => element.id == id);
@@ -119,7 +130,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
     }
   }
 
-  void fetchAllReports(
+  Future<void> fetchAllTickets(
     DateTime? dateFilter,
     String? time,
     String username,
@@ -131,7 +142,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Fetching reports...');
-      _reportsList = await _repository.getAllReports(
+      _reportsList = await _repository.getAllTickets(
         dateFilter,
         time,
         username,
@@ -146,12 +157,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
           if (filter) {
             _reportsList =
                 _reportsList
-                    .where(
-                      (report) =>
-                          report.preparedByShift1 == null &&
-                          report.preparedByShift2 == null &&
-                          report.preparedByShift3 == null,
-                    )
+                    .where((report) => report.preparedBy == null)
                     .toList();
             notifyListeners();
           }
@@ -163,9 +169,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
                 _reportsList
                     .where(
                       (report) =>
-                          report.preparedByShift1 != null &&
-                          report.preparedByShift2 != null &&
-                          report.preparedByShift3 != null &&
+                          report.preparedBy != null &&
                           report.checkedStatus == null,
                     )
                     .toList();
@@ -206,7 +210,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    QualityReportRefineryEntity report,
+    QualityRefineryEntity report,
     String username,
     String role,
     String plantCode,
@@ -215,10 +219,10 @@ class QualityReportRefineryProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReport(report);
+      final result = await _repository.updateReportTicket(report);
       log(result.toString());
-      fetchAllReports(null, null, username, role, plantCode);
-      await Future.delayed(const Duration(seconds: 1));
+      fetchAllTickets(null, null, username, role, plantCode);
+      await Future.delayed(const Duration(milliseconds: 300));
       _setLoading(false);
       return result;
     } catch (e) {
@@ -233,7 +237,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
     String status,
     String userRole,
     int shift,
-    String remark,
+    String? remark,
     String id,
     String role,
     String plantCode,
@@ -243,7 +247,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
 
     try {
       log("Sending Approval or Rejection for shift $shift report");
-      final result = await _repository.sendApproveRejectReport(
+      final result = await _repository.sendApproveRejectTicket(
         username,
         status,
         userRole,
@@ -252,7 +256,7 @@ class QualityReportRefineryProvider with ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllReports(null, null, username, role, plantCode);
+      fetchAllTickets(null, null, username, role, plantCode);
       return result;
     } catch (e) {
       _setErrorMessage('Failed to send approval or rejection report: $e');
@@ -261,13 +265,11 @@ class QualityReportRefineryProvider with ChangeNotifier {
     }
   }
 
-  void fetchAllPreparedTransactions(String plantCode) async {
+  Future<void> fetchReportsForManager(String plantCode) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
-      _approvedTransactions = await _repository.getAllPreparedTransactions(
-        plantCode,
-      );
+      _approvedTransactions = await _repository.getReportsForManager(plantCode);
       await Future.delayed(Duration(milliseconds: 500));
       _setLoading(false);
     } catch (e) {
@@ -311,6 +313,28 @@ class QualityReportRefineryProvider with ChangeNotifier {
       _setErrorMessage('Failed to fetch reported hours: $e');
       _setLoadingAlert(false);
       return [];
+    }
+  }
+
+  Future<void> fetchFilteredTickets(
+    DateTime? dateFilter,
+    String plantCode,
+    String? shift,
+  ) async {
+    _setLoadingFilterTicket(true);
+    _setErrorMessage(null);
+
+    try {
+      _filteredTickets = await _repository.getFilteredTickets(
+        dateFilter,
+        plantCode,
+        shift,
+      );
+      _setLoadingFilterTicket(false);
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage('(QR Provider) Failed fetch filtered QR ticket: $e');
+      _setLoading(false);
     }
   }
 }

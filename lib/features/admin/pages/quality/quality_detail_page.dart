@@ -3,16 +3,16 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_report_edit.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_edit_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityDetailPage extends StatefulWidget {
-  final QualityReportRefineryEntity item;
+  final QualityRefineryEntity item;
   final bool isDisplayed;
 
   const QualityDetailPage({
@@ -27,6 +27,7 @@ class QualityDetailPage extends StatefulWidget {
 
 class _QualityDetailPageState extends State<QualityDetailPage> {
   final TextEditingController _remarkController = TextEditingController();
+  late QualityRefineryEntity _currentReport;
 
   Widget _buildInfoCard(String title, String value) {
     return Expanded(
@@ -170,27 +171,22 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
                 ElevatedButton(
                   onPressed: () async {
                     final plantCode =
-                        Provider.of<PlantProvider>(
-                          context,
-                          listen: false,
-                        ).currentPlant?.code ??
-                        "";
+                        context.read<PlantProvider>().currentPlant?.code ?? "";
                     //ke provider
-                    await Provider.of<QualityReportRefineryProvider>(
-                      context,
-                      listen: false,
-                    ).sendApproveRejectReport(
-                      user.username,
-                      isApproved ? "Approved" : "Rejected",
-                      user.role,
-                      int.parse(shift),
-                      _remarkController.text.isNotEmpty
-                          ? _remarkController.text
-                          : "",
-                      widget.item.id,
-                      user.role,
-                      plantCode,
-                    );
+                    await context
+                        .read<QualityRefineryProvider>()
+                        .sendApproveRejectReport(
+                          user.username,
+                          isApproved ? "Approved" : "Rejected",
+                          user.role,
+                          int.parse(shift),
+                          _remarkController.text.isNotEmpty
+                              ? _remarkController.text
+                              : "",
+                          widget.item.id,
+                          user.role,
+                          plantCode,
+                        );
                     // Number (id) berhasil diapproved
                     // Number (id) berhasil direject
                     if (!context.mounted) return;
@@ -223,6 +219,8 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    _currentReport = widget.item;
     // WidgetsBinding.instance.addPostFrameCallback(
     //   (_) => context.read<ValueProvider>().fetchOilTypes(),
     // );
@@ -231,12 +229,12 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
   @override
   Widget build(BuildContext context) {
     final fullDateTimeForShift = DateTime(
-      widget.item.postingDate!.year,
-      widget.item.postingDate!.month,
-      widget.item.postingDate!.day,
-      widget.item.time!.hour,
-      widget.item.time!.minute,
-      widget.item.time!.second,
+      _currentReport.postingDate!.year,
+      _currentReport.postingDate!.month,
+      _currentReport.postingDate!.day,
+      _currentReport.time!.hour,
+      _currentReport.time!.minute,
+      _currentReport.time!.second,
     );
     log("$fullDateTimeForShift");
     final user = context.read<UserProvider>().currentUser;
@@ -244,7 +242,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
         context
             .read<ValueProvider>()
             .oilTypeLists
-            .where((element) => element.code == widget.item.oilType)
+            .where((element) => element.code == _currentReport.oilType)
             .toList();
 
     log("FinishedGoods list length: ${finishedGoods.length}");
@@ -254,17 +252,17 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
             ? 'Finished Goods (${finishedGoods[0].outputOilType})'
             : 'Finished Goods';
     String formattedDate =
-        widget.item.transactionDate != null
+        _currentReport.transactionDate != null
             ? DateFormat('dd MMMM yyyy').format(fullDateTimeForShift)
             : '-';
     String formattedTime =
-        widget.item.time != null
+        _currentReport.time != null
             ? DateFormat('HH:mm').format(widget.item.time!)
             : '-';
     String shift =
-        widget.item.time != null ? _getShift(fullDateTimeForShift) : '-';
-    String company = widget.item.company ?? '-';
-    String plant = widget.item.plant ?? '-';
+        _currentReport.time != null ? _getShift(fullDateTimeForShift) : '-';
+    String company = _currentReport.company ?? '-';
+    String plant = _currentReport.plant ?? '-';
 
     String formatDate(DateTime? date) {
       return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : '-';
@@ -272,44 +270,34 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: const Text(
-          'Quality Detail',
-          style: TextStyle(
-            color: Color(0xFF655F5B),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          if (widget.item.preparedStatusShift1 == null &&
-              widget.item.preparedStatusShift2 == null &&
-              widget.item.preparedStatusShift3 == null)
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return QualityEditPage(report: widget.item);
-                    },
-                  ),
-                );
-              },
-              icon: const Icon(Icons.edit),
-            ),
-          if (widget.item.preparedStatusShift1 == null &&
-              widget.item.preparedStatusShift2 == null &&
-              widget.item.preparedStatusShift3 == null)
-            IconButton(
-              onPressed: _showDeleteConfirmationDialog,
-              icon: const Icon(Icons.delete_rounded, color: Colors.red),
-            ),
-        ],
+      appBar: _buildAppBar(context),
+      body: _buildBody(
+        formattedDate,
+        formattedTime,
+        shift,
+        company,
+        plant,
+        finishedGoodsTitle,
+        formatDate,
+        user,
+        context,
       ),
-      body: SingleChildScrollView(
+    );
+  }
+
+  Widget _buildBody(
+    String formattedDate,
+    String formattedTime,
+    String shift,
+    String company,
+    String plant,
+    String finishedGoodsTitle,
+    String Function(DateTime? date) formatDate,
+    UserEntity? user,
+    BuildContext context,
+  ) {
+    return SafeArea(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.only(
           top: 16,
           bottom: 36,
@@ -344,123 +332,124 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
             ]),
 
             _buildSection('Raw Material', [
-              _buildDataRow('Oil Type', widget.item.oilType ?? '-'),
-              _buildDataRow('Work Center', widget.item.workCenter ?? '-'),
-              _buildDataRow('Tank Source', widget.item.rmTankSource ?? '-'),
-              _buildDataRow("Flow Rate", widget.item.rmFlowRate.toString()),
-              _buildDataRow('Temp (°C)', widget.item.rmTemp.toString()),
-              _buildDataRow('FFA (%)', widget.item.rmFFA.toString()),
-              _buildDataRow('IV', widget.item.rmIV.toString()),
-              _buildDataRow('PV', widget.item.rmPV.toString()),
-              _buildDataRow('AV', widget.item.rmAV.toString()),
-              _buildDataRow('DOBI', widget.item.rmDobi.toString()),
-              _buildDataRow('M&I (%)', widget.item.rmMNI.toString()),
-              _buildDataRow('Totox', widget.item.rmToTox.toString()),
-              _buildDataRow('Color R', widget.item.rmColorR.toString()),
-              _buildDataRow('Color Y', widget.item.rmColorY.toString()),
-              _buildDataRow('Color B', widget.item.rmColorB.toString()),
+              _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),
+              _buildDataRow('Work Center', _currentReport.workCenter ?? '-'),
+              _buildDataRow('Tank Source', _currentReport.rmTankSource ?? '-'),
+              _buildDataRow("Flow Rate", _currentReport.rmFlowRate.toString()),
+              _buildDataRow('Temp (°C)', _currentReport.rmTemp.toString()),
+              _buildDataRow('FFA (%)', _currentReport.rmFFA.toString()),
+              _buildDataRow('IV', _currentReport.rmIV.toString()),
+              _buildDataRow('PV', _currentReport.rmPV.toString()),
+              _buildDataRow('AV', _currentReport.rmAV.toString()),
+              _buildDataRow('DOBI', _currentReport.rmDobi.toString()),
+              _buildDataRow('M&I (%)', _currentReport.rmMNI.toString()),
+              _buildDataRow('Totox', _currentReport.rmToTox.toString()),
+              _buildDataRow('Color R', _currentReport.rmColorR.toString()),
+              _buildDataRow('Color Y', _currentReport.rmColorY.toString()),
+              _buildDataRow('Color B', _currentReport.rmColorB.toString()),
             ]),
 
             _buildSection('Bleach Oil', [
-              _buildDataRow('Color R', widget.item.boColorR.toString()),
-              _buildDataRow('Color Y', widget.item.boColorY.toString()),
-              _buildDataRow('Color B', widget.item.boColorB.toString()),
-              _buildDataRow('Break Test', widget.item.boBreakTest.toString()),
+              _buildDataRow('Color R', _currentReport.boColorR.toString()),
+              _buildDataRow('Color Y', _currentReport.boColorY.toString()),
+              _buildDataRow('Color B', _currentReport.boColorB.toString()),
+              _buildDataRow(
+                'Break Test',
+                _currentReport.boBreakTest.toString(),
+              ),
             ]),
 
             _buildSection(finishedGoodsTitle, [
-              _buildDataRow('FFA (%)', widget.item.fgFFA.toString()),
-              _buildDataRow('IV', widget.item.fgIV.toString()),
-              _buildDataRow('PV', widget.item.fgPV.toString()),
-              _buildDataRow('Moisture', widget.item.fgMoisture.toString()),
-              _buildDataRow('Impurities', widget.item.fgImpurities.toString()),
-              _buildDataRow('Color R', widget.item.fgColorR.toString()),
-              _buildDataRow('Color Y', widget.item.fgColorY.toString()),
+              _buildDataRow('FFA (%)', _currentReport.fgFFA.toString()),
+              _buildDataRow('IV', _currentReport.fgIV.toString()),
+              _buildDataRow('PV', _currentReport.fgPV.toString()),
+              _buildDataRow('Moisture', _currentReport.fgMoisture.toString()),
+              _buildDataRow(
+                'Impurities',
+                _currentReport.fgImpurities.toString(),
+              ),
+              _buildDataRow('Color R', _currentReport.fgColorR.toString()),
+              _buildDataRow('Color Y', _currentReport.fgColorY.toString()),
               _buildDataRow(
                 'Color B',
-                widget.item.fgColorB?.toStringAsFixed(0) ?? '-',
+                _currentReport.fgColorB?.toStringAsFixed(0) ?? '-',
               ),
-              _buildDataRow('Tank Destination', widget.item.fgTankTo ?? '-'),
+              _buildDataRow('Tank Destination', _currentReport.fgTankTo ?? '-'),
               _buildDataRow(
                 'Tank Others Remarks',
-                widget.item.fgTankToOthersRemarks.toString(),
+                _currentReport.fgTankToOthersRemarks.toString(),
               ),
             ]),
 
             _buildSection('By-Product', [
-              _buildDataRow('FFA (%)', widget.item.bpFFA.toString()),
-              _buildDataRow('M&I (%)', widget.item.bpMNI.toString()),
-              _buildDataRow('To Tank', widget.item.bpToTank.toString()),
+              _buildDataRow('FFA (%)', _currentReport.bpFFA.toString()),
+              _buildDataRow('M&I (%)', _currentReport.bpMNI.toString()),
+              _buildDataRow('To Tank', _currentReport.bpToTank.toString()),
             ]),
 
             _buildSection('Waste', [
-              _buildDataRow('SBE', widget.item.wSBEQC.toString()),
-              _buildDataRow('M&I', widget.item.wasteMNI.toString()),
+              _buildDataRow('OC', _currentReport.wSBEQC.toString()),
+              _buildDataRow('M&I', _currentReport.wasteMNI.toString()),
             ]),
 
             _buildSection('Metadata & Remarks', [
-              _buildDataRow('Entry By', widget.item.entryBy ?? '-'),
-              _buildDataRow('Entry Date', formatDate(widget.item.entryDate)),
-              _buildDataRow('Remarks', widget.item.remarks != "" ? "-" : "-"),
+              _buildDataRow(
+                'Transaction Date',
+                formatDate(_currentReport.transactionDate),
+              ),
+              _buildDataRow(
+                'Remarks',
+                _currentReport.remarks != "" ? "-" : "-",
+              ),
             ]),
 
             _buildSection('Status & History', [
+              _buildDataRow('Entried By', _currentReport.entryBy ?? '-'),
+              _buildDataRow('Entry Date', formatDate(_currentReport.entryDate)),
+
+              const Divider(),
+              _buildDataRow('Prepared By', _currentReport.preparedBy ?? '-'),
               _buildDataRow(
-                'Prepared By Shift 1',
-                widget.item.preparedByShift1 ?? '-',
+                'Prepared Date',
+                formatDate(_currentReport.preparedDate),
               ),
               _buildDataRow(
-                'Prepared Date Shift 1',
-                formatDate(widget.item.preparedDateShift1),
+                'Prepared Status',
+                _currentReport.preparedStatus ?? '-',
               ),
               _buildDataRow(
-                'Prepared Status Shift 1',
-                widget.item.preparedStatusShift1 ?? '-',
-              ),
-              _buildDataRow(
-                'Prepared By Shift 2',
-                widget.item.preparedByShift2 ?? '-',
-              ),
-              _buildDataRow(
-                'Prepared Date Shift 2',
-                formatDate(widget.item.preparedDateShift2),
-              ),
-              _buildDataRow(
-                'Prepared Status Shift 2',
-                widget.item.preparedStatusShift2 ?? '-',
-              ),
-              _buildDataRow(
-                'Prepared By Shift 3',
-                widget.item.preparedByShift3 ?? '-',
-              ),
-              _buildDataRow(
-                'Prepared Date Shift 3',
-                formatDate(widget.item.preparedDateShift3),
-              ),
-              _buildDataRow(
-                'Prepared Status Shift 3',
-                widget.item.preparedStatusShift3 ?? '-',
-              ),
-              _buildDataRow(
-                'Shift Status Remarks',
-                widget.item.preparedStatusRemarksShift ?? '-',
+                'Prepared Remarks',
+                _currentReport.preparedStatusRemarks ?? '-',
               ),
               const Divider(),
-              _buildDataRow('Checked By', widget.item.checkedBy ?? '-'),
+              _buildDataRow('Checked By', _currentReport.checkedBy ?? '-'),
               _buildDataRow(
                 'Checked Date',
-                formatDate(widget.item.checkedDate),
+                formatDate(_currentReport.checkedDate),
               ),
-              _buildDataRow('Checked Status', widget.item.checkedStatus ?? '-'),
+              _buildDataRow(
+                'Checked Status',
+                _currentReport.checkedStatus ?? '-',
+              ),
               _buildDataRow(
                 'Checked Remarks',
-                widget.item.checkedStatusRemarks ?? '-',
+                _currentReport.checkedStatusRemarks ?? '-',
               ),
               const Divider(),
-              _buildDataRow('Updated By', widget.item.updatedBy ?? '-'),
+              _buildDataRow('Updated By', _currentReport.updatedBy ?? '-'),
               _buildDataRow(
                 'Updated Date',
-                formatDate(widget.item.updatedDate),
+                formatDate(_currentReport.updatedDate),
+              ),
+              const Divider(),
+              _buildDataRow('Form No', _currentReport.formNo ?? '-'),
+              _buildDataRow(
+                'Date Issued',
+                formatDate(_currentReport.dateIssued),
+              ),
+              _buildDataRow(
+                'Revision No',
+                _currentReport.revisionNo.toString(),
               ),
             ]),
 
@@ -526,33 +515,92 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
     );
   }
 
-  Future<void> _showDeleteConfirmationDialog() async {
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      title: const Text(
+        'Quality Detail',
+        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.black),
+      actions: [
+        if (_currentReport.preparedStatus == null)
+          IconButton(
+            onPressed: () async {
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return QualityEditPage(report: _currentReport);
+                  },
+                ),
+              );
+
+              log(result != null ? 'result has value' : 'result has no value.');
+
+              if (result != null && result is QualityRefineryEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
+            },
+            icon: const Icon(Icons.edit),
+          ),
+        if (_currentReport.preparedStatus == null)
+          IconButton(
+            onPressed: () async => await _showDeleteConfirmationDialog(context),
+            icon: const Icon(Icons.delete_rounded, color: Colors.red),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
     // Use showDialog which returns a Future.
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Hapus Report'),
-          content: Text(
-            'Apakah anda yakin ingin menghapus report ${widget.item.id}?',
-          ),
-          actions: <Widget>[
-            // The "Cancel" button returns false.
-            TextButton(
-              child: const Text('Tidak'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            // The "Delete" button returns true.
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Ya'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            ),
-          ],
+        return Consumer<QualityRefineryProvider>(
+          builder: (context, provider, child) {
+            bool isLoadingDelete = provider.isLoadingDelete;
+            return AlertDialog(
+              title: const Text('Hapus Ticket'),
+              content: Text(
+                "Apakah anda yakin ingin menghapus Ticket ${_currentReport.id}?",
+              ),
+              actions: <Widget>[
+                // The "Cancel" button returns false.
+                TextButton(
+                  child: const Text("Tidak"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                // The "Delete" button returns true.
+                ElevatedButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child:
+                      isLoadingDelete
+                          ? SizedBox(
+                            width: 2,
+                            height: 2,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text('Ya', style: TextStyle(color: Colors.white)),
+                  onPressed: () async {
+                    await context
+                        .read<QualityRefineryProvider>()
+                        .deleteTicketById(_currentReport.id);
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -561,26 +609,27 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
     if (shouldDelete == true) {
       try {
         // Call your provider's delete method.
-        if (!mounted) return;
-        await context.read<QualityReportRefineryProvider>().deleteReportById(
-          widget.item.id,
+        if (!context.mounted) return;
+        await context.read<QualityRefineryProvider>().deleteTicketById(
+          _currentReport.id,
         );
 
         // Show a success message.
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Report ${widget.item.id} has been deleted.'),
+            content: Text('Report ${_currentReport.id} has been deleted.'),
             backgroundColor: Colors.green,
           ),
         );
 
         // Go back to the previous screen.
-        if (!mounted) return;
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
         Navigator.of(context).pop();
       } catch (e) {
         // Show an error message if something goes wrong.
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting report: $e'),

@@ -3,13 +3,11 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/transactions/quality_report_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class QualityReportRefineryMysqlService {
-  Future<bool> insertQualityReportRefinery(
-    QualityReportRefineryEntity entity,
-  ) async {
+  Future<bool> insertTicket(QualityRefineryEntity entity) async {
     MySQLConnection? connection;
     try {
       var connResult = await getMySQLConnection();
@@ -62,49 +60,6 @@ class QualityReportRefineryMysqlService {
           safeParameterName = 'w_sbe_mni_param';
         }
 
-        // Validate decimal values to prevent overflow
-        // if (formattedValue is double) {
-        //   // For decimal(4,3) fields - max value is 9.999
-        //   if (keyInEntityMap.contains('rm_ffa') ||
-        //       keyInEntityMap.contains('fg_ffa')) {
-        //     if (formattedValue > 9.999) {
-        //       log(
-        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(4,3) limit, capping at 9.999',
-        //       );
-        //       formattedValue = 9.999;
-        //     }
-        //   }
-        //   // For decimal(3,2) fields - max value is 9.99
-        //   else if (keyInEntityMap.contains('rm_iv') ||
-        //       keyInEntityMap.contains('rm_dobi') ||
-        //       keyInEntityMap.contains('rm_av') ||
-        //       keyInEntityMap.contains('rm_pv') ||
-        //       keyInEntityMap.contains('fg_iv') ||
-        //       keyInEntityMap.contains('bp_ffa') ||
-        //       keyInEntityMap.contains('w_sbe_qc')) {
-        //     if (formattedValue > 9.99) {
-        //       log(
-        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,2) limit, capping at 9.99',
-        //       );
-        //       formattedValue = 9.99;
-        //     }
-        //   }
-        //   // For decimal(3,0) fields - max value is 999
-        //   else if (keyInEntityMap.contains('rm_temp') ||
-        //       keyInEntityMap.contains('fg_pv') ||
-        //       keyInEntityMap.contains('fg_mni') ||
-        //       keyInEntityMap.contains('fg_color_r') ||
-        //       keyInEntityMap.contains('fg_color_y') ||
-        //       keyInEntityMap.contains('bp_mni')) {
-        //     if (formattedValue > 999) {
-        //       log(
-        //         'Warning: Value $formattedValue for $keyInEntityMap exceeds decimal(3,0) limit, capping at 999',
-        //       );
-        //       formattedValue = 999;
-        //     }
-        //   }
-        // }
-
         columns.add('`$actualDbColumnName`');
         params.add(':$safeParameterName');
         sqlExecuteParams[safeParameterName] = formattedValue;
@@ -142,19 +97,21 @@ class QualityReportRefineryMysqlService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllReports(
+  Future<List<Map<String, dynamic>>> getAllTickets(
     DateTime? dateFilter,
     String? time,
     String username,
     String role,
     String plantCode,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all reports.');
         return [];
       }
+      connection = connResult.connection;
       String baseQuery;
       final Map<String, dynamic> params = {};
 
@@ -168,7 +125,7 @@ class QualityReportRefineryMysqlService {
           JOIN
             m_roles_shift_prepared ON t_quality_report_refinery.shift = m_roles_shift_prepared.shift_code
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode 
+            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
         """;
           params["username"] = username;
           params["is_active"] = "T";
@@ -180,7 +137,7 @@ class QualityReportRefineryMysqlService {
             *
           FROM
             t_quality_report_refinery
-          WHERE plant = :plantCode
+          WHERE plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
         """;
 
           params["plantCode"] = plantCode;
@@ -193,7 +150,7 @@ class QualityReportRefineryMysqlService {
           FROM
             t_quality_report_refinery
           WHERE
-            (prepared_status_shift1 = :status OR prepared_status_shift2 = :status OR prepared_status_shift3 = :status) AND plant = :plantCode
+            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -201,7 +158,7 @@ class QualityReportRefineryMysqlService {
         case 'ADM':
           // Query for Admin: Can see all reports.
           baseQuery =
-              "SELECT * FROM t_quality_report_refinery WHERE plant = :plantCode";
+              "SELECT * FROM t_quality_report_refinery WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
           params["plantCode"] = plantCode;
           break;
 
@@ -231,10 +188,7 @@ class QualityReportRefineryMysqlService {
       // Add the ORDER BY clause
       baseQuery += " ORDER BY transaction_date DESC";
 
-      final IResultSet result = await connResult.connection!.execute(
-        baseQuery,
-        params,
-      );
+      final IResultSet result = await connection!.execute(baseQuery, params);
 
       log(
         'Fetched ${result.rows.length} reports for user $username with role $role.',
@@ -251,7 +205,7 @@ class QualityReportRefineryMysqlService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get all reports.');
+        log('Failed to get MySQL connection for get latest ticket id.');
         return null;
       }
       final result = await connResult.connection!.execute(
@@ -301,15 +255,16 @@ class QualityReportRefineryMysqlService {
     }
   }
 
-  Future<bool> updateReportQualityRefinery(
-    QualityReportRefineryEntity entity,
-  ) async {
+  Future<bool> updateTicket(QualityRefineryEntity entity) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for updating report.');
+        log('Failed to get MySQL connection for updating ticket.');
         return false;
       }
+
+      connection = connResult.connection;
 
       final entityData = entity.toMap();
       final List<String> setClause = [];
@@ -353,54 +308,65 @@ class QualityReportRefineryMysqlService {
       log('Generated UPDATE SQL: $sql');
       log('Params for SQL: $sqlExecuteParams');
 
-      final result = await connResult.connection!.execute(
-        sql,
-        sqlExecuteParams,
-      );
-      log('Report updated: ${result.affectedRows} row(s) affected.');
-      connResult.connection?.close();
+      final result = await connection!.execute(sql, sqlExecuteParams);
+      log('ticket updated: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating report: $e');
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log('$e');
+      }
     }
   }
 
-  Future<List<Map<String, dynamic>>> getAllPreparedTransactions(
+  Future<List<Map<String, dynamic>>> getReportsForManager(
     String plantCode,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all reports.');
         return [];
       }
-      final result = await connResult.connection!.execute(
-        'SELECT * FROM t_quality_report_refinery WHERE (prepared_status_shift1 = "Approved" OR prepared_status_shift2 = "Approved" OR prepared_status_shift3 = "Approved" OR prepared_status_shift4 = "Approved" OR prepared_status_shift5 = "Approved") AND plant = :plantCode;',
+      connection = connResult.connection;
+      final result = await connection!.execute(
+        "SELECT * FROM t_quality_report_refinery WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
         {"plantCode": plantCode},
       );
       log('Fetched ${result.rows.length} row.');
-      connResult.connection?.close();
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('Error fetching all prepared transactions: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection();
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
-  Future<bool> sendApproveRejectReport(
+  Future<bool> sendApproveRejectTicket(
     final String username,
     final String status,
     final String userRole,
     final int shift,
-    final String remark,
+    final String? remark,
     final String id,
   ) async {
     try {
       final connResult = await getMySQLConnection();
 
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for updating autonumber.');
+        log(
+          'Failed to get MySQL connection for sending approve/reject ticket.',
+        );
         return false;
       }
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -422,7 +388,7 @@ class QualityReportRefineryMysqlService {
         return result.affectedRows > BigInt.from(0);
       } else {
         final sql =
-            "UPDATE t_quality_report_refinery SET prepared_by_shift$shift = :username, prepared_status_shift$shift = :status, prepared_date_shift$shift = :date, prepared_status_remarks_shift = :remark WHERE id = :id";
+            "UPDATE t_quality_report_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
 
         final result = await connResult.connection!.execute(sql, {
           "username": username,
@@ -436,7 +402,7 @@ class QualityReportRefineryMysqlService {
         return result.affectedRows > BigInt.from(0);
       }
     } catch (e) {
-      log("Error sending approve or reject report");
+      log("Error sending approve or reject ticket");
       return false;
     }
   }
@@ -455,7 +421,7 @@ class QualityReportRefineryMysqlService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "SELECT time FROM t_quality_report_refinery WHERE date(posting_date) = :date AND plant = :plantCode;",
+        "SELECT time FROM t_quality_report_refinery WHERE date(posting_date) = :date AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
         {"date": dateFilter, "plantCode": plantCode},
       );
 
@@ -496,25 +462,16 @@ class QualityReportRefineryMysqlService {
           FROM
             t_quality_report_refinery
           WHERE
+            (flag IS NULL OR flag = 'T') AND
             posting_date >= CURDATE() - INTERVAL 7 DAY
           GROUP BY
             DATE(posting_date),
             work_center,
             oil_type
           HAVING
-           COUNT(CASE
-            WHEN (shift = 1 AND prepared_status_shift1 = 'Approved') THEN 1
-            WHEN (shift = 2 AND prepared_status_shift2 = 'Approved') THEN 1
-            WHEN (shift = 3 AND prepared_status_shift3 = 'Approved') THEN 1
-            WHEN (shift = 4 AND prepared_status_shift4 = 'Approved') THEN 1
-            WHEN (shift = 5 AND prepared_status_shift5 = 'Approved') THEN 1
-            ELSE NULL
-            END) = 24
+           SUM(shift in (1,2,3,4,5) AND prepared_status = 'Approved') = 24
           AND
-            COUNT(CASE
-              WHEN checked_status IS NOT NULL AND checked_status != '' THEN 1
-              ELSE NULL
-            END) < 24
+            COUNT(checked_status) < 24;
           """);
       log('done selecting.');
       log("Affected Rows: ${result.affectedRows}");
@@ -528,34 +485,80 @@ class QualityReportRefineryMysqlService {
     }
   }
 
-  Future<bool> deleteReport(String id) async {
+  Future<bool> deleteTicket(String id) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
 
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for deleting user.');
+        log('Failed to get MySQL connection for deleting ticket.');
         return false;
       }
 
       connection = connResult.connection!;
 
       final result = await connection.execute(
-        "DELETE FROM t_quality_report_refinery WHERE id = :id",
-        {"id": id},
+        // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
+        "UPDATE t_quality_report_refinery SET flag = 'D' WHERE id = :id", // Delete with Flag
+        {"status": "Deleted", "date": "${DateTime.now()}", "id": id},
       );
-      log('User terhapus: ${result.affectedRows} row(s) affected.');
+      log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
       // connResult.connection?.close();
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error deleting user: $e');
+      log('Error deleting ticket: $e');
       return false;
     } finally {
       try {
         await closeMySQLConnection();
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
-        log('Error closing connection: $e');
+        log("Error closing connection: $e");
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTickets(
+    DateTime? dateFilter,
+    String plantCode, {
+    String? shift = "All",
+  }) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for getTickets.');
+        return [];
+      }
+      connection = connResult.connection;
+      String query =
+          "SELECT * FROM t_quality_report_refinery WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+
+      dateFilter ??= DateTime.now();
+
+      final Map<String, dynamic> params = {
+        "dateFilter": DateFormat('yyyy-MM-dd').format(dateFilter),
+        "plantCode": plantCode,
+      };
+      log("Params: $params");
+
+      if (shift != "All") {
+        query += " AND shift = :shift";
+        params['shift'] = shift;
+      }
+      log("Query: $query");
+      log("Params: $params");
+
+      final IResultSet result = await connection!.execute(query, params);
+      log("QR Tickets fetched: ${result.rows.length}");
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log("(QR MySQL) Error getting all Quality Report tickets: $e");
+      return [];
+    } finally {
+      if (connection != null) {
+        await connection.close();
+        log('(QR MySQL) MySQL connection closed for getTickets.');
       }
     }
   }

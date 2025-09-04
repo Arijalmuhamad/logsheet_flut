@@ -18,11 +18,10 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          Provider.of<BusinessUnitProvider>(
-            context,
-            listen: false,
-          ).fetchAllBusinessUnits(),
+      (_) async =>
+          await context
+              .read()<BusinessUnitProvider>(context, listen: false)
+              .fetchAllBusinessUnits(),
     );
   }
 
@@ -52,12 +51,12 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
 
   Widget buildBody(BuildContext context) {
     return Consumer<BusinessUnitProvider>(
-      builder: (context, businessUnitProvider, child) {
-        if (businessUnitProvider.isLoading) {
+      builder: (context, buProvider, child) {
+        if (buProvider.isLoading) {
           return Center(child: const CircularProgressIndicator());
         }
 
-        if (businessUnitProvider.errorMessage != null) {
+        if (buProvider.errorMessage != null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -65,16 +64,13 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Error: ${businessUnitProvider.errorMessage!}',
+                    'Error: ${buProvider.errorMessage!}',
                     style: const TextStyle(color: Colors.red, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Provider.of<BusinessUnitProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllBusinessUnits();
+                    onPressed: () async {
+                      await buProvider.fetchAllBusinessUnits();
                     },
                     child: const Text("Refresh"),
                   ),
@@ -84,7 +80,7 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
           );
         }
 
-        if (businessUnitProvider.listBusinessUnits.isEmpty) {
+        if (buProvider.listBusinessUnits.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -96,11 +92,8 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      Provider.of<BusinessUnitProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllBusinessUnits();
+                    onPressed: () async {
+                      await buProvider.fetchAllBusinessUnits();
                     },
                     child: const Text("Refresh"),
                   ),
@@ -112,9 +105,9 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
 
         return ListView.builder(
           padding: const EdgeInsets.only(bottom: 88),
-          itemCount: businessUnitProvider.listBusinessUnits.length,
+          itemCount: buProvider.listBusinessUnits.length,
           itemBuilder: (context, index) {
-            final businessUnit = businessUnitProvider.listBusinessUnits[index];
+            final businessUnit = buProvider.listBusinessUnits[index];
             return Card(
               elevation: 4,
               color: Theme.of(context).cardTheme.color,
@@ -218,8 +211,9 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                               ),
                         );
                         if (confirmDelete == true) {
-                          bool success = await businessUnitProvider
-                              .deleteBusinessUnit(businessUnit.buCode);
+                          bool success = await buProvider.deleteBusinessUnit(
+                            businessUnit.buCode,
+                          );
                           if (success) {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -234,7 +228,7 @@ class _BusinessUnitPageState extends State<BusinessUnitPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Gagal menghapus user ${businessUnit.buName}: ${businessUnitProvider.errorMessage}',
+                                  'Gagal menghapus user ${businessUnit.buName}: ${buProvider.errorMessage}',
                                 ),
                               ),
                             );

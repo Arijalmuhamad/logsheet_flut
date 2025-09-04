@@ -3,61 +3,68 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/pretreatment_bleaching_filtration_entity.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet_pretreatment/logsheet_pretreatment_bleaching_filtration_input_page.dart';
-import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/quality_input_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class LogsheetPretreatmentBleachingFiltrationListPage extends StatefulWidget {
-  const LogsheetPretreatmentBleachingFiltrationListPage({super.key});
+class QualityReportList extends StatefulWidget {
+  const QualityReportList({super.key});
 
   @override
-  State<LogsheetPretreatmentBleachingFiltrationListPage> createState() =>
-      _LogsheetPretreatmentBleachingFiltrationListPageState();
+  State<QualityReportList> createState() => _QualityReportListState();
 }
 
-class _LogsheetPretreatmentBleachingFiltrationListPageState
-    extends State<LogsheetPretreatmentBleachingFiltrationListPage> {
-  DataFormNoEntity? formQualityRefinery;
+class _QualityReportListState extends State<QualityReportList> {
+  DataFormNoEntity? formData;
 
   @override
   void initState() {
+    final username = context.read<UserProvider>().currentUser?.username;
+    final role = context.read<UserProvider>().currentUser?.role;
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<QualityRefineryProvider>().fetchAllTickets(
+        null,
+        null,
+        username ?? "",
+        role ?? "",
+        plantCode,
+      );
+      if (!mounted) return;
+      await context.read<ValueProvider>().fetchAllInitialData();
+    });
+
+    // WidgetsBinding.instance.addPostFrameCallback(
+    //   (_) async => context.read<ValueProvider>().fetchOilTypes(),
+    // );
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) =>
-          context
-              .read<PretreatmentBleachingFiltrationProvider>()
-              .fetchAllLogsheet(),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    formQualityRefinery =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where(
-              (form) =>
-                  form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration",
-            )
-            .first;
+    final username = context.read<UserProvider>().currentUser?.username;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol tambah PBE logsheet diklik");
+          log("Tombol tambah report diklik");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FiltrationPerformInputPage(),
+              builder:
+                  (context) =>
+                      QualityRefineryInputPage(userName: username ?? "Unknown"),
             ),
           );
         },
-        label: const Text("Tambah Logsheet"),
+        label: const Text("Tambah Quality Report"),
         icon: Icon(Icons.add),
         backgroundColor: Color(0xFFB91C1C),
         foregroundColor: Colors.white,
@@ -65,16 +72,60 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
     );
   }
 
-  AppBar _buildAppBar() =>
-      AppBar(title: Text("PBF List (${formQualityRefinery?.code})"));
+  AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Quality_Report")
+            .first;
+    return AppBar(
+      title: Text("Quality List (${formData!.code})"),
+      actions: [
+        context.watch<QualityRefineryProvider>().isLoading
+            ? CircularProgressIndicator()
+            : IconButton(
+              onPressed: () async {
+                final username =
+                    context.read<UserProvider>().currentUser?.username;
+                final role = context.read<UserProvider>().currentUser?.role;
+                final plantCode =
+                    context.read<PlantProvider>().currentPlant?.code ?? "";
+                await context.read<QualityRefineryProvider>().fetchAllTickets(
+                  null,
+                  null,
+                  username ?? "",
+                  role ?? "",
+                  plantCode,
+                );
+              },
+              icon: Consumer<QualityRefineryProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const CircularProgressIndicator();
+                  }
+                  return const Icon(Icons.replay);
+                },
+              ),
+            ),
+      ],
+    );
+  }
 
   Widget _buildBody() {
-    return Consumer<PretreatmentBleachingFiltrationProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading) {
+    return Consumer2<QualityRefineryProvider, PlantProvider>(
+      builder: (context, qualityProvider, plantprovider, child) {
+        List<QualityRefineryEntity> filteredList =
+            qualityProvider.reportsList
+                .where(
+                  (e) => e.preparedStatus == null && e.checkedStatus == null,
+                )
+                .toList();
+        if (qualityProvider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }
-        if (provider.errorMessage != null) {
+
+        if (qualityProvider.errorMessage != null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -82,23 +133,15 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Error: ${provider.errorMessage!}',
+                    'Error: ${qualityProvider.errorMessage!}',
                     style: const TextStyle(color: Colors.red, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      // final plantCode =
-                      //     Provider.of<PlantProvider>(
-                      //       context,
-                      //       listen: false,
-                      //     ).currentPlant?.code ??
-                      //     "";
+                    onPressed: () async {
+                      final plantCode = plantprovider.currentPlant?.code ?? "";
 
-                      Provider.of<PretreatmentBleachingFiltrationProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllLogsheet();
+                      await qualityProvider.fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -107,8 +150,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
             ),
           );
         }
-
-        if (provider.pretreatmentList.isEmpty) {
+        if (filteredList.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -120,18 +162,10 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      // final plantCode =
-                      //     Provider.of<PlantProvider>(
-                      //       context,
-                      //       listen: false,
-                      //     ).currentPlant?.code ??
-                      //     "";
+                    onPressed: () async {
+                      final plantCode = plantprovider.currentPlant?.code ?? "";
 
-                      Provider.of<PretreatmentBleachingFiltrationProvider>(
-                        context,
-                        listen: false,
-                      ).fetchAllLogsheet();
+                      await qualityProvider.fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -142,17 +176,21 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
         }
 
         return Padding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: ListView.builder(
-            itemCount: provider.pretreatmentList.length,
+            padding: const EdgeInsets.only(bottom: 88),
+            itemCount: filteredList.length,
             itemBuilder: (context, index) {
-              final item = provider.pretreatmentList[index];
-              log(
-                "list from provider length ${provider.pretreatmentList.length}",
-              );
+              final report = filteredList[index];
               return Card(
                 child: InkWell(
-                  onTap: null,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => QualityDetailPage(item: report),
+                      ),
+                    );
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
@@ -166,7 +204,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                           children: [
                             Expanded(
                               child: Text(
-                                item.id,
+                                report.id,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -180,11 +218,11 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(item),
+                                color: _getStatusColor(report),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                _getStatusText(item),
+                                _getStatusText(report),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -207,7 +245,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                             Text(
                               DateFormat(
                                 'yyyy-MM-dd',
-                              ).format(item.transactionDate!),
+                              ).format(report.transactionDate!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -221,7 +259,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                             ),
                             SizedBox(width: 8),
                             Text(
-                              DateFormat('HH:mm').format(item.time!),
+                              DateFormat('HH:mm').format(report.time!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -235,7 +273,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                             ),
                             SizedBox(width: 8),
                             Text(
-                              "Shift ${item.shift}",
+                              "Shift ${report.shift}",
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -254,7 +292,7 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Entried by: ${item.entryBy}',
+                              'Entried by: ${report.entryBy}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -274,38 +312,38 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
     );
   }
 
-  String _getStatusText(PretreatmentBleachingFiltrationEntity report) {
-    if (report.checkedBy != null) {
+  String _getStatusText(QualityRefineryEntity report) {
+    if (report.checkedStatus == "Approved") {
       return "Approved";
     }
 
-    if (report.checkedBy == null) {
+    if (report.checkedStatus == "Rejected") {
       return "Rejected";
     }
-    if (report.preparedBy != null) {
+    if (report.preparedStatus == "Approved") {
       return "Prepared ${report.shift}";
     }
 
-    if (report.preparedBy == null) {
+    if (report.preparedStatus == "Rejected") {
       return "Rejected";
     }
     return "Submitted";
   }
 
-  Color _getStatusColor(PretreatmentBleachingFiltrationEntity report) {
-    if (report.checkedBy != null) {
+  Color _getStatusColor(QualityRefineryEntity report) {
+    if (report.checkedStatus == "Approved") {
       return Colors.green;
     }
 
-    if (report.checkedBy == null) {
+    if (report.checkedStatus == "Rejected") {
       return Colors.red;
     }
 
-    if (report.preparedBy != null) {
+    if (report.preparedStatus == "Approved") {
       return Colors.orangeAccent;
     }
 
-    if (report.preparedBy == null) {
+    if (report.preparedStatus == "Rejected") {
       return Colors.red;
     }
     return Colors.grey;
