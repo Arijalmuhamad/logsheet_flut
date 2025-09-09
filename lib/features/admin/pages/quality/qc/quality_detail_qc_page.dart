@@ -7,6 +7,7 @@ import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entit
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -563,9 +564,12 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return Consumer<QualityReportQCProvider>(
-          builder: (context, provider, child) {
-            bool isLoadingDelete = provider.isLoadingDelete;
+        return Consumer2<
+          QualityReportQCProvider,
+          QualityReportProductionProvider
+        >(
+          builder: (context, providerQC, providerProd, child) {
+            bool isLoadingDelete = providerQC.isLoadingDelete;
             return AlertDialog(
               title: const Text('Hapus Ticket'),
               content: Text(
@@ -593,9 +597,10 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
                           )
                           : Text('Ya', style: TextStyle(color: Colors.white)),
                   onPressed: () async {
-                    await context
-                        .read<QualityReportQCProvider>()
-                        .deleteTicketById(_currentReport.id);
+                    await providerQC.deleteTicketById(_currentReport.id);
+
+                    if (!context.mounted) return;
+                    await providerProd.deleteTicketById(_currentReport.id);
                     if (!context.mounted) return;
                     Navigator.pop(context);
                   },

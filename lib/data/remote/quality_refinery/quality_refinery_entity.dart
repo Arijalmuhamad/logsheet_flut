@@ -73,10 +73,10 @@ class QualityRefineryEntity {
   final String? updatedBy;
   final DateTime? updatedDate;
 
-  final String? formNo;
-  final DateTime? dateIssued;
-  final int? revisionNo;
-  final DateTime? revisionDate;
+  String? formNo;
+  DateTime? dateIssued;
+  int? revisionNo;
+  DateTime? revisionDate;
 
   QualityRefineryEntity({
     required this.oilType,

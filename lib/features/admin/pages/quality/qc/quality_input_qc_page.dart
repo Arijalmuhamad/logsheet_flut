@@ -112,7 +112,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
 
   final logger = Logger();
 
-  DataFormNoEntity? formData;
+  DataFormNoEntity? formDataQC, formDataProd;
 
   @override
   void initState() {
@@ -523,7 +523,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         selectedHour!,
       );
 
-      log("Form ID: ${formData!.code}");
+      log("Form ID: ${formDataQC!.code}");
       final entity = QualityRefineryEntity(
         id: await buildTicketNumber(),
         transactionDate: getTransactionDate(),
@@ -581,10 +581,10 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         workCenter: selectedWorkCenter,
         updatedBy: null,
         updatedDate: null,
-        formNo: formData!.code,
-        dateIssued: formData!.dateIssued,
-        revisionNo: formData!.revisionNo,
-        revisionDate: formData!.revisionDate,
+        formNo: formDataQC!.code,
+        dateIssued: formDataQC!.dateIssued,
+        revisionNo: formDataQC!.revisionNo,
+        revisionDate: formDataQC!.revisionDate,
       );
 
       bool? success;
@@ -597,6 +597,11 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       if (success) {
         QualityRefineryEntity prodEntity = entity;
         prodEntity.remarks = null;
+        prodEntity.formNo = formDataProd!.code;
+        prodEntity.dateIssued = formDataProd!.dateIssued;
+        prodEntity.revisionNo = formDataProd!.revisionNo;
+        prodEntity.revisionDate = formDataProd!.revisionDate;
+
         final prodSuccess = await providerProd.insertTicket(prodEntity);
 
         if (prodSuccess) {
@@ -1674,7 +1679,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   }
 
   AppBar _buildAppBar() {
-    formData =
+    formDataQC =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
@@ -1683,13 +1688,24 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
             )
             .first;
 
-    log("${formData!.code}");
+    formDataProd =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Quality_Report_Production" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    log("${formDataQC!.code}");
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: Text(
-        'Quality Report - ${formData!.code}',
+        'Quality Report - ${formDataQC!.code}',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
