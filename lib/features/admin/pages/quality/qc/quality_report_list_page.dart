@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
-import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityReportListPage extends StatefulWidget {
@@ -44,7 +43,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async => await context
-          .read<QualityRefineryProvider>()
+          .read<QualityReportQCProvider>()
           .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
     );
   }
@@ -175,7 +174,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                   elevation: 4,
                   shadowColor: Colors.black26,
                   margin: const EdgeInsets.only(top: 16),
-                  child: Consumer<QualityRefineryProvider>(
+                  child: Consumer<QualityReportQCProvider>(
                     builder: (context, provider, child) {
                       // List<QualityRefineryEntity> filteredTickets =
                       //     provider.reportsList;
@@ -221,7 +220,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                       "";
 
                                   await context
-                                      .read<QualityRefineryProvider>()
+                                      .read<QualityReportQCProvider>()
                                       .fetchFilteredTickets(
                                         _selectedDate,
                                         plantCode,
@@ -250,7 +249,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => QualityDetailPage(
+                                        (context) => QualityDetailQCPage(
                                           item: report,
                                           isDisplayed: false,
                                         ),

@@ -4,27 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityApprovalDetailScreen extends StatefulWidget {
+class QualityApprovalDetailQCScreen extends StatefulWidget {
   final List<QualityRefineryEntity> reportEntities;
   final String reportIdentifier;
 
-  const QualityApprovalDetailScreen({
+  const QualityApprovalDetailQCScreen({
     super.key,
     required this.reportEntities,
     required this.reportIdentifier,
   });
 
   @override
-  State<QualityApprovalDetailScreen> createState() =>
-      _QualityApprovalDetailScreenState();
+  State<QualityApprovalDetailQCScreen> createState() =>
+      _QualityApprovalDetailQCScreenState();
 }
 
-class _QualityApprovalDetailScreenState
-    extends State<QualityApprovalDetailScreen> {
+class _QualityApprovalDetailQCScreenState
+    extends State<QualityApprovalDetailQCScreen> {
   final _remarkController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -525,7 +525,7 @@ class _QualityApprovalDetailScreenState
     String status,
     Function(String) onStatusChange,
   ) async {
-    final provider = context.read<QualityRefineryProvider>();
+    final provider = context.read<QualityReportQCProvider>();
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     await provider.sendApproveRejectReport(

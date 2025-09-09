@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_edit_page.dart';
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
@@ -65,7 +66,7 @@ class _DeodorizingFiltrationDetailPageState
             : '-';
     String formattedTime =
         _currentReport.time != null
-            ? DateFormat('HH:mm').format(widget.item.time!)
+            ? DateFormat('HH:mm').format(_currentReport.time!)
             : '-';
     String shift =
         _currentReport.time != null ? _getShift(fullDateTimeForShift) : '-';
@@ -498,25 +499,32 @@ class _DeodorizingFiltrationDetailPageState
       actions: [
         if (widget.item.preparedStatus == null)
           IconButton(
-            onPressed: () {
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder: (context) {
-              //       return LogsheetPretreatmentBleachingFiltrationEditPage(
-              //         logsheet: widget.item,
-              //       );
-              //     },
-              //   ),
-              // );
+            onPressed: () async {
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return DeodorizingFiltrationEditPage(logsheet: widget.item);
+                  },
+                ),
+              );
+
+              log(result != null ? 'result has value' : 'result has no value.');
+
+              if (result != null && result is DeodorizingFiltrationEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
             },
             icon: const Icon(Icons.edit),
           ),
 
-        // if (widget.item.preparedStatus == null)
-        //   IconButton(
-        //     onPressed: _showDeleteConfirmationDialog,
-        //     icon: Icon(Icons.delete_rounded),
-        //   ),
+        if (_currentReport.preparedStatus == null)
+          IconButton(
+            onPressed: _showDeleteConfirmationDialog,
+            icon: Icon(Icons.delete_rounded, color: Colors.red),
+          ),
+        SizedBox(width: 12),
       ],
     );
   }
@@ -599,6 +607,97 @@ class _DeodorizingFiltrationDetailPageState
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog() async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isLoading =
+                context.watch<DeodorizingFiltrationProvider>().isLoadingDelete;
+
+            return AlertDialog(
+              title: const Text('Hapus Ticket'),
+              content: Text(
+                "Apakah anda yakin ingin menghapus Ticket ${_currentReport.id}?",
+              ),
+              actions: <Widget>[
+                TextButton(
+                  // Disable the "Tidak" button while loading.
+                  onPressed: isLoading ? null : () => Navigator.pop(context),
+                  child: const Text("Tidak"),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  // 1. Disable the button when loading to prevent multiple taps.
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            try {
+                              await context
+                                  .read<DeodorizingFiltrationProvider>()
+                                  .deleteTicketById(_currentReport.id);
+                              if (!context.mounted) return;
+                              final user = context.read<UserProvider>();
+                              final plant = context.read<PlantProvider>();
+
+                              await context
+                                  .read<DeodorizingFiltrationProvider>()
+                                  .fetchAllTicket(
+                                    null,
+                                    null,
+                                    user.currentUser!.username,
+                                    user.currentUser!.role,
+                                    plant.currentPlant!.code,
+                                  );
+
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Ticket ${_currentReport.id} Terhapus.',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              Navigator.pop(context);
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              Navigator.pop(context);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error deleting report: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                  // Conditionally show the loader or the text.
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.0,
+                            ),
+                          )
+                          : const Text('Ya'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

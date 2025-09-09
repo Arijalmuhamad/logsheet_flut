@@ -49,7 +49,7 @@ class _DeodorizingFiltrationApprovalListPageState
   }
 
   AppBar _buildAppBar() =>
-      AppBar(title: Text("PBF Approval (${formDeodorizing?.code})"));
+      AppBar(title: Text("Deodorizing Approval (${formDeodorizing?.code})"));
 
   Widget _buildBody() {
     return Consumer<DeodorizingFiltrationProvider>(
@@ -71,23 +71,12 @@ class _DeodorizingFiltrationApprovalListPageState
                   ),
                   OutlinedButton(
                     onPressed: () {
-                      final username =
-                          context.read<UserProvider>().currentUser?.username ??
-                          "";
-                      final role =
-                          context.read<UserProvider>().currentUser?.role ?? "";
                       final plantCode =
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
                       context
                           .read<DeodorizingFiltrationProvider>()
-                          .fetchAllTicket(
-                            null,
-                            null,
-                            username,
-                            role,
-                            plantCode,
-                          );
+                          .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),
@@ -97,7 +86,7 @@ class _DeodorizingFiltrationApprovalListPageState
           );
         }
 
-        if (provider.deodorizingList.isEmpty) {
+        if (provider.reportsForManager.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -110,22 +99,12 @@ class _DeodorizingFiltrationApprovalListPageState
                   ),
                   OutlinedButton(
                     onPressed: () {
-                      final username =
-                          context.read<UserProvider>().currentUser?.username;
-                      final role =
-                          context.read<UserProvider>().currentUser?.role;
                       final plantCode =
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
                       context
                           .read<DeodorizingFiltrationProvider>()
-                          .fetchAllTicket(
-                            null,
-                            null,
-                            username ?? "",
-                            role ?? "",
-                            plantCode,
-                          );
+                          .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
                   ),

@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
@@ -13,16 +14,17 @@ import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 
-class QualityEditPage extends StatefulWidget {
+class QualityEditProductionPage extends StatefulWidget {
   final QualityRefineryEntity report;
 
-  const QualityEditPage({super.key, required this.report});
+  const QualityEditProductionPage({super.key, required this.report});
 
   @override
-  State<QualityEditPage> createState() => _QualityEditPageState();
+  State<QualityEditProductionPage> createState() =>
+      _QualityEditProductionPageState();
 }
 
-class _QualityEditPageState extends State<QualityEditPage> {
+class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
   // Database & DAO
   late final AppDatabase db;
   late final QualityReportRefineryDao qualityReportRefDao;
@@ -301,18 +303,15 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
       bool? success;
 
-      success = await context.read<QualityRefineryProvider>().updateReport(
-        updatedItem,
-        userName ?? "",
-        role ?? "",
-        plantCode,
-      );
+      success = await context
+          .read<QualityReportProductionProvider>()
+          .updateReport(updatedItem, userName ?? "", role ?? "", plantCode);
 
       if (success) {
         _showSnackBar('Data berhasil diperbarui ✅');
         if (!mounted) return;
         final user = context.read<UserProvider>().currentUser;
-        context.read<QualityRefineryProvider>().fetchAllTickets(
+        context.read<QualityReportProductionProvider>().fetchAllTickets(
           null,
           null,
           userName!,
@@ -416,10 +415,12 @@ class _QualityEditPageState extends State<QualityEditPage> {
     required IconData icon,
     String? hintText,
     bool isNumeric = false,
+    bool isEnabled = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: TextField(
+        enabled: isEnabled,
         controller: controller,
         keyboardType:
             isNumeric
@@ -494,6 +495,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
               icon: Icons.thermostat,
               hintText: 'Masukkan nilai Temperatur (°C)',
               isNumeric: true,
+              isEnabled: true,
             ),
             _buildTextField(
               controller: rmFFAController,
@@ -681,11 +683,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                       child: Text("Others", style: TextStyle(fontSize: 14)),
                     ),
                   ],
-                  onChanged: (value) {
-                    setState(() {
-                      selectedToTankGroup = value;
-                    });
-                  },
+                  onChanged: null,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -754,11 +752,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                       child: Text("Others", style: TextStyle(fontSize: 14)),
                     ),
                   ],
-                  onChanged: (value) {
-                    setState(() {
-                      selectedBpToTankGroup = value;
-                    });
-                  },
+                  onChanged: null,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: const Color(0xFFF0ECE9),
@@ -846,6 +840,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
               label: 'Remark',
               icon: Icons.note,
               hintText: 'Masukkan remark tambahan',
+              isEnabled: true,
             ),
           ],
         );
@@ -857,12 +852,12 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final finishedGoods =
-        context
-            .read<ValueProvider>()
-            .oilTypeLists
-            .where((element) => element.code == widget.report.oilType)
-            .toList();
+    // final finishedGoods =
+    //     context
+    //         .read<ValueProvider>()
+    //         .oilTypeLists
+    //         .where((element) => element.code == widget.report.oilType)
+    //         .toList();
     return Scaffold(
       backgroundColor: backgroundGrey,
       appBar: buildAppBar(),
@@ -893,11 +888,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                             ),
                           );
                         }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedWorkCenter = value;
-                      });
-                    },
+                    onChanged: null,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF0ECE9),
@@ -934,11 +925,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                             ),
                           );
                         }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedOilType = value;
-                      });
-                    },
+                    onChanged: null,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF0ECE9),
@@ -972,9 +959,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
                             ),
                           );
                         }).toList(),
-                    onChanged: (value) {
-                      setState(() => selectedTankSource = value);
-                    },
+                    onChanged: null,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF0ECE9),
@@ -999,7 +984,7 @@ class _QualityEditPageState extends State<QualityEditPage> {
 
               // Jam Input
               InkWell(
-                onTap: () => _showHourPicker(context),
+                onTap: null,
                 child: InputDecorator(
                   decoration: InputDecoration(
                     filled: true,

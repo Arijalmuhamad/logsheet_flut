@@ -96,11 +96,10 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
   }
 
   Future<bool> insert(PretreatmentBleachingFiltrationEntity entity) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      _setLoading(false);
       _setErrorMessage(null);
       final result = await _repository.insert(entity);
 

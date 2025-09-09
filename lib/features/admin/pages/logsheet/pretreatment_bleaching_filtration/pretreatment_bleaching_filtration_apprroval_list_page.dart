@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
@@ -35,16 +37,22 @@ class _PretreatmentBleachingFiltrationApprovalListPageState
 
   @override
   Widget build(BuildContext context) {
-    formPretreatment =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where(
-              (form) =>
-                  form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration" &&
-                  form.isActive == "T",
-            )
-            .first;
+    try {
+      formPretreatment =
+          context
+              .read<DataFormNoProvider>()
+              .dataFormNoList
+              .where(
+                (form) =>
+                    form.isMenu ==
+                        "Logsheet_Pretreatment_Bleaching_Filtration" &&
+                    form.isActive == "T",
+              )
+              .first;
+    } catch (e) {
+      log("$e");
+      formPretreatment = null;
+    }
     return Scaffold(appBar: _buildAppBar(), body: _buildBody());
   }
 

@@ -2,12 +2,12 @@ import 'dart:developer';
 
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/services/transaction/quality_refinery_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
 
-class QualityReportRefineryRepository {
-  final QualityReportRefineryMysqlService _mySQLService;
+class QualityReportProductionRepository {
+  final QualityReportProductionMySQLService _mySQLService;
 
-  QualityReportRefineryRepository(this._mySQLService);
+  QualityReportProductionRepository(this._mySQLService);
 
   // Insert Quality Refinery Report
   Future<bool> insert(QualityRefineryEntity entity) async {
@@ -39,14 +39,6 @@ class QualityReportRefineryRepository {
     log('converted ${mapToList.length.toString()}');
 
     return mapToList;
-  }
-
-  Future<String?> getLatestTicketId(String plantCode) async {
-    return await _mySQLService.getLatestTicketId(plantCode);
-  }
-
-  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
-    return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
   Future<bool> updateReportTicket(QualityRefineryEntity report) async {

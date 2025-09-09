@@ -791,7 +791,14 @@ class _FiltrationPerformInputPageState
       final DateTime previousDay = now.subtract(const Duration(days: 1));
       return DateTime(previousDay.year, previousDay.month, previousDay.day);
     } else {
-      return DateTime(now.year, now.month, now.day);
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+        now.hour,
+        now.minute,
+        now.second,
+      );
     }
   }
 
@@ -828,8 +835,12 @@ class _FiltrationPerformInputPageState
   void _showAlertDialog(BuildContext context) {
     log("Show Dialog function");
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
+        bool isLoading =
+            context.watch<PretreatmentBleachingFiltrationProvider>().isLoading;
+
         return AlertDialog(
           title: const Text("Konfirmasi Input"),
           content: const Text("Apakah data yang anda masukkan sudah sesuai?"),
@@ -841,10 +852,15 @@ class _FiltrationPerformInputPageState
               child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog first
-                _save(); // Then call the save function
-              },
+              onPressed:
+                  isLoading
+                      ? null
+                      : () async {
+                        await _save();
+                        Future.delayed(Duration(milliseconds: 300));
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                      },
               child: Consumer<PretreatmentBleachingFiltrationProvider>(
                 builder: (context, provider, child) {
                   // You'll need to add 'isLoading' to your provider for this indicator
@@ -852,10 +868,7 @@ class _FiltrationPerformInputPageState
                     return const SizedBox(
                       width: 12,
                       height: 12,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.0,
-                      ),
+                      child: CircularProgressIndicator(color: Colors.red),
                     );
                   }
                   return const Text("Ya");
@@ -909,7 +922,7 @@ class _FiltrationPerformInputPageState
     return ticketPrefix + lastDigit;
   }
 
-  void _save() async {
+  Future<void> _save() async {
     log("Save button logsheet pretreatment clicked");
     final provider = context.read<PretreatmentBleachingFiltrationProvider>();
     final userProvider = context.read<UserProvider>();
@@ -956,7 +969,7 @@ class _FiltrationPerformInputPageState
         ptBe: parseDouble(ptBEController),
 
         // Bleaching
-        blVacum: parseDouble(blVacumController),
+        blVacum: blVacumController.text,
         blTInlet: parseDouble(blTInletController),
         blTB602: parseDouble(blTB602Controller),
         blSpurge: parseDouble(blSpurgeController),
@@ -1015,7 +1028,7 @@ class _FiltrationPerformInputPageState
         final role = context.read<UserProvider>().currentUser?.role;
         final plantCode =
             context.read<PlantProvider>().currentPlant?.code ?? "";
-        provider.fetchAllTicket(
+        await provider.fetchAllTicket(
           null,
           null,
           username ?? "",
@@ -1249,11 +1262,14 @@ class _FiltrationPerformInputPageState
         controller: controller,
         keyboardType:
             isNumeric
-                ? const TextInputType.numberWithOptions(decimal: true)
+                ? const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: true,
+                )
                 : TextInputType.text,
         inputFormatters:
             isNumeric
-                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))]
                 : [],
         decoration: InputDecoration(
           labelText: label,

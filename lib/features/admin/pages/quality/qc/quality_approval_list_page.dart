@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_approval_detail_qc_page.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityApprovalListScreenPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _QualityApprovalListScreenPageState
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<QualityRefineryProvider>().fetchReportsForManager(
+      (_) => context.read<QualityReportQCProvider>().fetchReportsForManager(
         plantCode,
       ),
     );
@@ -45,7 +45,7 @@ class _QualityApprovalListScreenPageState
             .first;
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Consumer<QualityRefineryProvider>(
+      body: Consumer<QualityReportQCProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -64,7 +64,7 @@ class _QualityApprovalListScreenPageState
                           "";
 
                       context
-                          .read<QualityRefineryProvider>()
+                          .read<QualityReportQCProvider>()
                           .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
@@ -108,7 +108,7 @@ class _QualityApprovalListScreenPageState
                           "";
 
                       context
-                          .read<QualityRefineryProvider>()
+                          .read<QualityReportQCProvider>()
                           .fetchReportsForManager(plantCode);
                     },
                     child: const Text("Refresh"),
@@ -221,10 +221,11 @@ class _QualityApprovalListScreenPageState
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder:
-                                      (context) => QualityApprovalDetailScreen(
-                                        reportEntities: reportsForGroup,
-                                        reportIdentifier: compositeKey,
-                                      ),
+                                      (context) =>
+                                          QualityApprovalDetailQCScreen(
+                                            reportEntities: reportsForGroup,
+                                            reportIdentifier: compositeKey,
+                                          ),
                                 ),
                               );
                             }
@@ -255,7 +256,7 @@ class _QualityApprovalListScreenPageState
             final plantCode =
                 context.read<PlantProvider>().currentPlant?.code ?? "";
 
-            context.read<QualityRefineryProvider>().fetchReportsForManager(
+            context.read<QualityReportQCProvider>().fetchReportsForManager(
               plantCode,
             );
           },

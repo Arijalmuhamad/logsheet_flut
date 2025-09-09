@@ -5,15 +5,15 @@ import 'package:logsheet_app/data/services/storage_service/storage_service.dart'
 import 'package:logsheet_app/features/admin/pages/master/business_unit/business_unit_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/plant/plant_page.dart';
 import 'package:logsheet_app/features/admin/pages/master/user/user_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_approval_list_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_list_qc_page.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import '../auth/login_page.dart';
-import 'pages/quality/quality_report_list_page.dart';
+import 'pages/quality/qc/quality_report_list_page.dart';
 
 // import 'pages/quality_report/quality_report_main.dart';
 
@@ -373,7 +373,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => QualityReportList()),
+                    MaterialPageRoute(builder: (_) => QualityReportQCList()),
                   );
                 },
               ),

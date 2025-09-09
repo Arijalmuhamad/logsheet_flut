@@ -97,13 +97,12 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
   }
 
   Future<bool> insert(DeodorizingFiltrationEntity entity) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      _setLoading(false);
-      _setErrorMessage(null);
       final result = await _repository.insert(entity);
+      Future.delayed(Duration(milliseconds: 300));
 
       if (result) {
         _setLoading(false);
@@ -239,6 +238,7 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
     _setErrorMessage(null);
     try {
       _reportsForManager = await _repository.getReportsForManager(plantCode);
+      log(_reportsForManager.length.toString());
       _setLoading(false);
     } catch (e) {
       _setErrorMessage(

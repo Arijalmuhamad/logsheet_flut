@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_approval_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_approval_detail_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -21,7 +21,7 @@ class _AlertsPageState extends State<AlertsPage> {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<QualityRefineryProvider>().fetchReportsForManager(
+      (_) => context.read<QualityReportQCProvider>().fetchReportsForManager(
         plantCode,
       ),
     );
@@ -31,7 +31,7 @@ class _AlertsPageState extends State<AlertsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Alerts")),
-      body: Consumer<QualityRefineryProvider>(
+      body: Consumer<QualityReportQCProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingAlert) {
             return Center(child: const CircularProgressIndicator());
@@ -71,7 +71,7 @@ class _AlertsPageState extends State<AlertsPage> {
                     context,
                     MaterialPageRoute(
                       builder:
-                          (context) => QualityApprovalDetailScreen(
+                          (context) => QualityApprovalDetailQCScreen(
                             reportEntities: reportEntities,
                             reportIdentifier: reportIdentifier,
                           ),

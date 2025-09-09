@@ -1,14 +1,14 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/repositories/quality_refinery/quality_refinery_repository.dart';
+import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
 
-class QualityRefineryProvider with ChangeNotifier {
-  final QualityReportRefineryRepository _repository;
+class QualityReportProductionProvider with ChangeNotifier {
+  final QualityReportProductionRepository _repository;
 
-  QualityRefineryProvider(this._repository);
+  QualityReportProductionProvider(this._repository);
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -68,20 +68,6 @@ class QualityRefineryProvider with ChangeNotifier {
   void _setErrorMessage(String? message) {
     _errorMessage = message;
     notifyListeners();
-  }
-
-  Future<String?> fetchLatestId(String plantCode) async {
-    _setLoading(false);
-    _setErrorMessage(null);
-    try {
-      _latestId = await _repository.getLatestTicketId(plantCode);
-      log("latest ID = $_latestId");
-      return _latestId;
-    } catch (e) {
-      _setLoading(false);
-      _setErrorMessage('Failed to get latest id: $e');
-      return null;
-    }
   }
 
   Future<bool> insertTicket(QualityRefineryEntity entity) async {
@@ -187,25 +173,6 @@ class QualityRefineryProvider with ChangeNotifier {
     } catch (e) {
       _setErrorMessage('Failed to fetch Quality Reports: $e');
       _setLoading(false);
-    }
-  }
-
-  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      _setLoading(false);
-      log('Update auto number...');
-      final result = await _repository.updateAutoNumber(
-        plantCode,
-        newAutoNumber,
-      );
-      log(result.toString());
-      return result;
-    } catch (e) {
-      _setErrorMessage('Failed to update autonumber: $e');
-      _setLoading(false);
-      return false;
     }
   }
 

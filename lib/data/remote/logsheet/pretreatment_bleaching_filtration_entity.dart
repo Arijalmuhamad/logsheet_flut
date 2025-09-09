@@ -41,7 +41,7 @@ class PretreatmentBleachingFiltrationEntity {
   final double? ptBe;
 
   /// Bleaching Vacum - mmHg
-  final double? blVacum;
+  final String? blVacum;
 
   /// Bleaching T-Inlet - C
   final double? blTInlet;
@@ -245,7 +245,7 @@ class PretreatmentBleachingFiltrationEntity {
       ptH3po4: tryParseDouble(map['pt_h3po4']),
       ptBe: tryParseDouble(map['pt_be']),
 
-      blVacum: tryParseDouble(map['bl_vacum']),
+      blVacum: map['bl_vacum'] as String?,
       blTInlet: tryParseDouble(map['bl_t_inlet']),
       blTB602: tryParseDouble(map['bl_t_b602']),
       blSpurge: tryParseDouble(map['bl_spurge']),

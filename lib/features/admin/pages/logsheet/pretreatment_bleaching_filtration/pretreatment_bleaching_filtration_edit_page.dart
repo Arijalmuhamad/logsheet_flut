@@ -824,7 +824,7 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
         ptBe: parseDouble(ptBEController),
 
         // Bleaching
-        blVacum: parseDouble(blVacumController),
+        blVacum: blVacumController.text,
         blTInlet: parseDouble(blTInletController),
         blTB602: parseDouble(blTB602Controller),
         blSpurge: parseDouble(blSpurgeController),
@@ -890,7 +890,7 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
           plantCode,
         );
         _showSnackBar('Update berhasil');
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context, updatedEntity);
       } else {
         _showSnackBar('Gagal memperbarui data');
       }

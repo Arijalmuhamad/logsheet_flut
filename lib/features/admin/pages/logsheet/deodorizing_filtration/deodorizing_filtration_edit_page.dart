@@ -15,16 +15,17 @@ import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class DeodorizingFiltrationInputPage extends StatefulWidget {
-  const DeodorizingFiltrationInputPage({super.key});
+class DeodorizingFiltrationEditPage extends StatefulWidget {
+  const DeodorizingFiltrationEditPage({super.key, required this.logsheet});
+  final DeodorizingFiltrationEntity logsheet;
 
   @override
-  State<DeodorizingFiltrationInputPage> createState() =>
+  State<DeodorizingFiltrationEditPage> createState() =>
       _DeodorizingFiltrationInputPageState();
 }
 
 class _DeodorizingFiltrationInputPageState
-    extends State<DeodorizingFiltrationInputPage> {
+    extends State<DeodorizingFiltrationEditPage> {
   int? selectedHour;
   int currentStep = 0;
   String? selectedWorkCenter;
@@ -58,6 +59,34 @@ class _DeodorizingFiltrationInputPageState
 
   @override
   void initState() {
+    final logsheet = widget.logsheet;
+    selectedWorkCenter = logsheet.refineryMachine;
+    selectedHour = logsheet.time?.hour;
+
+    fit701BpoController.text = logsheet.fit701Bpo?.toString() ?? '';
+    d701VacumController.text = logsheet.d701Vacum?.toString() ?? '';
+    d701Td701Controller.text = logsheet.d701Td701?.toString() ?? '';
+    e702Controller.text = logsheet.e702?.toString() ?? '';
+    thermopacInletController.text = logsheet.thermopacInlet?.toString() ?? '';
+    thermopacOutletController.text = logsheet.thermopacOutlet?.toString() ?? '';
+    d702InletController.text = logsheet.d702Inlet?.toString() ?? '';
+    d702OutletController.text = logsheet.d702Outlet?.toString() ?? '';
+    d702VacumController.text = logsheet.d702Vacum?.toString() ?? '';
+    spargingAController.text = logsheet.spargingA ?? '';
+    spargingBController.text = logsheet.spargingB ?? '';
+    e730InletController.text = logsheet.e730Inlet ?? '';
+    steamInletController.text = logsheet.steamInlet ?? '';
+    pish706Controller.text = logsheet.pish706 ?? '';
+    tiwh706Controller.text = logsheet.tiwh706 ?? '';
+    f702AController.text = logsheet.f702A?.toString() ?? '';
+    f702BController.text = logsheet.f702B?.toString() ?? '';
+    f702CController.text = logsheet.f702C?.toString() ?? '';
+    fit704RpoController.text = logsheet.fit704Rpo?.toString() ?? '';
+    e704Controller.text = logsheet.e704?.toString() ?? '';
+    fit705PfadController.text = logsheet.fit705Pfad?.toString() ?? '';
+    e705Controller.text = logsheet.e705?.toString() ?? '';
+    clarityController.text = logsheet.clarity ?? '';
+    remarksController.text = logsheet.remarks ?? '';
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async => await context.read<ValueProvider>().fetchWorkCenterLists(),
@@ -455,26 +484,9 @@ class _DeodorizingFiltrationInputPageState
   DateTime getPostingDate() {
     final now = DateTime.now();
     final hour = selectedHour ?? now.hour;
-    if (hour <= 7) {
-      final DateTime previousDay = now.subtract(const Duration(days: 1));
-      return DateTime(
-        previousDay.year,
-        previousDay.month,
-        previousDay.day,
-        previousDay.hour,
-        previousDay.minute,
-        previousDay.second,
-      );
-    } else {
-      return DateTime(
-        now.year,
-        now.month,
-        now.day,
-        now.hour,
-        now.minute,
-        now.second,
-      );
-    }
+    return (hour <= 7)
+        ? now.subtract(const Duration(days: 1))
+        : DateTime(now.year, now.month, now.day);
   }
 
   DateTime getTransactionDate() => DateTime.now();
@@ -495,45 +507,42 @@ class _DeodorizingFiltrationInputPageState
     log("Show Dialog function");
     showDialog(
       context: context,
-      builder: (context) {
-        bool isLoading =
-            context.watch<DeodorizingFiltrationProvider>().isLoading;
-
-        return AlertDialog(
-          title: const Text("Konfirmasi Input"),
-          content: const Text("Apakah data yang anda masukkan sudah sesuai?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed:
-                  isLoading
-                      ? null
-                      : () async {
-                        await _save();
-                        Future.delayed(Duration(milliseconds: 300));
-                        if (!context.mounted) return;
-                        Navigator.of(context).pop();
-                      },
-
-              child: Consumer<DeodorizingFiltrationProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const SizedBox(
-                      width: 6,
-                      height: 6,
-                      child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  }
-                  return const Text("Ya");
-                },
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Konfirmasi Input"),
+            content: const Text("Apakah data yang anda masukkan sudah sesuai?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  "Tidak",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
-            ),
-          ],
-        );
-      },
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _save();
+                },
+
+                child: Consumer<DeodorizingFiltrationProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoading) {
+                      return const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.0,
+                        ),
+                      );
+                    }
+                    return const Text("Ya");
+                  },
+                ),
+              ),
+            ],
+          ),
     );
   }
 
@@ -579,7 +588,7 @@ class _DeodorizingFiltrationInputPageState
     return ticketPrefix + lastDigit;
   }
 
-  Future<void> _save() async {
+  void _save() async {
     final provider = context.read<DeodorizingFiltrationProvider>();
     final userProvider = context.read<UserProvider>();
     final buProvider = context.read<BusinessUnitProvider>();
@@ -603,7 +612,7 @@ class _DeodorizingFiltrationInputPageState
 
       final entity = DeodorizingFiltrationEntity(
         // UPDATED: Call the ticket number generation function
-        id: await buildTicketNumber(),
+        id: widget.logsheet.id,
         company: buProvider.currentBusinessUnit?.buCode,
         plant: plantProvider.currentPlant?.code,
         transactionDate: getTransactionDate(),
@@ -650,14 +659,16 @@ class _DeodorizingFiltrationInputPageState
         preparedStatusRemarks: null,
         checkedStatus: null,
         checkedStatusRemarks: null,
-        updatedDate: null,
-        updatedBy: null,
+        updatedDate: DateTime.now(),
+        updatedBy: userProvider.currentUser?.username,
       );
 
-      bool success = await provider.insert(entity); // Assuming insert exists
+      bool success = await provider.updateTicket(
+        entity,
+      ); // Assuming insert exists
 
       if (success) {
-        _showSnackBar('Input berhasil');
+        _showSnackBar('Edit berhasil');
         if (!mounted) return;
         final username = context.read<UserProvider>().currentUser?.username;
         final role = context.read<UserProvider>().currentUser?.role;
@@ -670,10 +681,10 @@ class _DeodorizingFiltrationInputPageState
           role ?? "",
           plantCode,
         );
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context, entity);
       }
     } catch (e) {
-      log("Gagal menyimpan laporan: $e");
+      log("Gagal edit laporan: $e");
       _showSnackBar("Terjadi kesalahan: $e");
     }
   }

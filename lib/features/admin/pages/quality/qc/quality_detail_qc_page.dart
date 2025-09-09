@@ -4,28 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_edit_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityDetailPage extends StatefulWidget {
+class QualityDetailQCPage extends StatefulWidget {
   final QualityRefineryEntity item;
   final bool isDisplayed;
 
-  const QualityDetailPage({
+  const QualityDetailQCPage({
     super.key,
     required this.item,
     this.isDisplayed = true,
   });
 
   @override
-  State<QualityDetailPage> createState() => _QualityDetailPageState();
+  State<QualityDetailQCPage> createState() => _QualityDetailQCPageState();
 }
 
-class _QualityDetailPageState extends State<QualityDetailPage> {
+class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
   final TextEditingController _remarkController = TextEditingController();
   late QualityRefineryEntity _currentReport;
 
@@ -174,7 +174,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
                         context.read<PlantProvider>().currentPlant?.code ?? "";
                     //ke provider
                     await context
-                        .read<QualityRefineryProvider>()
+                        .read<QualityReportQCProvider>()
                         .sendApproveRejectReport(
                           user.username,
                           isApproved ? "Approved" : "Rejected",
@@ -183,7 +183,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
                           _remarkController.text.isNotEmpty
                               ? _remarkController.text
                               : "",
-                          widget.item.id,
+                          _currentReport.id,
                           user.role,
                           plantCode,
                         );
@@ -194,8 +194,8 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
                       SnackBar(
                         content: Text(
                           isApproved
-                              ? "Number ${widget.item.id} berhasil diapprove"
-                              : "Number ${widget.item.id} berhasil direject",
+                              ? "Number ${_currentReport.id} berhasil diapprove"
+                              : "Number ${_currentReport.id} berhasil direject",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         backgroundColor: Colors.black,
@@ -399,7 +399,9 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
               ),
               _buildDataRow(
                 'Remarks',
-                _currentReport.remarks != "" ? "-" : "-",
+                _currentReport.remarks != null
+                    ? "${_currentReport.remarks}"
+                    : "-",
               ),
             ]),
 
@@ -532,7 +534,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
               final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return QualityEditPage(report: _currentReport);
+                    return QualityEditQCPage(report: _currentReport);
                   },
                 ),
               );
@@ -561,7 +563,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return Consumer<QualityRefineryProvider>(
+        return Consumer<QualityReportQCProvider>(
           builder: (context, provider, child) {
             bool isLoadingDelete = provider.isLoadingDelete;
             return AlertDialog(
@@ -592,7 +594,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
                           : Text('Ya', style: TextStyle(color: Colors.white)),
                   onPressed: () async {
                     await context
-                        .read<QualityRefineryProvider>()
+                        .read<QualityReportQCProvider>()
                         .deleteTicketById(_currentReport.id);
                     if (!context.mounted) return;
                     Navigator.pop(context);
@@ -610,7 +612,7 @@ class _QualityDetailPageState extends State<QualityDetailPage> {
       try {
         // Call your provider's delete method.
         if (!context.mounted) return;
-        await context.read<QualityRefineryProvider>().deleteTicketById(
+        await context.read<QualityReportQCProvider>().deleteTicketById(
           _currentReport.id,
         );
 

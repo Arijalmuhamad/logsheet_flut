@@ -99,7 +99,7 @@ class DeodorizingFiltrationMySQLService {
             JOIN
               m_roles_shift_prepared rs ON t.shift = rs.shift_code
             WHERE
-              rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode  AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (T.flag IS NULL OR T.flag = 'T')
+              rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (T.flag IS NULL OR T.flag = 'T')
           """;
 
           // baseQuery = """
@@ -129,7 +129,7 @@ class DeodorizingFiltrationMySQLService {
           FROM
             t_deodorizing_filtration
           WHERE
-            prepared_status = :status AND plant = :plantCode 
+            prepared_status = :status AND plant = :plantCode AND (T.flag IS NULL OR T.flag = 'T')
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -137,7 +137,7 @@ class DeodorizingFiltrationMySQLService {
         case 'ADM':
           // Query untuk Admin: Dapat melihat semua logsheet di plant-nya.
           baseQuery =
-              "SELECT * FROM t_deodorizing_filtration WHERE plant = :plantCode";
+              "SELECT * FROM t_deodorizing_filtration WHERE plant = :plantCode AND (T.flag IS NULL OR T.flag = 'T')";
           params["plantCode"] = plantCode;
           break;
 
@@ -167,6 +167,8 @@ class DeodorizingFiltrationMySQLService {
       }
 
       final IResultSet result = await connection!.execute(baseQuery, params);
+
+      log("baseQuery: $baseQuery");
 
       log(
         '(DEODORIZING FILTRATION MySQL) Fetched ${result.rows.length} deodorizing filtration logsheet records for user $username with role $role.',
@@ -393,7 +395,7 @@ class DeodorizingFiltrationMySQLService {
       connection = connResult.connection;
       const sql = """
         SELECT * FROM t_deodorizing_filtration 
-        WHERE prepared_status = 'Approved' AND plant = :plantCode
+        WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
         ORDER BY posting_date DESC
       """;
       final result = await connection!.execute(sql, {"plantCode": plantCode});

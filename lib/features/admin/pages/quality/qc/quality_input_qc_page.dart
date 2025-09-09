@@ -11,24 +11,25 @@ import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entit
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:logsheet_app/core/database/app_database.dart';
-import '../../../../providers/master/user_provider.dart';
+import '../../../../../providers/master/user_provider.dart';
 
-class QualityRefineryInputPage extends StatefulWidget {
+class QualityReportInputQCPage extends StatefulWidget {
   final String userName;
 
-  const QualityRefineryInputPage({super.key, required this.userName});
+  const QualityReportInputQCPage({super.key, required this.userName});
 
   @override
-  State<QualityRefineryInputPage> createState() =>
-      _QualityRefineryInputPageState();
+  State<QualityReportInputQCPage> createState() =>
+      _QualityReportInputQCPageState();
 }
 
-class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
+class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   // Database & DAO
 
   // Data dropdown & kontrol
@@ -337,8 +338,10 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
   void _showAlertDialog(BuildContext context) {
     log("Show Dialog function");
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
+        bool isLoading = context.watch<QualityReportQCProvider>().isLoading;
         return AlertDialog(
           title: const Text("Konfirmasi Input"),
           content: Text("Apakah data yang anda masukkan sudah sesuai?"),
@@ -350,18 +353,21 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
               child: const Text("Tidak", style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: () async {
-                await _saveQualityReport();
-                if (!context.mounted) return;
-                Navigator.of(context).pop();
-              },
-              child: Consumer<QualityRefineryProvider>(
+              onPressed:
+                  isLoading
+                      ? null
+                      : () async {
+                        await _saveQualityReport();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                      },
+              child: Consumer<QualityReportQCProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return SizedBox(
-                      width: 4,
-                      height: 4,
-                      child: CircularProgressIndicator(color: Colors.white),
+                      width: 6,
+                      height: 6,
+                      child: CircularProgressIndicator(color: Colors.red),
                     );
                   }
                   return Text("Ya");
@@ -375,7 +381,7 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
   }
 
   Future<void> _saveQualityReport() async {
-    final reportProvider = context.read<QualityRefineryProvider>();
+    final reportProvider = context.read<QualityReportQCProvider>();
     final userProvider = context.read<UserProvider>();
     final plantProvider = context.read<PlantProvider>();
     log('Save report button clicked.');
@@ -483,7 +489,7 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
       log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
       int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
       final update = await context
-          .read<QualityRefineryProvider>()
+          .read<QualityReportQCProvider>()
           .updateAutoNumber(plantCode, digit);
       String lastDigit = digit.toString().padLeft(6, '0');
       if (lastDigit == "") {
@@ -499,7 +505,9 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
     try {
       final time = DateFormat('HH:mm:ss').parse(formattedTime);
 
-      final provider = context.read<QualityRefineryProvider>();
+      if (!mounted) return;
+      final providerQC = context.read<QualityReportQCProvider>();
+      final providerProd = context.read<QualityReportProductionProvider>();
 
       final currentUser = context.read<UserProvider>().currentUser;
 
@@ -582,25 +590,35 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
       bool? success;
 
       log('attempt to insert');
-      success = await provider.insertTicket(entity);
+      success = await providerQC.insertTicket(entity);
 
       log("is success? $success");
 
       if (success) {
-        context.read<QualityRefineryProvider>().fetchAllTickets(
-          null,
-          null,
-          userProvider.currentUser?.username ?? "",
-          userProvider.currentUser?.role ?? "",
-          plantProvider.currentPlant?.code ?? "",
-        );
-        _showSnackBar('Input Report berhasil.');
+        QualityRefineryEntity prodEntity = entity;
+        prodEntity.remarks = null;
+        final prodSuccess = await providerProd.insertTicket(prodEntity);
 
-        log('insert successful.');
-        if (mounted) Navigator.pop(context);
+        if (prodSuccess) {
+          if (!mounted) return;
+          context.read<QualityReportQCProvider>().fetchAllTickets(
+            null,
+            null,
+            userProvider.currentUser?.username ?? "",
+            userProvider.currentUser?.role ?? "",
+            plantProvider.currentPlant?.code ?? "",
+          );
+          _showSnackBar('Input Report berhasil.');
+
+          log('insert successful.');
+          if (mounted) Navigator.pop(context);
+        } else {
+          log('insert to Production Table is not successful.');
+          _showSnackBar('Input Report gagal: ${providerProd.errorMessage}.');
+        }
       } else {
-        log('insert is not successful.');
-        _showSnackBar('Input Report gagal: ${provider.errorMessage}.');
+        log('insert to QC Table is not successful.');
+        _showSnackBar('Input Report gagal: ${providerQC.errorMessage}.');
       }
     } catch (e) {
       log("Gagal menyimpan laporan: $e");
@@ -1631,15 +1649,8 @@ class _QualityRefineryInputPageState extends State<QualityRefineryInputPage> {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton.icon(
-            icon: Consumer<QualityRefineryProvider>(
+            icon: Consumer<QualityReportQCProvider>(
               builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  return SizedBox(
-                    width: 12,
-                    height: 12,
-                    child: const CircularProgressIndicator(color: Colors.white),
-                  );
-                }
                 return Icon(
                   currentStep == 5 ? Icons.save : Icons.arrow_forward,
                 );

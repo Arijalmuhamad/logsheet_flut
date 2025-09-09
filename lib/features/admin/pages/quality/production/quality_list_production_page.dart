@@ -4,23 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_detail_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/quality_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/production/quality_detail_production_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityReportList extends StatefulWidget {
-  const QualityReportList({super.key});
+class QualityReportProductionList extends StatefulWidget {
+  const QualityReportProductionList({super.key});
 
   @override
-  State<QualityReportList> createState() => _QualityReportListState();
+  State<QualityReportProductionList> createState() =>
+      _QualityReportProductionListState();
 }
 
-class _QualityReportListState extends State<QualityReportList> {
+class _QualityReportProductionListState
+    extends State<QualityReportProductionList> {
   DataFormNoEntity? formData;
 
   @override
@@ -29,7 +33,7 @@ class _QualityReportListState extends State<QualityReportList> {
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<QualityRefineryProvider>().fetchAllTickets(
+      await context.read<QualityReportProductionProvider>().fetchAllTickets(
         null,
         null,
         username ?? "",
@@ -48,27 +52,27 @@ class _QualityReportListState extends State<QualityReportList> {
 
   @override
   Widget build(BuildContext context) {
-    final username = context.read<UserProvider>().currentUser?.username;
+    // final username = context.read<UserProvider>().currentUser?.username;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          log("Tombol tambah report diklik");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      QualityRefineryInputPage(userName: username ?? "Unknown"),
-            ),
-          );
-        },
-        label: const Text("Tambah Quality Report"),
-        icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
-      ),
+      // floatingActionButton: FloatingActionButton.extended(
+      //   onPressed: () {
+      //     log("Tombol tambah report diklik");
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder:
+      //             (context) =>
+      //                 QualityRefineryInputPage(userName: username ?? "Unknown"),
+      //       ),
+      //     );
+      //   },
+      //   label: const Text("Tambah Quality Report"),
+      //   icon: Icon(Icons.add),
+      //   backgroundColor: Color(0xFFB91C1C),
+      //   foregroundColor: Colors.white,
+      // ),
     );
   }
 
@@ -77,12 +81,12 @@ class _QualityReportListState extends State<QualityReportList> {
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
+            .where((form) => form.isMenu == "Quality_Report_Production")
             .first;
     return AppBar(
       title: Text("Quality List (${formData!.code})"),
       actions: [
-        context.watch<QualityRefineryProvider>().isLoading
+        context.watch<QualityReportProductionProvider>().isLoading
             ? CircularProgressIndicator()
             : IconButton(
               onPressed: () async {
@@ -91,15 +95,17 @@ class _QualityReportListState extends State<QualityReportList> {
                 final role = context.read<UserProvider>().currentUser?.role;
                 final plantCode =
                     context.read<PlantProvider>().currentPlant?.code ?? "";
-                await context.read<QualityRefineryProvider>().fetchAllTickets(
-                  null,
-                  null,
-                  username ?? "",
-                  role ?? "",
-                  plantCode,
-                );
+                await context
+                    .read<QualityReportProductionProvider>()
+                    .fetchAllTickets(
+                      null,
+                      null,
+                      username ?? "",
+                      role ?? "",
+                      plantCode,
+                    );
               },
-              icon: Consumer<QualityRefineryProvider>(
+              icon: Consumer<QualityReportProductionProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return const CircularProgressIndicator();
@@ -113,7 +119,7 @@ class _QualityReportListState extends State<QualityReportList> {
   }
 
   Widget _buildBody() {
-    return Consumer2<QualityRefineryProvider, PlantProvider>(
+    return Consumer2<QualityReportProductionProvider, PlantProvider>(
       builder: (context, qualityProvider, plantprovider, child) {
         List<QualityRefineryEntity> filteredList =
             qualityProvider.reportsList
@@ -187,7 +193,9 @@ class _QualityReportListState extends State<QualityReportList> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => QualityDetailPage(item: report),
+                        builder:
+                            (context) =>
+                                QualityDetailProductionPage(item: report),
                       ),
                     );
                   },

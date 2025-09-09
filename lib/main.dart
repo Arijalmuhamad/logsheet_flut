@@ -7,7 +7,8 @@ import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and
 import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
 import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
-import 'package:logsheet_app/data/repositories/quality_refinery/quality_refinery_repository.dart';
+import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
+import 'package:logsheet_app/data/repositories/quality_report/quality_report_qc_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
@@ -16,7 +17,8 @@ import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_gla
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
-import 'package:logsheet_app/data/services/transaction/quality_refinery_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/auth_wrapper.dart';
@@ -26,7 +28,8 @@ import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_p
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_refinery_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
@@ -54,9 +57,13 @@ void main() async {
         Provider<ValueMySQLService>(create: (context) => ValueMySQLService()),
         // Provide PlantMySQL Service
         Provider<PlantMySQLService>(create: (context) => PlantMySQLService()),
-        // Provide Quality Report Refinery MySQL Service
-        Provider<QualityReportRefineryMysqlService>(
-          create: (context) => QualityReportRefineryMysqlService(),
+        // Provide Quality Report QC MySQL Service
+        Provider<QualityReportQCMySQLService>(
+          create: (context) => QualityReportQCMySQLService(),
+        ),
+        // Provide Quality Report Production MySQL Service
+        Provider<QualityReportProductionMySQLService>(
+          create: (context) => QualityReportProductionMySQLService(),
         ),
         // Provider Maintenance Lamps And Glass MySQL Service
         Provider<MaintenanceLampsAndGlassMySQLService>(
@@ -96,11 +103,18 @@ void main() async {
           create:
               (context) => PlantRepository(context.read<PlantMySQLService>()),
         ),
-        // Provide Quality Report Refinery Repository
-        Provider<QualityReportRefineryRepository>(
+        // Provide Quality Report QC Repository
+        Provider<QualityReportQCRepository>(
           create:
-              (context) => QualityReportRefineryRepository(
-                context.read<QualityReportRefineryMysqlService>(),
+              (context) => QualityReportQCRepository(
+                context.read<QualityReportQCMySQLService>(),
+              ),
+        ),
+        // Provide Quality Report Production Repository
+        Provider<QualityReportProductionRepository>(
+          create:
+              (context) => QualityReportProductionRepository(
+                context.read<QualityReportProductionMySQLService>(),
               ),
         ),
         // Provide Maintenance Lamps And Glass Repository
@@ -148,11 +162,18 @@ void main() async {
         ChangeNotifierProvider(
           create: (context) => PlantProvider(context.read<PlantRepository>()),
         ),
-        // Provide Quality Report Refinery Provider
+        // Provide Quality Report QC Provider
         ChangeNotifierProvider(
           create:
-              (context) => QualityRefineryProvider(
-                context.read<QualityReportRefineryRepository>(),
+              (context) => QualityReportQCProvider(
+                context.read<QualityReportQCRepository>(),
+              ),
+        ),
+        // Provide Quality Report Production Provider
+        ChangeNotifierProvider(
+          create:
+              (context) => QualityReportProductionProvider(
+                context.read<QualityReportProductionRepository>(),
               ),
         ),
         // Provide Maintenance Lamps And Glass Provider

@@ -55,7 +55,7 @@ class QualityRefineryEntity {
   final double? wasteMNI;
 
   // Remark
-  final String? remarks;
+  String? remarks;
   final String? flag;
   final String? entryBy;
   final DateTime? entryDate;

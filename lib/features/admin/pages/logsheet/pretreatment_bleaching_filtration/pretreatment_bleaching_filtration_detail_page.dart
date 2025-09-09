@@ -480,8 +480,8 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
       actions: [
         if (widget.item.preparedStatus == null)
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
                     return LogsheetPretreatmentBleachingFiltrationEditPage(
@@ -490,7 +490,16 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                   },
                 ),
               );
+              log(result != null ? 'result has value' : 'result has no value.');
+
+              if (result != null &&
+                  result is PretreatmentBleachingFiltrationEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
             },
+
             icon: const Icon(Icons.edit),
           ),
 

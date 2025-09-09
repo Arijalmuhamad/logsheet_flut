@@ -98,7 +98,7 @@ class PretreatmentBleachingFiltrationMySQLService {
           JOIN
             m_roles_shift_prepared rs ON t.shift = rs.shift_code
           WHERE
-            rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode  AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (T.flag IS NULL OR T.flag = 'T')
+            rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode  AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (t.flag IS NULL OR t.flag = 'T')
         """;
           params["username"] = username;
           params["is_active"] = "T";

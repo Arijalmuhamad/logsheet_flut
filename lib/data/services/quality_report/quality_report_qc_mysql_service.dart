@@ -6,7 +6,7 @@ import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
-class QualityReportRefineryMysqlService {
+class QualityReportQCMySQLService {
   Future<bool> insertTicket(QualityRefineryEntity entity) async {
     MySQLConnection? connection;
     try {
@@ -66,7 +66,7 @@ class QualityReportRefineryMysqlService {
       });
 
       final String sql =
-          'INSERT INTO t_quality_report_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
+          'INSERT INTO t_quality_report_qc (${columns.join(', ')}) VALUES (${params.join(', ')})';
 
       // final String sql =
       //     'INSERT INTO t_quality_report_refinery_2 (`id`) VALUES ("QRMPS2125000108")';
@@ -119,13 +119,13 @@ class QualityReportRefineryMysqlService {
         case 'LEAD':
           baseQuery = """
           SELECT
-            t_quality_report_refinery.*
+            t_quality_report_qc.*
           FROM
-            t_quality_report_refinery
+            t_quality_report_qc
           JOIN
-            m_roles_shift_prepared ON t_quality_report_refinery.shift = m_roles_shift_prepared.shift_code
+            m_roles_shift_prepared ON t_quality_report_qc.shift = m_roles_shift_prepared.shift_code
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
+            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_qc.plant = :plantCode AND (t_quality_report_qc.flag IS NULL OR t_quality_report_qc.flag = 'T') 
         """;
           params["username"] = username;
           params["is_active"] = "T";
@@ -136,8 +136,8 @@ class QualityReportRefineryMysqlService {
           SELECT
             *
           FROM
-            t_quality_report_refinery
-          WHERE plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
+            t_quality_report_qc
+          WHERE plant = :plantCode AND (t_quality_report_qc.flag IS NULL OR t_quality_report_qc.flag = 'T') 
         """;
 
           params["plantCode"] = plantCode;
@@ -148,7 +148,7 @@ class QualityReportRefineryMysqlService {
           SELECT
             *
           FROM
-            t_quality_report_refinery
+            t_quality_report_qc
           WHERE
             prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
         """;
@@ -158,7 +158,7 @@ class QualityReportRefineryMysqlService {
         case 'ADM':
           // Query for Admin: Can see all reports.
           baseQuery =
-              "SELECT * FROM t_quality_report_refinery WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
+              "SELECT * FROM t_quality_report_qc WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
           params["plantCode"] = plantCode;
           break;
 
@@ -303,7 +303,7 @@ class QualityReportRefineryMysqlService {
       sqlExecuteParams['id'] = entity.id;
 
       final sql =
-          "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id = :id";
+          "UPDATE t_quality_report_qc SET ${setClause.join(', ')} WHERE id = :id";
 
       log('Generated UPDATE SQL: $sql');
       log('Params for SQL: $sqlExecuteParams');
@@ -335,7 +335,7 @@ class QualityReportRefineryMysqlService {
       }
       connection = connResult.connection;
       final result = await connection!.execute(
-        "SELECT * FROM t_quality_report_refinery WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
+        "SELECT * FROM t_quality_report_qc WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
         {"plantCode": plantCode},
       );
       log('Fetched ${result.rows.length} row.');
@@ -421,7 +421,7 @@ class QualityReportRefineryMysqlService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "SELECT time FROM t_quality_report_refinery WHERE date(posting_date) = :date AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
+        "SELECT time FROM t_quality_report_qc WHERE date(posting_date) = :date AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
         {"date": dateFilter, "plantCode": plantCode},
       );
 
@@ -460,7 +460,7 @@ class QualityReportRefineryMysqlService {
             work_center,
             oil_type
           FROM
-            t_quality_report_refinery
+            t_quality_report_qc
           WHERE
             (flag IS NULL OR flag = 'T') AND
             posting_date >= CURDATE() - INTERVAL 7 DAY
@@ -499,7 +499,7 @@ class QualityReportRefineryMysqlService {
 
       final result = await connection.execute(
         // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
-        "UPDATE t_quality_report_refinery SET flag = 'D' WHERE id = :id", // Delete with Flag
+        "UPDATE t_quality_report_qc SET flag = 'D' WHERE id = :id", // Delete with Flag
         {"status": "Deleted", "date": "${DateTime.now()}", "id": id},
       );
       log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
@@ -532,7 +532,7 @@ class QualityReportRefineryMysqlService {
       }
       connection = connResult.connection;
       String query =
-          "SELECT * FROM t_quality_report_refinery WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+          "SELECT * FROM t_quality_report_qc WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
 
       dateFilter ??= DateTime.now();
 

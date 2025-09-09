@@ -1,7 +1,12 @@
+import 'dart:developer';
+
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
-  final _secureStorage = const FlutterSecureStorage();
+  final _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
   static const keys = (
     username: 'username',
@@ -71,13 +76,19 @@ class StorageService {
   }
 
   Future<Map<String, String?>> readAllLoginData() async {
-    final data = await _secureStorage.readAll();
-    return {
-      keys.username: data[keys.username],
-      keys.password: data[keys.password],
-      keys.businessUnit: data[keys.businessUnit],
-      keys.plant: data[keys.plant],
-    };
+    try {
+      final data = await _secureStorage.readAll();
+      return {
+        keys.username: data[keys.username],
+        keys.password: data[keys.password],
+        keys.businessUnit: data[keys.businessUnit],
+        keys.plant: data[keys.plant],
+      };
+    } on PlatformException catch (e) {
+      log("Error PlatformException: $e");
+      await deleteAllLoginData();
+      return {};
+    }
   }
 
   Future<void> deleteAllLoginData() async {
