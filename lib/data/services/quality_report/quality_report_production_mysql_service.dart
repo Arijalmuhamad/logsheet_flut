@@ -2,11 +2,11 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class QualityReportProductionMySQLService {
-  Future<bool> insertTicket(QualityRefineryEntity entity) async {
+  Future<bool> insertTicket(QualityReportProductionEntity entity) async {
     MySQLConnection? connection;
     try {
       var connResult = await getMySQLConnection();
@@ -115,7 +115,7 @@ class QualityReportProductionMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD':
+        case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
             t_quality_report_refinery.*
@@ -142,7 +142,7 @@ class QualityReportProductionMySQLService {
           params["plantCode"] = plantCode;
           break;
 
-        case 'MGR':
+        case 'MGR' || 'MGR_PROD':
           baseQuery = """
           SELECT
             *
@@ -200,7 +200,61 @@ class QualityReportProductionMySQLService {
     }
   }
 
-  Future<bool> updateTicket(QualityRefineryEntity entity) async {
+  Future<String?> getLatestTicketId(String plantCode) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get latest ticket id.');
+        return null;
+      }
+      final result = await connResult.connection!.execute(
+        // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
+        // {"plant": plantCode},
+        "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'QRRM'",
+        {"plant": plantCode},
+      );
+
+      if (result.rows.isNotEmpty) {
+        final row = result.rows.first.assoc();
+
+        final latestId = row['ticket'];
+        log("ticket id from database: ${row['ticket']}");
+
+        return latestId;
+      }
+      await closeMySQLConnection();
+      return null;
+    } catch (e) {
+      log('Error fetching latest ticket id: $e');
+      return null;
+    }
+  }
+
+  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating autonumber.');
+        return false;
+      }
+
+      final sql =
+          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'QRRM'";
+      final params = {"autonumber": newAutoNumber, "plantid": plantCode};
+
+      final result = await connResult.connection!.execute(sql, params);
+      log(
+        'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
+      );
+      connResult.connection?.close();
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating autonumber: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateTicket(QualityReportProductionEntity entity) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -216,7 +270,7 @@ class QualityReportProductionMySQLService {
       final Map<String, dynamic> sqlExecuteParams = {};
 
       entityData.forEach((keyInEntityMap, value) {
-        if (keyInEntityMap != 'id') {
+        if (keyInEntityMap != 'id' || keyInEntityMap != 'id_fk') {
           String actualDbColumnName = keyInEntityMap;
           String safeParameterName = keyInEntityMap;
 
@@ -245,10 +299,10 @@ class QualityReportProductionMySQLService {
           sqlExecuteParams[safeParameterName] = value;
         }
       });
-      sqlExecuteParams['id'] = entity.id;
+      sqlExecuteParams['id'] = entity.idFk;
 
       final sql =
-          "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id = :id";
+          "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id_fk = :id";
 
       log('Generated UPDATE SQL: $sql');
       log('Params for SQL: $sqlExecuteParams');
@@ -316,7 +370,7 @@ class QualityReportProductionMySQLService {
       }
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-      if (userRole == "MGR") {
+      if (userRole == "MGR" || userRole == "MGR_PROD") {
         final sql =
             "UPDATE t_quality_report_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
 
@@ -444,7 +498,7 @@ class QualityReportProductionMySQLService {
 
       final result = await connection.execute(
         // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
-        "UPDATE t_quality_report_refinery SET flag = 'D' WHERE id = :id", // Delete with Flag
+        "UPDATE t_quality_report_refinery SET flag = 'D' WHERE id_fk = :id", // Delete with Flag
         {"status": "Deleted", "date": "${DateTime.now()}", "id": id},
       );
       log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');

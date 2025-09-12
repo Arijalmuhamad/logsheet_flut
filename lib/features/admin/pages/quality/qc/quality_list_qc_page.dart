@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
@@ -115,7 +115,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
   Widget _buildBody() {
     return Consumer2<QualityReportQCProvider, PlantProvider>(
       builder: (context, qualityProvider, plantprovider, child) {
-        List<QualityRefineryEntity> filteredList =
+        List<QualityReportQcEntity> filteredList =
             qualityProvider.reportsList
                 .where(
                   (e) => e.preparedStatus == null && e.checkedStatus == null,
@@ -312,7 +312,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
     );
   }
 
-  String _getStatusText(QualityRefineryEntity report) {
+  String _getStatusText(QualityReportQcEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -330,7 +330,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityRefineryEntity report) {
+  Color _getStatusColor(QualityReportQcEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }

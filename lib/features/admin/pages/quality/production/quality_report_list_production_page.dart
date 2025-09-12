@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_detail_page.dart';
-import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/features/admin/pages/quality/production/quality_detail_production_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:provider/provider.dart';
 
-class DeodorizingFiltrationReportListPage extends StatefulWidget {
-  const DeodorizingFiltrationReportListPage({
+class QualityReportListProductionPage extends StatefulWidget {
+  final String userName;
+  final String role;
+  const QualityReportListProductionPage({
     super.key,
     required this.userName,
     required this.role,
   });
 
-  final String userName;
-  final String role;
-
   @override
-  State<DeodorizingFiltrationReportListPage> createState() =>
-      _LogsheetPretreatmentBleachingFiltrationReportListsPageState();
+  State<QualityReportListProductionPage> createState() =>
+      _QualityReportListProductionPageState();
 }
 
-class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
-    extends State<DeodorizingFiltrationReportListPage> {
-  final TextEditingController _dateController = TextEditingController();
-  DateTime? _selectedDate = DateTime.now();
+class _QualityReportListProductionPageState
+    extends State<QualityReportListProductionPage> {
+  final _dateController = TextEditingController();
+
+  DateTime? _selectedDate;
   String? _tempSelectedShift = "All";
   final List<String> shifts = ["1", "2", "3", "4", "5"];
 
+  // final List<String> _hours = List.generate(
+  //   24,
+  //   (index) => '${index.toString().padLeft(2, '0')}:00',
+  // );
   DataFormNoEntity? formData;
 
   @override
@@ -39,37 +44,45 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) async => await context
-          .read<DeodorizingFiltrationProvider>()
+      (_) async => await context
+          .read<QualityReportProductionProvider>()
           .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
     );
   }
 
   @override
   void dispose() {
-    _dateController.dispose();
     super.dispose();
+
+    _dateController.dispose();
   }
 
-  void _resetFormAndRefresh() {
+  void _resetFormAndRefresh() async {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
-      _tempSelectedShift = null;
-      // _fetchReports();
+      _tempSelectedShift = "All";
     });
-  }
 
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.black87,
-        duration: const Duration(seconds: 3),
-      ),
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    await context.read<QualityReportProductionProvider>().fetchFilteredTickets(
+      _selectedDate,
+      plantCode,
+      _tempSelectedShift,
     );
   }
+
+  // void _showSnackbar(String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(message),
+  //       behavior: SnackBarBehavior.floating,
+  //       backgroundColor: Colors.black87,
+  //       duration: const Duration(seconds: 3),
+  //     ),
+  //   );
+  // }
 
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -88,55 +101,6 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
     }
   }
 
-  // Future<void> _deleteData(String id) async {
-  //   final confirm = await showDialog<bool>(
-  //     context: context,
-  //     builder:
-  //         (context) => AlertDialog(
-  //           backgroundColor: Colors.white,
-  //           shape: RoundedRectangleBorder(
-  //             borderRadius: BorderRadius.circular(16),
-  //           ),
-  //           title: const Text(
-  //             'Konfirmasi Hapus',
-  //             style: TextStyle(
-  //               color: Color(0xFF655F5B),
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //           content: const Text(
-  //             'Apakah Anda yakin ingin menghapus data ini?',
-  //             style: TextStyle(color: Color(0xFF655F5B)),
-  //           ),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () => Navigator.pop(context, false),
-  //               style: TextButton.styleFrom(foregroundColor: Colors.black87),
-  //               child: const Text('Batal'),
-  //             ),
-  //             ElevatedButton(
-  //               onPressed: () => Navigator.pop(context, true),
-  //               style: ElevatedButton.styleFrom(
-  //                 backgroundColor: const Color(0xFFAB2F2B),
-  //                 foregroundColor: Colors.white,
-  //                 shape: RoundedRectangleBorder(
-  //                   borderRadius: BorderRadius.circular(8),
-  //                 ),
-  //               ),
-  //               child: const Text('Hapus'),
-  //             ),
-  //           ],
-  //         ),
-  //   );
-
-  //   if (confirm == true) {
-  //     // Assuming you have a delete method in your provider
-  //     // await Provider.of<QualityReportRefineryProvider>(context, listen: false).delete(id);
-  //     _showSnackbar('🗑️ Data berhasil dihapus');
-  //     // _fetchReports();
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,15 +115,16 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Logsheet_Deodorizing_Filtration")
+            .where((form) => form.isMenu == "Quality_Report_Production")
             .first;
+
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       centerTitle: true,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: Text(
-        'Deodorizing List (${formData!.code})',
+        'Quality Report List (${formData!.code})',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
@@ -175,7 +140,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
     );
   }
 
-  Stack _buildBody(BuildContext context) {
+  _buildBody(BuildContext context) {
     return Stack(
       children: [
         Padding(
@@ -192,32 +157,8 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                   elevation: 4,
                   shadowColor: Colors.black26,
                   margin: const EdgeInsets.only(top: 16),
-                  child: Consumer<DeodorizingFiltrationProvider>(
+                  child: Consumer<QualityReportProductionProvider>(
                     builder: (context, provider, child) {
-                      // List<PretreatmentBleachingFiltrationEntity>
-                      // filteredTickets = provider.filteredTickets;
-
-                      // if (_selectedDate != null) {
-                      //   filteredTickets =
-                      //       filteredTickets.where((ticket) {
-                      //         return ticket.transactionDate?.year ==
-                      //                 _selectedDate!.year &&
-                      //             ticket.transactionDate?.month ==
-                      //                 _selectedDate!.month &&
-                      //             ticket.transactionDate?.day ==
-                      //                 _selectedDate!.day;
-                      //       }).toList();
-                      // }
-                      // if (_tempSelectedShift != null) {
-                      //   // We parse the selected hour string "HH:00" to get the hour as an integer.
-                      //   final selectedShift = int.tryParse(_tempSelectedShift!);
-                      //   if (selectedShift != null) {
-                      //     filteredTickets =
-                      //         filteredTickets.where((report) {
-                      //           return report.shift == selectedShift;
-                      //         }).toList();
-                      //   }
-                      // }
                       if (provider.filteredTickets.isEmpty) {
                         return Center(
                           child: Column(
@@ -234,7 +175,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                       "";
 
                                   await context
-                                      .read<DeodorizingFiltrationProvider>()
+                                      .read<QualityReportProductionProvider>()
                                       .fetchFilteredTickets(
                                         _selectedDate,
                                         plantCode,
@@ -264,7 +205,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                   MaterialPageRoute(
                                     builder:
                                         (context) =>
-                                            DeodorizingFiltrationDetailPage(
+                                            QualityDetailProductionPage(
                                               item: report,
                                               isDisplayed: false,
                                             ),
@@ -403,6 +344,43 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
     );
   }
 
+  String _getStatusText(QualityReportProductionEntity report) {
+    if (report.checkedStatus == "Approved") {
+      return "Approved";
+    }
+
+    if (report.checkedStatus == "Rejected") {
+      return "Rejected";
+    }
+    if (report.preparedStatus == "Approved") {
+      return "Prepared ${report.shift}";
+    }
+
+    if (report.preparedStatus == "Rejected") {
+      return "Rejected";
+    }
+    return "Submitted";
+  }
+
+  Color _getStatusColor(QualityReportProductionEntity report) {
+    if (report.checkedStatus == "Approved") {
+      return Colors.green;
+    }
+
+    if (report.checkedStatus == "Rejected") {
+      return Colors.red;
+    }
+
+    if (report.preparedStatus == "Approved") {
+      return Colors.orangeAccent;
+    }
+
+    if (report.preparedStatus == "Rejected") {
+      return Colors.red;
+    }
+    return Colors.grey;
+  }
+
   Widget _buildFilterSection(BuildContext context) {
     return Row(
       children: [
@@ -472,7 +450,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                 context.read<PlantProvider>().currentPlant?.code ?? "";
 
             await context
-                .read<DeodorizingFiltrationProvider>()
+                .read<QualityReportProductionProvider>()
                 .fetchFilteredTickets(
                   _selectedDate,
                   plantCode,
@@ -492,42 +470,5 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
         ),
       ],
     );
-  }
-
-  String _getStatusText(DeodorizingFiltrationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return "Approved";
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return "Rejected";
-    }
-    if (report.preparedStatus == "Approved") {
-      return "Prepared ${report.shift}";
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return "Rejected";
-    }
-    return "Submitted";
-  }
-
-  Color _getStatusColor(DeodorizingFiltrationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return Colors.green;
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return Colors.red;
-    }
-
-    if (report.preparedStatus == "Approved") {
-      return Colors.orangeAccent;
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return Colors.red;
-    }
-    return Colors.grey;
   }
 }

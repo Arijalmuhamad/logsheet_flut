@@ -1,20 +1,25 @@
 // quality_report_edit.dart
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 
 class QualityEditQCPage extends StatefulWidget {
-  final QualityRefineryEntity report;
+  final QualityReportQcEntity report;
 
   const QualityEditQCPage({super.key, required this.report});
 
@@ -234,7 +239,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     final time = DateFormat('HH:mm:ss').parse(formattedTime);
     try {
       selectedBpToTankGroup = bpToTankController.text.trim();
-      final updatedItem = QualityRefineryEntity(
+      final updatedItem = QualityReportQcEntity(
         id: widget.report.id,
         company: widget.report.company,
         plant: widget.report.plant,
@@ -309,21 +314,51 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       );
 
       if (success) {
-        _showSnackBar('Data berhasil diperbarui ✅');
+        QualityReportProductionEntity prodEntity =
+            updatedItem.toProductionEntity();
         if (!mounted) return;
-        final user = context.read<UserProvider>().currentUser;
-        context.read<QualityReportQCProvider>().fetchAllTickets(
-          null,
-          null,
-          userName!,
-          user!.role,
-          plantCode,
-        );
+        final formDataProd =
+            context
+                .read<DataFormNoProvider>()
+                .dataFormNoList
+                .where(
+                  (form) =>
+                      form.isMenu == "Quality_Report_Production" &&
+                      form.isActive == "T",
+                )
+                .first;
 
-        if (!mounted) return;
-        Navigator.pop(context, updatedItem);
+        prodEntity.remarks = null;
+        prodEntity.formNo = formDataProd.code;
+        prodEntity.dateIssued = formDataProd.dateIssued;
+        prodEntity.revisionNo = formDataProd.revisionNo;
+        prodEntity.revisionDate = formDataProd.revisionDate;
+
+        final prodSuccess = await context
+            .read<QualityReportProductionProvider>()
+            .updateReport(prodEntity, userName ?? "", role ?? "", plantCode);
+
+        if (prodSuccess) {
+          _showSnackBar('Data berhasil diperbarui ✅');
+          if (!mounted) return;
+          final user = context.read<UserProvider>().currentUser;
+          context.read<QualityReportQCProvider>().fetchAllTickets(
+            null,
+            null,
+            userName!,
+            user!.role,
+            plantCode,
+          );
+
+          if (!mounted) return;
+          Navigator.pop(context, updatedItem);
+        } else {
+          log('Updating to Production Table is not successful.');
+          if (!mounted) return;
+          _showSnackBar('Edit Report gagal. Coba lagi.');
+        }
       } else {
-        _showSnackBar('Edit Gagal');
+        _showSnackBar('Edit Gagal. Coba lagi.');
       }
     } catch (e) {
       _showSnackBar('Gagal memperbarui laporan: $e');
@@ -794,25 +829,11 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       case 4:
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "W SBE QC",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B),
-                  ),
-                ),
-              ),
-            ),
             _buildTextField(
               controller: WSBEQCController,
-              label: 'SBE',
+              label: 'OC',
               icon: Icons.high_quality,
-              hintText: 'Masukkan Waste SBE',
+              hintText: 'Masukkan OC',
               isNumeric: true,
             ),
             _buildTextField(

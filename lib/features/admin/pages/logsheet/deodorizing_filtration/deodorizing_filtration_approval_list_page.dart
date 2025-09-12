@@ -6,7 +6,6 @@ import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtratio
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class DeodorizingFiltrationApprovalListPage extends StatefulWidget {

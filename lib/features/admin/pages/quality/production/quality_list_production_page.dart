@@ -1,17 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_detail_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -121,7 +116,7 @@ class _QualityReportProductionListState
   Widget _buildBody() {
     return Consumer2<QualityReportProductionProvider, PlantProvider>(
       builder: (context, qualityProvider, plantprovider, child) {
-        List<QualityRefineryEntity> filteredList =
+        List<QualityReportProductionEntity> filteredList =
             qualityProvider.reportsList
                 .where(
                   (e) => e.preparedStatus == null && e.checkedStatus == null,
@@ -320,7 +315,7 @@ class _QualityReportProductionListState
     );
   }
 
-  String _getStatusText(QualityRefineryEntity report) {
+  String _getStatusText(QualityReportProductionEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -338,7 +333,7 @@ class _QualityReportProductionListState
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityRefineryEntity report) {
+  Color _getStatusColor(QualityReportProductionEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }

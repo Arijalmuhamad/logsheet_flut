@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/admin/pages/daily_porduction/fractination/fra_section_rbdpo_rol_rps.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_rbdpo_rol_rps.dart';
 
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
@@ -11,7 +12,12 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 
 class DailyProductionFractinationPage extends StatefulWidget {
   final String userName;
-  const DailyProductionFractinationPage({super.key, required this.userName});
+  final DataFormNoEntity dataForm;
+  const DailyProductionFractinationPage({
+    super.key,
+    required this.userName,
+    required this.dataForm,
+  });
 
   @override
   State<DailyProductionFractinationPage> createState() =>

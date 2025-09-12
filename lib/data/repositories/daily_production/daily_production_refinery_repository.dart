@@ -1,16 +1,15 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
+import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
+import 'package:logsheet_app/data/services/daily_production/daily_production_refinery_mysql_service.dart';
 
-class QualityReportProductionRepository {
-  final QualityReportProductionMySQLService _mySQLService;
+class DailyProductionRefineryRepository {
+  final DailyProductionRefineryMySQLService _mySQLService;
 
-  QualityReportProductionRepository(this._mySQLService);
+  DailyProductionRefineryRepository(this._mySQLService);
 
-  // Insert Quality Refinery Report
-  Future<bool> insert(QualityReportProductionEntity entity) async {
+  // Insert Ticket
+  Future<bool> insert(DailyProductionRefineryEntity entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
@@ -19,7 +18,7 @@ class QualityReportProductionRepository {
   }
 
   // Fetch all Quality Refinery Report
-  Future<List<QualityReportProductionEntity>> getAllTickets(
+  Future<List<DailyProductionRefineryEntity>> getAllTickets(
     DateTime? dateFilter,
     String? time,
     String username,
@@ -33,9 +32,9 @@ class QualityReportProductionRepository {
 
     log('converting to list...');
 
-    final List<QualityReportProductionEntity> mapToList =
+    final List<DailyProductionRefineryEntity> mapToList =
         reportsData
-            .map((maps) => QualityReportProductionEntity.fromMap(maps))
+            .map((maps) => DailyProductionRefineryEntity.fromMap(maps))
             .toList();
 
     log('converted ${mapToList.length.toString()}');
@@ -51,11 +50,11 @@ class QualityReportProductionRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> updateReportTicket(QualityReportProductionEntity report) async {
+  Future<bool> updateReportTicket(DailyProductionRefineryEntity report) async {
     return await _mySQLService.updateTicket(report);
   }
 
-  Future<List<QualityReportProductionEntity>> getReportsForManager(
+  Future<List<DailyProductionRefineryEntity>> getReportsForManager(
     String plantCode,
   ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
@@ -63,7 +62,7 @@ class QualityReportProductionRepository {
 
     log('converting to list...');
     return reportsData
-        .map((maps) => QualityReportProductionEntity.fromMap(maps))
+        .map((maps) => DailyProductionRefineryEntity.fromMap(maps))
         .toList();
   }
 
@@ -85,25 +84,25 @@ class QualityReportProductionRepository {
     );
   }
 
-  Future<List<int>> getReportedHours(
-    DateTime dateFilter,
-    String plantCode,
-  ) async {
-    return await _mySQLService.getReportedHours(dateFilter, plantCode);
-  }
+  // Future<List<int>> getReportedHours(
+  //   DateTime dateFilter,
+  //   String plantCode,
+  // ) async {
+  //   return await _mySQLService.getReportedHours(dateFilter, plantCode);
+  // }
 
-  Future<List<ReportNotificationDataEntity>>
-  getReadyForManagerApprovalReports() async {
-    log("In the Repository calling the mysql service");
-    final List<Map<String, dynamic>> reportData =
-        await _mySQLService.getReadyForManagerApprovalReports();
-    log("Done calling the mysql service, list length is ${reportData.length}");
-    return reportData
-        .map((maps) => ReportNotificationDataEntity.fromMap(maps))
-        .toList();
-  }
+  // Future<List<DailyProductionRefineryEntity>>
+  // getReadyForManagerApprovalReports() async {
+  //   log("In the Repository calling the mysql service");
+  //   final List<Map<String, dynamic>> reportData =
+  //       await _mySQLService.getReadyForManagerApprovalReports();
+  //   log("Done calling the mysql service, list length is ${reportData.length}");
+  //   return reportData
+  //       .map((maps) => DailyProductionRefineryEntity.fromMap(maps))
+  //       .toList();
+  // }
 
-  Future<List<QualityReportProductionEntity>> getFilteredTickets(
+  Future<List<DailyProductionRefineryEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
     String? shift,
@@ -111,9 +110,9 @@ class QualityReportProductionRepository {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
         .getTickets(dateFilter, plantCode, shift: shift);
 
-    List<QualityReportProductionEntity> filteredTicketListFromMap =
+    List<DailyProductionRefineryEntity> filteredTicketListFromMap =
         filteredTicketList
-            .map((map) => QualityReportProductionEntity.fromMap(map))
+            .map((map) => DailyProductionRefineryEntity.fromMap(map))
             .toList();
 
     return filteredTicketListFromMap;

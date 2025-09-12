@@ -1,14 +1,14 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
+import 'package:logsheet_app/data/repositories/daily_production/daily_production_refinery_repository.dart';
 
-class QualityReportProductionProvider with ChangeNotifier {
-  final QualityReportProductionRepository _repository;
+class DailyProductionRefineryProvider with ChangeNotifier {
+  final DailyProductionRefineryRepository _repository;
 
-  QualityReportProductionProvider(this._repository);
+  DailyProductionRefineryProvider(this._repository);
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -25,14 +25,14 @@ class QualityReportProductionProvider with ChangeNotifier {
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
-  List<QualityReportProductionEntity> _reportsList = [];
-  List<QualityReportProductionEntity> get reportsList => _reportsList;
+  List<DailyProductionRefineryEntity> _reportsList = [];
+  List<DailyProductionRefineryEntity> get reportsList => _reportsList;
 
-  List<QualityReportProductionEntity> _filteredTickets = [];
-  List<QualityReportProductionEntity> get filteredTickets => _filteredTickets;
+  List<DailyProductionRefineryEntity> _filteredTickets = [];
+  List<DailyProductionRefineryEntity> get filteredTickets => _filteredTickets;
 
-  List<QualityReportProductionEntity> _approvedTransactions = [];
-  List<QualityReportProductionEntity> get approvedTransactions =>
+  List<DailyProductionRefineryEntity> _approvedTransactions = [];
+  List<DailyProductionRefineryEntity> get approvedTransactions =>
       _approvedTransactions;
 
   List<ReportNotificationDataEntity> _readyReportsList = [];
@@ -85,7 +85,7 @@ class QualityReportProductionProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insertTicket(QualityReportProductionEntity entity) async {
+  Future<bool> insertTicket(DailyProductionRefineryEntity entity) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -119,7 +119,7 @@ class QualityReportProductionProvider with ChangeNotifier {
       log("Quality Refinery Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 
-      _reportsList.removeWhere((element) => element.idFk == id);
+      _reportsList.removeWhere((element) => element.id == id);
       notifyListeners();
 
       return response;
@@ -184,9 +184,9 @@ class QualityReportProductionProvider with ChangeNotifier {
 
       // await Future.delayed(const Duration(seconds: 1));
       _setLoading(false);
-      log('Report List length: ${_reportsList.length}');
+      log('Daily Prod Refinery List length: ${_reportsList.length}');
     } catch (e) {
-      _setErrorMessage('Failed to fetch Quality Reports: $e');
+      _setErrorMessage('Failed to fetch Daily Production Refinery: $e');
       _setLoading(false);
     }
   }
@@ -211,7 +211,7 @@ class QualityReportProductionProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    QualityReportProductionEntity report,
+    DailyProductionRefineryEntity report,
     String username,
     String role,
     String plantCode,
@@ -263,79 +263,6 @@ class QualityReportProductionProvider with ChangeNotifier {
       _setErrorMessage('Failed to send approval or rejection report: $e');
       _setLoading(false);
       return false;
-    }
-  }
-
-  Future<void> fetchReportsForManager(String plantCode) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      _approvedTransactions = await _repository.getReportsForManager(plantCode);
-      await Future.delayed(Duration(milliseconds: 500));
-      _setLoading(false);
-    } catch (e) {
-      _setErrorMessage('Failed to fetch transaction reports: $e');
-      _setLoading(false);
-    }
-  }
-
-  Future<List<int>> fetchReportedHours(
-    DateTime dateFilter,
-    String plantCode,
-  ) async {
-    _setLoading(true);
-    _setErrorMessage(null);
-    try {
-      final List<int> reportedTime = await _repository.getReportedHours(
-        dateFilter,
-        plantCode,
-      );
-      return reportedTime;
-    } catch (e) {
-      _setErrorMessage('Failed to fetch reported hours: $e');
-      _setLoading(false);
-      return [];
-    }
-  }
-
-  Future<List<ReportNotificationDataEntity>>
-  fetchReadyForManagerApprovalReports() async {
-    _setLoadingAlert(true);
-    _setErrorMessage(null);
-    try {
-      log("Fetching ready for manager approval list");
-      _readyReportsList = await _repository.getReadyForManagerApprovalReports();
-
-      log("${_readyReportsList.length} is ready to be approved.");
-      _setLoadingAlert(false);
-      return _readyReportsList;
-    } catch (e) {
-      log('Failed to fetch reported hours: $e');
-      _setErrorMessage('Failed to fetch reported hours: $e');
-      _setLoadingAlert(false);
-      return [];
-    }
-  }
-
-  Future<void> fetchFilteredTickets(
-    DateTime? dateFilter,
-    String plantCode,
-    String? shift,
-  ) async {
-    _setLoadingFilterTicket(true);
-    _setErrorMessage(null);
-
-    try {
-      _filteredTickets = await _repository.getFilteredTickets(
-        dateFilter,
-        plantCode,
-        shift,
-      );
-      _setLoadingFilterTicket(false);
-      notifyListeners();
-    } catch (e) {
-      _setErrorMessage('(QR Provider) Failed fetch filtered QR ticket: $e');
-      _setLoading(false);
     }
   }
 }

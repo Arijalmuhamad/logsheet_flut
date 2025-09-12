@@ -294,7 +294,9 @@ class _DeodorizingFiltrationDetailPageState
             ]),
             // Approval Buttons Section
             if (user?.role == 'LEAD' ||
+                user?.role == 'LEAD_PROD' ||
                 user?.role == 'MGR' ||
+                user?.role == 'MGR_PROD' ||
                 user?.role == 'ADM')
               if (widget.isDisplayed && _currentReport.preparedStatus == null)
                 Padding(

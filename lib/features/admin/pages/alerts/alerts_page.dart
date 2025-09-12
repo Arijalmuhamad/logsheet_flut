@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_approval_detail_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
@@ -54,7 +55,7 @@ class _AlertsPageState extends State<AlertsPage> {
                 onTap: () {
                   final reportIdentifier = "$postingDate|$workCenter|$oilType";
 
-                  final List<QualityRefineryEntity> reportEntities =
+                  final List<QualityReportQcEntity> reportEntities =
                       provider.approvedTransactions
                           .where(
                             (report) =>

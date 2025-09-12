@@ -3,7 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
@@ -13,7 +14,7 @@ import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityDetailQCPage extends StatefulWidget {
-  final QualityRefineryEntity item;
+  final QualityReportQcEntity item;
   final bool isDisplayed;
 
   const QualityDetailQCPage({
@@ -28,7 +29,7 @@ class QualityDetailQCPage extends StatefulWidget {
 
 class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
   final TextEditingController _remarkController = TextEditingController();
-  late QualityRefineryEntity _currentReport;
+  late QualityReportQcEntity _currentReport;
 
   Widget _buildInfoCard(String title, String value) {
     return Expanded(
@@ -458,7 +459,7 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
 
             if ((user?.role == 'ADM' ||
                 user?.role == 'LEAD' ||
-                user?.role == 'MGR'))
+                user?.role == 'LEAD_QC'))
               if (widget.isDisplayed)
                 Row(
                   children: [
@@ -542,7 +543,7 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
 
               log(result != null ? 'result has value' : 'result has no value.');
 
-              if (result != null && result is QualityRefineryEntity) {
+              if (result != null && result is QualityReportQcEntity) {
                 setState(() {
                   _currentReport = result;
                 });
@@ -598,10 +599,10 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
                           : Text('Ya', style: TextStyle(color: Colors.white)),
                   onPressed: () async {
                     await providerQC.deleteTicketById(_currentReport.id);
-
                     if (!context.mounted) return;
                     await providerProd.deleteTicketById(_currentReport.id);
                     if (!context.mounted) return;
+                    Navigator.pop(context);
                     Navigator.pop(context);
                   },
                 ),

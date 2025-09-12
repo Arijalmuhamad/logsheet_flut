@@ -3,41 +3,34 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityApprovalDetailQCScreen extends StatefulWidget {
-  final List<QualityReportQcEntity> reportEntities;
+class QualityApprovalDetailProductionScreen extends StatefulWidget {
+  final List<QualityReportProductionEntity> reportEntities;
   final String reportIdentifier;
 
-  const QualityApprovalDetailQCScreen({
+  const QualityApprovalDetailProductionScreen({
     super.key,
     required this.reportEntities,
     required this.reportIdentifier,
   });
 
   @override
-  State<QualityApprovalDetailQCScreen> createState() =>
-      _QualityApprovalDetailQCScreenState();
+  State<QualityApprovalDetailProductionScreen> createState() =>
+      _QualityApprovalDetailProductionScreenState();
 }
 
-class _QualityApprovalDetailQCScreenState
-    extends State<QualityApprovalDetailQCScreen> {
+class _QualityApprovalDetailProductionScreenState
+    extends State<QualityApprovalDetailProductionScreen> {
   final _remarkController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    // The detail screen is now only accessible if the report is complete.
-    // The validation logic has been moved to the list screen.
-    // final provider = Provider.of<QualityReportRefineryProvider>(
-    //   context,
-    //   listen: false,
-    // );
     log(widget.reportIdentifier);
     // Group the entities by shift to display them
-    final Map<int?, List<QualityReportQcEntity>> groupedByShift = {};
+    final Map<int?, List<QualityReportProductionEntity>> groupedByShift = {};
     for (var report in widget.reportEntities) {
       if (!groupedByShift.containsKey(report.shift)) {
         groupedByShift[report.shift] = [];
@@ -184,7 +177,7 @@ class _QualityApprovalDetailQCScreenState
 
   Future<dynamic> _buildBottomSheet(
     BuildContext context,
-    QualityReportQcEntity report,
+    QualityReportProductionEntity report,
     String username,
     String role,
   ) {
@@ -403,7 +396,7 @@ class _QualityApprovalDetailQCScreenState
 
   Widget _buildApprovalButtonRow(
     BuildContext context,
-    QualityReportQcEntity report,
+    QualityReportProductionEntity report,
     String username,
     String role,
     Function(String) onStatusChange,
@@ -520,13 +513,13 @@ class _QualityApprovalDetailQCScreenState
 
   Future<void> _handleAction(
     BuildContext context,
-    QualityReportQcEntity report,
+    QualityReportProductionEntity report,
     String username,
     String role,
     String status,
     Function(String) onStatusChange,
   ) async {
-    final provider = context.read<QualityReportQCProvider>();
+    final provider = context.read<QualityReportProductionProvider>();
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     await provider.sendApproveRejectReport(

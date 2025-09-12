@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 
-class QualityRefineryEntity {
-  // Parameter
+class QualityReportQcEntity {
   final String id;
   final String? company;
   final String? plant;
@@ -78,7 +78,7 @@ class QualityRefineryEntity {
   int? revisionNo;
   DateTime? revisionDate;
 
-  QualityRefineryEntity({
+  QualityReportQcEntity({
     required this.oilType,
     required this.transactionDate,
     required this.id,
@@ -149,7 +149,7 @@ class QualityRefineryEntity {
     required this.revisionDate,
   });
 
-  factory QualityRefineryEntity.fromMap(Map<String, dynamic> map) {
+  factory QualityReportQcEntity.fromMap(Map<String, dynamic> map) {
     double? parseDouble(dynamic value) {
       if (value == null) {
         return null;
@@ -185,7 +185,7 @@ class QualityRefineryEntity {
       return null;
     }
 
-    return QualityRefineryEntity(
+    return QualityReportQcEntity(
       id: map['id'] as String,
       company: map['company'] as String?,
       plant: map['plant'] as String?,
@@ -315,5 +315,70 @@ class QualityRefineryEntity {
       'revision_no': revisionNo,
       'revision_date': revisionDate,
     };
+  }
+
+  QualityReportProductionEntity toProductionEntity() {
+    return QualityReportProductionEntity(
+      id: id,
+      idFk: id,
+      company: company,
+      plant: plant,
+      transactionDate: transactionDate,
+      postingDate: postingDate,
+      workCenter: workCenter,
+      oilType: oilType,
+      time: time,
+      shift: shift,
+      rmFlowRate: rmFlowRate,
+      rmTankSource: rmTankSource,
+      rmTemp: rmTemp,
+      rmFFA: rmFFA,
+      rmIV: rmIV,
+      rmDobi: rmDobi,
+      rmAV: rmAV,
+      rmMNI: rmMNI,
+      rmPV: rmPV,
+      rmToTox: rmToTox,
+      rmColorR: rmColorR,
+      rmColorY: rmColorY,
+      rmColorB: rmColorB,
+      boColorR: boColorR,
+      boColorY: boColorY,
+      boColorB: boColorB,
+      boBreakTest: boBreakTest,
+      fgFFA: fgFFA,
+      fgIV: fgIV,
+      fgPV: fgPV,
+      fgMoisture: fgMoisture,
+      fgImpurities: fgImpurities,
+      fgColorR: fgColorR,
+      fgColorY: fgColorY,
+      fgColorB: fgColorB,
+      fgTankTo: fgTankTo,
+      fgTankToOthersRemarks: fgTankToOthersRemarks,
+      bpFFA: bpFFA,
+      bpMNI: bpMNI,
+      bpToTank: bpToTank,
+      wSBEQC: wSBEQC,
+      wasteMNI: wasteMNI,
+      remarks: remarks,
+      flag: flag,
+      entryBy: entryBy,
+      entryDate: entryDate,
+      preparedBy: preparedBy,
+      preparedDate: preparedDate,
+      preparedStatus: preparedStatus,
+      preparedStatusRemarks: preparedStatusRemarks,
+      checkedBy: checkedBy,
+      checkedDate: checkedDate,
+      checkedStatus: checkedStatus,
+      checkedStatusRemarks: checkedStatusRemarks,
+      updatedBy: updatedBy,
+      updatedDate: updatedDate,
+      formNo: formNo,
+      dateIssued: dateIssued,
+      revisionNo: revisionNo,
+      revisionDate: revisionDate,
+    );
   }
 }

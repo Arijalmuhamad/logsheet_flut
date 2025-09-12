@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_approval_detail_qc_page.dart';
-import 'package:intl/intl.dart';
+import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_detail_production_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityApprovalListScreenPage extends StatefulWidget {
-  const QualityApprovalListScreenPage({super.key});
+class QualityApprovalListProductionPage extends StatefulWidget {
+  const QualityApprovalListProductionPage({super.key});
 
   @override
-  State<QualityApprovalListScreenPage> createState() =>
-      _QualityApprovalListScreenPageState();
+  State<QualityApprovalListProductionPage> createState() =>
+      _QualityApprovalListProductionPageState();
 }
 
-class _QualityApprovalListScreenPageState
-    extends State<QualityApprovalListScreenPage> {
-  DataFormNoEntity? formQualityRefinery;
+class _QualityApprovalListProductionPageState
+    extends State<QualityApprovalListProductionPage> {
+  DataFormNoEntity? formData;
 
   @override
   void initState() {
@@ -28,28 +27,52 @@ class _QualityApprovalListScreenPageState
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<QualityReportQCProvider>().fetchReportsForManager(
-        plantCode,
-      ),
+      (_) => context
+          .read<QualityReportProductionProvider>()
+          .fetchReportsForManager(plantCode),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    formQualityRefinery =
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody());
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    formData =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
             .where(
-              (form) => form.isMenu == "Quality_Report" && form.isActive == "T",
+              (form) =>
+                  form.isMenu == "Quality_Report_Production" &&
+                  form.isActive == "T",
             )
             .first;
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody());
+    return AppBar(
+      title: Text(
+        'Quality Approcal \nProduction (${formData?.code})',
+        style: TextStyle(fontSize: 18),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            final plantCode =
+                context.read<PlantProvider>().currentPlant?.code ?? "";
+
+            context
+                .read<QualityReportProductionProvider>()
+                .fetchReportsForManager(plantCode);
+          },
+          icon: Icon(Icons.replay_rounded),
+        ),
+      ],
+    );
   }
 
   Widget _buildBody() {
-    return Consumer<QualityReportQCProvider>(
-      builder: (context, provider, child) {
+    return Consumer2<QualityReportProductionProvider, PlantProvider>(
+      builder: (context, provider, plantProvider, child) {
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -76,8 +99,8 @@ class _QualityApprovalListScreenPageState
 
         final allReports = provider.approvedTransactions;
 
-        // Group reports by date
-        final Map<String, List<QualityReportQcEntity>> groupedReports = {};
+        final Map<String, List<QualityReportProductionEntity>> groupedReports =
+            {};
 
         for (var report in allReports) {
           if (report.postingDate != null &&
@@ -107,7 +130,7 @@ class _QualityApprovalListScreenPageState
                         context.read<PlantProvider>().currentPlant?.code ?? "";
 
                     context
-                        .read<QualityReportQCProvider>()
+                        .read<QualityReportProductionProvider>()
                         .fetchReportsForManager(plantCode);
                   },
                   child: const Text("Refresh"),
@@ -130,7 +153,6 @@ class _QualityApprovalListScreenPageState
             final date = keyParts[0];
             final oilType = keyParts[1];
             final workCenter = keyParts[2];
-
             bool isReadyForApproval = false;
             int requiredReports = 24;
 
@@ -220,10 +242,11 @@ class _QualityApprovalListScreenPageState
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder:
-                                    (context) => QualityApprovalDetailQCScreen(
-                                      reportEntities: reportsForGroup,
-                                      reportIdentifier: compositeKey,
-                                    ),
+                                    (context) =>
+                                        QualityApprovalDetailProductionScreen(
+                                          reportEntities: reportsForGroup,
+                                          reportIdentifier: compositeKey,
+                                        ),
                               ),
                             );
                           }
@@ -241,25 +264,6 @@ class _QualityApprovalListScreenPageState
           },
         );
       },
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text('Quality Approval QC (${formQualityRefinery?.code})'),
-      actions: [
-        IconButton(
-          onPressed: () async {
-            final plantCode =
-                context.read<PlantProvider>().currentPlant?.code ?? "";
-
-            context.read<QualityReportQCProvider>().fetchReportsForManager(
-              plantCode,
-            );
-          },
-          icon: Icon(Icons.replay_rounded),
-        ),
-      ],
     );
   }
 }

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_edit_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -13,7 +13,7 @@ import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityDetailProductionPage extends StatefulWidget {
-  final QualityRefineryEntity item;
+  final QualityReportProductionEntity item;
   final bool isDisplayed;
 
   const QualityDetailProductionPage({
@@ -30,7 +30,7 @@ class QualityDetailProductionPage extends StatefulWidget {
 class _QualityDetailProductionPageState
     extends State<QualityDetailProductionPage> {
   final TextEditingController _remarkController = TextEditingController();
-  late QualityRefineryEntity _currentReport;
+  late QualityReportProductionEntity _currentReport;
 
   Widget _buildInfoCard(String title, String value) {
     return Expanded(
@@ -459,8 +459,8 @@ class _QualityDetailProductionPageState
             ]),
 
             if ((user?.role == 'ADM' ||
-                user?.role == 'LEAD' ||
-                user?.role == 'MGR'))
+                user?.role == 'LEAD_PROD' ||
+                user?.role == 'LEAD'))
               if (widget.isDisplayed)
                 Row(
                   children: [
@@ -544,7 +544,7 @@ class _QualityDetailProductionPageState
 
               log(result != null ? 'result has value' : 'result has no value.');
 
-              if (result != null && result is QualityRefineryEntity) {
+              if (result != null && result is QualityReportProductionEntity) {
                 setState(() {
                   _currentReport = result;
                 });

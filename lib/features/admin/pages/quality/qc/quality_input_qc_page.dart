@@ -7,7 +7,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -381,7 +382,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
   }
 
   Future<void> _saveQualityReport() async {
-    final reportProvider = context.read<QualityReportQCProvider>();
+    final reportQcProvider = context.read<QualityReportQCProvider>();
+    final reportProdProvider = context.read<QualityReportProductionProvider>();
     final userProvider = context.read<UserProvider>();
     final plantProvider = context.read<PlantProvider>();
     log('Save report button clicked.');
@@ -402,9 +404,12 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode ?? "";
     final plantCode = plantProvider.currentPlant?.code ?? "";
 
-    final latestTicketIdFromProvider = await reportProvider.fetchLatestId(
+    final latestTicketQcIdFromProvider = await reportQcProvider.fetchLatestId(
       plantCode,
     );
+
+    final latestTicketProdIdFromProvider = await reportProdProvider
+        .fetchLatestId(plantCode);
 
     log("Business Unit: $businessUnitCode, Plant Code: $plantCode");
 
@@ -479,15 +484,15 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       );
     }
 
-    Future<String> buildTicketNumber() async {
-      log("TICKET NUMBER FROM PROVIDER: $latestTicketIdFromProvider");
-      if (latestTicketIdFromProvider == null) {
+    Future<String> buildTicketNumberQc() async {
+      log("TICKET NUMBER QC FROM PROVIDER: $latestTicketQcIdFromProvider");
+      if (latestTicketQcIdFromProvider == null) {
         // return error snackbar saying plant code is not registered.
         log("id is null");
         return "";
       }
-      log("lastDigit: ${latestTicketIdFromProvider.substring(9)}");
-      int digit = (int.parse((latestTicketIdFromProvider.substring(9))) + 1);
+      log("lastDigit: ${latestTicketQcIdFromProvider.substring(9)}");
+      int digit = (int.parse((latestTicketQcIdFromProvider.substring(9))) + 1);
       final update = await context
           .read<QualityReportQCProvider>()
           .updateAutoNumber(plantCode, digit);
@@ -496,10 +501,36 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         lastDigit = "1";
       }
       log("Last Digit: $lastDigit, is update successful: $update");
-      String ticketPrefix = latestTicketIdFromProvider.substring(0, 9);
-      log(ticketPrefix + lastDigit);
+      String ticketPrefixQc = latestTicketQcIdFromProvider.substring(0, 9);
+      log(ticketPrefixQc + lastDigit);
 
-      return ticketPrefix + lastDigit;
+      return ticketPrefixQc + lastDigit;
+    }
+
+    Future<String> buildTicketNumberProd() async {
+      log(
+        "TICKET NUMBER PRODUCTION FROM PROVIDER: $latestTicketProdIdFromProvider",
+      );
+      if (latestTicketProdIdFromProvider == null) {
+        // return error snackbar saying plant code is not registered.
+        log("id is null");
+        return "";
+      }
+      log("lastDigit: ${latestTicketProdIdFromProvider.substring(10)}");
+      int digit =
+          (int.parse((latestTicketProdIdFromProvider.substring(10))) + 1);
+      final update = await context
+          .read<QualityReportProductionProvider>()
+          .updateAutoNumber(plantCode, digit);
+      String lastDigit = digit.toString().padLeft(6, '0');
+      if (lastDigit == "") {
+        lastDigit = "1";
+      }
+      log("Last Digit: $lastDigit, is update successful: $update");
+      String ticketPrefixProd = latestTicketProdIdFromProvider.substring(0, 10);
+      log(ticketPrefixProd + lastDigit);
+
+      return ticketPrefixProd + lastDigit;
     }
 
     try {
@@ -524,8 +555,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       );
 
       log("Form ID: ${formDataQC!.code}");
-      final entity = QualityRefineryEntity(
-        id: await buildTicketNumber(),
+      final entity = QualityReportQcEntity(
+        id: await buildTicketNumberQc(),
         transactionDate: getTransactionDate(),
         postingDate: postingDate,
         time: time,
@@ -595,7 +626,8 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       log("is success? $success");
 
       if (success) {
-        QualityRefineryEntity prodEntity = entity;
+        QualityReportProductionEntity prodEntity = entity.toProductionEntity();
+        prodEntity.id = await buildTicketNumberProd();
         prodEntity.remarks = null;
         prodEntity.formNo = formDataProd!.code;
         prodEntity.dateIssued = formDataProd!.dateIssued;

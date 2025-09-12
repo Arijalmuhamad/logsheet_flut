@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/data/repositories/quality_report/quality_report_qc_repository.dart';
 
@@ -25,14 +25,14 @@ class QualityReportQCProvider with ChangeNotifier {
   bool _isLoadingAlert = false;
   bool get isLoadingAlert => _isLoadingAlert;
 
-  List<QualityRefineryEntity> _reportsList = [];
-  List<QualityRefineryEntity> get reportsList => _reportsList;
+  List<QualityReportQcEntity> _reportsList = [];
+  List<QualityReportQcEntity> get reportsList => _reportsList;
 
-  List<QualityRefineryEntity> _filteredTickets = [];
-  List<QualityRefineryEntity> get filteredTickets => _filteredTickets;
+  List<QualityReportQcEntity> _filteredTickets = [];
+  List<QualityReportQcEntity> get filteredTickets => _filteredTickets;
 
-  List<QualityRefineryEntity> _approvedTransactions = [];
-  List<QualityRefineryEntity> get approvedTransactions => _approvedTransactions;
+  List<QualityReportQcEntity> _approvedTransactions = [];
+  List<QualityReportQcEntity> get approvedTransactions => _approvedTransactions;
 
   List<ReportNotificationDataEntity> _readyReportsList = [];
   List<ReportNotificationDataEntity> get readyReportsList => _readyReportsList;
@@ -84,7 +84,7 @@ class QualityReportQCProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> insertTicket(QualityRefineryEntity entity) async {
+  Future<bool> insertTicket(QualityReportQcEntity entity) async {
     _setLoading(false);
     _setErrorMessage(null);
 
@@ -210,7 +210,7 @@ class QualityReportQCProvider with ChangeNotifier {
   }
 
   Future<bool> updateReport(
-    QualityRefineryEntity report,
+    QualityReportQcEntity report,
     String username,
     String role,
     String plantCode,

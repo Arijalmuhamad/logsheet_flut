@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/admin/pages/daily_porduction/refinary/ref_section_auxiliary_material.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinary/ref_section_auxiliary_material.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
@@ -14,7 +15,12 @@ import 'ref_section_rfad.dart';
 
 class DailyProductionRefineryPage extends StatefulWidget {
   final String userName;
-  const DailyProductionRefineryPage({super.key, required this.userName});
+  final DataFormNoEntity dataForm;
+  const DailyProductionRefineryPage({
+    super.key,
+    required this.userName,
+    required this.dataForm,
+  });
 
   @override
   State<DailyProductionRefineryPage> createState() =>
@@ -101,7 +107,7 @@ class _DailyProductionPageState extends State<DailyProductionRefineryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: CustomAppBar(
-        title: 'Daily Production - Refinary',
+        title: 'Daily Production - \nRefinery (${widget.dataForm.code})',
         onRefresh: _refreshPage,
       ),
       body: SingleChildScrollView(

@@ -1,4 +1,6 @@
 // quality_report_edit.dart
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,11 +13,11 @@ import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 
 class QualityEditProductionPage extends StatefulWidget {
-  final QualityRefineryEntity report;
+  final QualityReportProductionEntity report;
 
   const QualityEditProductionPage({super.key, required this.report});
 
@@ -236,8 +238,9 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
     final time = DateFormat('HH:mm:ss').parse(formattedTime);
     try {
       selectedBpToTankGroup = bpToTankController.text.trim();
-      final updatedItem = QualityRefineryEntity(
+      final updatedItem = QualityReportProductionEntity(
         id: widget.report.id,
+        idFk: widget.report.idFk,
         company: widget.report.company,
         plant: widget.report.plant,
         transactionDate: widget.report.transactionDate,
@@ -302,6 +305,8 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       );
 
       bool? success;
+
+      log("PROD ID: ${updatedItem.id}, QC ID: ${updatedItem.idFk}");
 
       success = await context
           .read<QualityReportProductionProvider>()

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -29,10 +30,10 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
   String? _tempSelectedShift = "All";
   final List<String> shifts = ["1", "2", "3", "4", "5"];
 
-  final List<String> _hours = List.generate(
-    24,
-    (index) => '${index.toString().padLeft(2, '0')}:00',
-  );
+  // final List<String> _hours = List.generate(
+  //   24,
+  //   (index) => '${index.toString().padLeft(2, '0')}:00',
+  // );
   DataFormNoEntity? formData;
 
   @override
@@ -55,20 +56,19 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     super.dispose();
   }
 
-  // void _fetchReports() {
-  //   Provider.of<QualityReportRefineryProvider>(
-  //     context,
-  //     listen: false,
-  //   ).fetchAllReports(null, null, widget.userName, widget.role);
-  // }
-
-  void _resetFormAndRefresh() {
+  void _resetFormAndRefresh() async {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
       _tempSelectedShift = "All";
-      // _fetchReports();
     });
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+
+    await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+      _selectedDate,
+      plantCode,
+      _tempSelectedShift,
+    );
   }
 
   void _showSnackbar(String message) {
@@ -501,7 +501,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     );
   }
 
-  String _getStatusText(QualityRefineryEntity report) {
+  String _getStatusText(QualityReportQcEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -519,7 +519,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityRefineryEntity report) {
+  Color _getStatusColor(QualityReportQcEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }
@@ -539,7 +539,8 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
   }
 }
 
-extension QualityReportRefineryEntityExtension on QualityRefineryEntity {
+extension QualityReportRefineryEntityExtension
+    on QualityReportProductionEntity {
   String get shift {
     if (time == null) return '-';
     final hour = time!.hour;

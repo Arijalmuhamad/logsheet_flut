@@ -209,7 +209,12 @@ class _LoginPageState extends State<LoginPage> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 650),
               child: Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.only(
+                  top: 24,
+                  bottom: 12,
+                  right: 24,
+                  left: 24,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(32),
@@ -503,7 +508,7 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
 
-                    SizedBox(height: 24),
+                    SizedBox(height: 8),
 
                     if (_errorMessage != null)
                       Center(
@@ -512,7 +517,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: const TextStyle(color: Colors.red),
                         ),
                       ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
                     SizedBox(
                       width: double.infinity,
@@ -539,6 +544,28 @@ class _LoginPageState extends State<LoginPage> {
                                     color: Colors.white,
                                   ),
                                 ),
+                      ),
+                    ),
+                    SizedBox(height: 18),
+                    Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Version 1.0.0",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          Text(
+                            "Build 2025-09-10",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

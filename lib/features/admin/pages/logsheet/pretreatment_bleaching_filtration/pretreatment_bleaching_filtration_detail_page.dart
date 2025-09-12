@@ -298,7 +298,7 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
           ]),
           // Approval Buttons Section
           if (user?.role == 'LEAD' ||
-              user?.role == 'MGR' ||
+              user?.role == 'LEAD_PROD' ||
               user?.role == 'ADM')
             if (widget.isDisplayed && _currentReport.preparedStatus == null)
               Padding(
