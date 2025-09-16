@@ -5,8 +5,8 @@ import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_production/refinary/ref_daily_production_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -274,7 +274,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.0"), Text("Build 2025-09-10")],
+              children: [Text("Version 1.0.1"), Text("Build 2025-09-16")],
             ),
           ],
         ),
@@ -378,16 +378,16 @@ class _UserHomePageState extends State<UserHomePage> {
             },
           ),
 
+          _buildDrawerSubheader("Transactions"),
           if ([
             "ADM",
             "LEAD",
             "LEAD_QC",
             "OPR",
+            "OPR_QC",
             "MGR",
             "MGR_QC",
-            "MGR_PROD",
           ].contains(userRole)) ...[
-            _buildDrawerSubheader("Transactions"),
             ExpansionTile(
               leading: const Icon(
                 Icons.factory_outlined,
@@ -419,6 +419,7 @@ class _UserHomePageState extends State<UserHomePage> {
                     },
                   ),
                 ],
+
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
                   title: 'Quality List (${formQualityRefineryQC?.code})',
@@ -454,6 +455,7 @@ class _UserHomePageState extends State<UserHomePage> {
             "LEAD",
             "LEAD_PROD",
             "OPR",
+            "OPR_PROD",
             "MGR",
             "MGR_PROD",
           ].contains(userRole)) ...[
@@ -519,7 +521,14 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
-          if (["ADM", "LEAD_PROD", "OPR", "MGR_PROD"].contains(userRole)) ...[
+          if ([
+            "ADM",
+            "OPR",
+            "LEAD",
+            "LEAD_PROD",
+            "OPR_PROD",
+            "MGR_PROD",
+          ].contains(userRole)) ...[
             _buildDrawerSubheader("Logsheet"),
             ExpansionTile(
               leading: const Icon(
@@ -589,7 +598,15 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
           ],
           // Deodorizing Filtration Logsheet
-          if (["ADM", "LEAD_PROD", "OPR", "MGR_PROD"].contains(userRole)) ...[
+          if ([
+            "ADM",
+            "LEAD",
+            "LEAD_PROD",
+            "OPR",
+            "OPR_PROD",
+            "MGR",
+            "MGR_PROD",
+          ].contains(userRole)) ...[
             ExpansionTile(
               leading: const Icon(
                 Icons.article_rounded,
@@ -654,8 +671,16 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
           ],
 
-          // Deodorizing Filtration Logsheet
-          if (["ADM", "LEAD_PROD", "OPR", "MGR_PROD"].contains(userRole)) ...[
+          // Daily Productions
+          if ([
+            "ADM",
+            "LEAD",
+            "LEAD_PROD",
+            "OPR",
+            "OPR_PROD",
+            "MGR",
+            "MGR_PROD",
+          ].contains(userRole)) ...[
             _buildDrawerSubheader("Daily Production"),
             ExpansionTile(
               leading: const Icon(
@@ -697,9 +722,8 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => DailyProductionRefineryPage(
-                              userName: widget.userEntity.username,
-                              dataForm: formDailyProduction!,
+                            (_) => DailyProductionRefineryListPage(
+                              formData: formDailyProduction!,
                             ),
                       ),
                     );
@@ -713,9 +737,8 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => DeodorizingFiltrationReportListPage(
-                              userName: user.username,
-                              role: user.role,
+                            (_) => DailyProductionFractionationListPage(
+                              formData: formDailyProduction!,
                             ),
                       ),
                     );
@@ -762,7 +785,10 @@ class _UserHomePageState extends State<UserHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DeodorizingFiltrationListPage(),
+                        builder:
+                            (_) => DailyProductionFractionationListPage(
+                              formData: formDailyProduction!,
+                            ),
                       ),
                     );
                   },

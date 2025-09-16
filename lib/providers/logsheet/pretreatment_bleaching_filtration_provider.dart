@@ -139,12 +139,12 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteTicketById(String id) async {
+  Future<bool> deleteTicketById(String id, String username) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
 
     try {
-      final response = await _repository.deleteTicket(id);
+      final response = await _repository.deleteTicket(id, username);
       log("Pretreatment Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 

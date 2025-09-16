@@ -130,7 +130,7 @@ class QualityReportProductionMySQLService {
           params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
-        case 'OPR':
+        case 'OPR' || 'OPR_PROD':
           baseQuery = """
           SELECT
             *
@@ -484,7 +484,7 @@ class QualityReportProductionMySQLService {
     }
   }
 
-  Future<bool> deleteTicket(String id) async {
+  Future<bool> deleteTicket(String id, String username) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -498,8 +498,13 @@ class QualityReportProductionMySQLService {
 
       final result = await connection.execute(
         // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
-        "UPDATE t_quality_report_refinery SET flag = 'D' WHERE id_fk = :id", // Delete with Flag
-        {"status": "Deleted", "date": "${DateTime.now()}", "id": id},
+        "UPDATE t_quality_report_refinery SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id_fk = :id", // Delete with Flag
+        {
+          "username": username,
+          "prepared_status": "Deleted",
+          "date": "${DateTime.now()}",
+          "id": id,
+        },
       );
       log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
       // connResult.connection?.close();

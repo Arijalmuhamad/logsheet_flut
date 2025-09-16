@@ -1,25 +1,22 @@
 import 'package:intl/intl.dart';
 
-class DailyProductionRefineryEntity {
+class DailyProductionFractionationEntity {
   // General Information
   final String id;
   final String? company;
   final String? plant;
   final DateTime? transactionDate;
   final DateTime? postingDate;
-  final String? refineryMachine;
+  final String? workCenter;
   final String? shift;
   final String? cpoTank;
 
-  // Raw Material (RM)
   final String? oilTypeRm;
   final String? oilTypeRmAwalJam;
   final int? oilTypeRmAwalFlowmeter;
   final String? oilTypeRmAkhirJam;
   final int? oilTypeRmAkhirFlowmeter;
   final int? oilTypeRmTotal;
-
-  // Finished Goods (FG)
   final String? oilTypeFg;
   final String? oilTypeFgAwalJam;
   final int? oilTypeFgAwalFlowmeter;
@@ -28,7 +25,6 @@ class DailyProductionRefineryEntity {
   final int? oilTypeFgTotal;
   final String? oilTypeFgToTank;
 
-  // By Product (BP) / PFAD
   final String? bpAwalJam;
   final int? bpAwalFlowmeter;
   final String? bpAkhirJam;
@@ -36,7 +32,6 @@ class DailyProductionRefineryEntity {
   final int? bpTotal;
   final int? bpToTank;
 
-  // Bleaching Earth (BE)
   final String? beRefTank;
   final String? beRefQty;
   final String? beTotalBag;
@@ -44,51 +39,52 @@ class DailyProductionRefineryEntity {
   final int? beLotBatchNumber;
   final double? beYieldPercent;
 
-  // Phosphoric Acid (PA)
   final String? paRefTank;
   final String? paRefQty;
   final String? paTotal;
   final int? paLotBatchNumber;
   final double? paYieldPercent;
 
-  //  Remarks
-  final String? remarks;
-
-  // Utility Usage (UU)
   final String? uuItem;
   final String? uuBudgetRefTank;
   final String? uuBudgetQty;
-  final int? uuTotalCpo;
+  final int? uuTotalCPO;
   final int? uuTotalSteam;
-  final String? uuSteamCpo;
+  final String? uuSteamCPO;
   final double? uuYieldPercent;
 
-  // Approval & Tracking
+  final String? remarks;
+  final String? flag;
+
   final String? entryBy;
   final DateTime? entryDate;
   final String? preparedBy;
   final DateTime? preparedDate;
   final String? preparedStatus;
+  final String? preparedStatusRemarks;
+
   final String? verifiedBy;
   final DateTime? verifiedDate;
   final String? verifiedStatus;
+  final String? verifiedStatusRemarks;
+
   final String? checkedBy;
   final DateTime? checkedDate;
   final String? checkedStatus;
+  final String? checkedStatusRemarks;
 
-  // Form Information
   final String? formNo;
   final DateTime? dateIssued;
   final int? revisionNo;
   final DateTime? revisionDate;
 
-  DailyProductionRefineryEntity({
+  DailyProductionFractionationEntity({
     required this.id,
     required this.company,
     required this.plant,
     required this.transactionDate,
     required this.postingDate,
-    required this.refineryMachine,
+    required this.workCenter,
     required this.shift,
     required this.cpoTank,
     required this.oilTypeRm,
@@ -121,32 +117,36 @@ class DailyProductionRefineryEntity {
     required this.paTotal,
     required this.paLotBatchNumber,
     required this.paYieldPercent,
-    required this.remarks,
     required this.uuItem,
     required this.uuBudgetRefTank,
     required this.uuBudgetQty,
-    required this.uuTotalCpo,
+    required this.uuTotalCPO,
     required this.uuTotalSteam,
-    required this.uuSteamCpo,
+    required this.uuSteamCPO,
     required this.uuYieldPercent,
+    required this.remarks,
+    required this.flag,
     required this.entryBy,
     required this.entryDate,
     required this.preparedBy,
     required this.preparedDate,
     required this.preparedStatus,
+    required this.preparedStatusRemarks,
     required this.verifiedBy,
     required this.verifiedDate,
     required this.verifiedStatus,
+    required this.verifiedStatusRemarks,
     required this.checkedBy,
     required this.checkedDate,
     required this.checkedStatus,
+    required this.checkedStatusRemarks,
     required this.formNo,
     required this.dateIssued,
     required this.revisionNo,
     required this.revisionDate,
   });
 
-  factory DailyProductionRefineryEntity.fromMap(Map<String, dynamic> map) {
+  factory DailyProductionFractionationEntity.fromMap(Map<String, dynamic> map) {
     int? parseInt(dynamic value) {
       if (value == null) return null;
       if (value is int) return value;
@@ -182,13 +182,13 @@ class DailyProductionRefineryEntity {
       return null;
     }
 
-    return DailyProductionRefineryEntity(
+    return DailyProductionFractionationEntity(
       id: map['id'] as String,
       company: map['company'] as String?,
       plant: map['plant'] as String?,
       transactionDate: parseDateTime(map['transaction_date']),
       postingDate: parseDateTime(map['posting_date']),
-      refineryMachine: map['refinery_machine'],
+      workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
       cpoTank: map['cpo_tank'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
@@ -201,7 +201,7 @@ class DailyProductionRefineryEntity {
       oilTypeFgAwalJam: map['oil_type_fg_awal_jam'] as String?,
       oilTypeFgAwalFlowmeter: parseInt(map['oil_type_fg_awal_flowmeter']),
       oilTypeFgAkhirJam: map['oil_type_fg_akhir_jam'] as String?,
-      oilTypeFgAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
+      oilTypeFgAkhirFlowmeter: parseInt(map['oil_type_fg_akhir_flowmeter']),
       oilTypeFgTotal: parseInt(map['oil_type_fg_total']),
       oilTypeFgToTank: map['oil_type_fg_to_tank'] as String?,
       bpAwalJam: map['bp_awal_jam'] as String?,
@@ -221,25 +221,29 @@ class DailyProductionRefineryEntity {
       paTotal: map['pa_total'] as String?,
       paLotBatchNumber: parseInt(map['pa_lot_batch_number']),
       paYieldPercent: parseDouble(map['pa_yield_percent']),
-      remarks: map['remarks'] as String?,
       uuItem: map['uu_item'] as String?,
       uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
       uuBudgetQty: map['uu_budget_qty'] as String?,
-      uuTotalCpo: parseInt(map['uu_total_cpo']),
+      uuTotalCPO: parseInt(map['uu_total_cpo']),
       uuTotalSteam: parseInt(map['uu_total_steam']),
-      uuSteamCpo: map['uu_steam_cpo'] as String?,
+      uuSteamCPO: map['uu_steam_cpo'] as String?,
       uuYieldPercent: parseDouble(map['uu_yield_percent']),
+      remarks: map['remarks'] as String?,
+      flag: map['flag'] as String?,
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
       preparedBy: map['prepared_by'] as String?,
       preparedDate: parseDateTime(map['prepared_date']),
       preparedStatus: map['prepared_status'] as String?,
+      preparedStatusRemarks: map['prepared_status_remarks'] as String?,
       verifiedBy: map['verified_by'] as String?,
       verifiedDate: parseDateTime(map['verified_date']),
       verifiedStatus: map['verified_status'] as String?,
+      verifiedStatusRemarks: map['verified_status_remarks'] as String?,
       checkedBy: map['checked_by'] as String?,
       checkedDate: parseDateTime(map['checked_date']),
       checkedStatus: map['checked_status'] as String?,
+      checkedStatusRemarks: map['checked_status_remarks'] as String?,
       formNo: map['form_no'] as String?,
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
@@ -254,7 +258,7 @@ class DailyProductionRefineryEntity {
       'plant': plant,
       'transaction_date': transactionDate?.toIso8601String(),
       'posting_date': postingDate?.toIso8601String(),
-      'refinery_machine': refineryMachine,
+      'work_center': workCenter,
       'shift': shift,
       'cpo_tank': cpoTank,
       'oil_type_rm': oilTypeRm,
@@ -287,22 +291,29 @@ class DailyProductionRefineryEntity {
       'pa_total': paTotal,
       'pa_lot_batch_number': paLotBatchNumber,
       'pa_yield_percent': paYieldPercent,
-      'remarks': remarks,
       'uu_item': uuItem,
       'uu_budget_ref_tank': uuBudgetRefTank,
       'uu_budget_qty': uuBudgetQty,
-      'uu_total_cpo': uuTotalCpo,
+      'uu_total_cpo': uuTotalCPO,
       'uu_total_steam': uuTotalSteam,
-      'uu_steam_cpo': uuSteamCpo,
+      'uu_steam_cpo': uuSteamCPO,
       'uu_yield_percent': uuYieldPercent,
+      'remarks': remarks,
+      'flag': flag,
       'entry_by': entryBy,
       'entry_date': entryDate?.toIso8601String(),
       'prepared_by': preparedBy,
       'prepared_date': preparedDate?.toIso8601String(),
+      'prepared_status': preparedStatus,
+      'prepared_status_remarks': preparedStatusRemarks,
       'verified_by': verifiedBy,
       'verified_date': verifiedDate?.toIso8601String(),
+      'verified_status': verifiedStatus,
+      'verified_status_remarks': verifiedStatusRemarks,
       'checked_by': checkedBy,
       'checked_date': checkedDate?.toIso8601String(),
+      'checked_status': checkedStatus,
+      'checked_status_remarks': checkedStatusRemarks,
       'form_no': formNo,
       'date_issued': dateIssued?.toIso8601String(),
       'revision_no': revisionNo,
@@ -310,66 +321,3 @@ class DailyProductionRefineryEntity {
     };
   }
 }
-
-///
-///CREATE TABLE `t_daily_production_refinery` (
-//   `id` varchar(16) NOT NULL COMMENT 'id number',
-//   `company` varchar(2) DEFAULT NULL COMMENT 'company',
-//   `plant` varchar(4) DEFAULT NULL COMMENT 'plant',
-//   `transaction_date` datetime DEFAULT NULL COMMENT 'tanggal transaksi',
-//   `posting_date` datetime DEFAULT NULL COMMENT 'Jam 08:00 WIB Hari ini sd Jam 07:00, Esok Hari',
-//   `refinery_machine` varchar(10) DEFAULT NULL COMMENT 'mesin refinery',
-//   `shift` varchar(1) DEFAULT NULL COMMENT 'Shift',
-//   `cpo_tank` varchar(5) DEFAULT NULL COMMENT 'CPO Tank',
-//   `oil_type_rm` varchar(10) DEFAULT NULL COMMENT 'CPO/RPA/RPS  - Raw Material',
-//   `oil_type_rm_awal_jam` time DEFAULT NULL COMMENT 'Awal Jam',
-//   `oil_type_rm_awal_flowmeter` int(11) DEFAULT NULL COMMENT 'Awal Flowmeter',
-//   `oil_type_rm_akhir_jam` time DEFAULT NULL COMMENT 'Akhir Jam',
-//   `oil_type_rm_akhir_flowmeter` int(11) DEFAULT NULL COMMENT 'Akhir Flowmeter',
-//   `oil_type_rm_total` int(11) DEFAULT NULL COMMENT 'Oil Type Total',
-//   `oil_type_fg` varchar(10) DEFAULT NULL COMMENT 'RBDPO/RRBDPO/RRPS - Finish Good',
-//   `oil_type_fg_awal_jam` time DEFAULT NULL COMMENT 'Awal Jam',
-//   `oil_type_fg_awal_flowmeter` int(11) DEFAULT NULL COMMENT 'Awal Flowmeter',
-//   `oil_type_fg_akhir_jam` time DEFAULT NULL COMMENT 'Akhir Jam',
-//   `oil_type_fg_akhir_flowmeter` int(11) DEFAULT NULL COMMENT 'Akhir Flowmeter',
-//   `oil_type_fg_total` int(11) DEFAULT NULL COMMENT 'Oil Type Total',
-//   `oil_type_fg_to_tank` varchar(10) DEFAULT NULL COMMENT 'Oil Type FG To Tank',
-//   `bp_awal_jam` time DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD Jam awal',
-//   `bp_awal_flowmeter` int(11) DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD Flowmeter',
-//   `bp_akhir_jam` time DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD Jam akhir',
-//   `bp_akhir_flowmeter` int(11) DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD Flowmeter',
-//   `bp_total` int(11) DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD Total',
-//   `bp_to_tank` int(11) DEFAULT NULL COMMENT 'By Product / Product Sampingan / PFAD To Tank',
-//   `be_ref_tank` varchar(10) DEFAULT NULL COMMENT 'Bleaching Earth Refinery Tank ( 500 / 150 )',
-//   `be_ref_qty` varchar(20) DEFAULT NULL COMMENT 'Bleaching Earth Refinery Qty ( 1 bag 1000 Kg )',
-//   `be_total_bag` varchar(10) DEFAULT NULL COMMENT 'Total Bag',
-//   `be_total_jenis` varchar(10) DEFAULT NULL COMMENT 'Jenis ',
-//   `be_lot_batch_number` int(11) DEFAULT NULL COMMENT 'Lot Batch Number',
-//   `be_yield_percent` decimal(3,2) DEFAULT NULL COMMENT 'Yield %',
-//   `pa_ref_tank` varchar(10) DEFAULT NULL COMMENT 'PHOSPHORIC ACID Ref ( 500/150 )',
-//   `pa_ref_qty` varchar(20) DEFAULT NULL COMMENT 'PHOSPHORIC ACID Qty',
-//   `pa_total` varchar(10) DEFAULT NULL COMMENT 'Total',
-//   `pa_lot_batch_number` int(11) DEFAULT NULL COMMENT 'Lot Batch Number',
-//   `pa_yield_percent` decimal(3,2) DEFAULT NULL COMMENT 'Yield %',
-//   `remarks` varchar(255) DEFAULT NULL COMMENT 'remarks',
-//   `uu_item` varchar(10) DEFAULT NULL COMMENT 'Utility Usage - Item',
-//   `uu_budget_ref_tank` varchar(10) DEFAULT NULL COMMENT 'Utility Usage - Budget Ref 500 / 150',
-//   `uu_budget_qty` varchar(20) DEFAULT NULL COMMENT 'Utility Usage - Qty',
-//   `uu_total_cpo` int(11) DEFAULT NULL COMMENT 'Utility Usage - Total CPO',
-//   `uu_total_steam` int(11) DEFAULT NULL COMMENT 'Utility Usage - Total Steam',
-//   `uu_steam_cpo` varchar(10) DEFAULT NULL COMMENT 'Utility Usage - Steam CPO',
-//   `uu_yield_percent` decimal(3,2) DEFAULT NULL COMMENT 'Utility Usage - Yield %',
-//   `entry_by` varchar(50) DEFAULT NULL COMMENT 'nama yang input',
-//   `entry_date` datetime DEFAULT NULL COMMENT 'tanggal input',
-//   `prepared_by` varchar(50) DEFAULT NULL COMMENT 'Nama Shift Leader',
-//   `prepared_date` datetime DEFAULT NULL COMMENT 'Tanggal Prepared',
-//   `verified_by` varchar(50) DEFAULT NULL COMMENT 'Nama Dept Head',
-//   `verified_date` datetime DEFAULT NULL COMMENT 'Tanggal Checked',
-//   `checked_by` varchar(50) DEFAULT NULL COMMENT 'Nama Dept Head',
-//   `checked_date` datetime DEFAULT NULL COMMENT 'Tanggal Checked',
-//   `form_no` varchar(15) DEFAULT NULL COMMENT 'Form No Cth : F/RFA-002',
-//   `date_issued` datetime DEFAULT NULL COMMENT 'Date Issued Form No',
-//   `revision_no` int(11) DEFAULT NULL COMMENT 'Revision Form No',
-//   `revision_date` datetime DEFAULT NULL COMMENT 'Revision Date Form No',
-//   PRIMARY KEY (`id`) USING BTREE
-// ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci

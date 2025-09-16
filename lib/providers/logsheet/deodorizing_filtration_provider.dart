@@ -142,12 +142,12 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> deleteTicketById(String id) async {
+  Future<bool> deleteTicketById(String id, String username) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
 
     try {
-      final response = await _repository.deleteTicket(id);
+      final response = await _repository.deleteTicket(id, username);
       log(
         "(Deodorizing Filtration Provider) deleteTicketById response: $response",
       );

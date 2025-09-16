@@ -110,11 +110,11 @@ class QualityReportQCProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> deleteTicketById(String id) async {
+  Future<bool> deleteTicketById(String id, String username) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
     try {
-      final response = await _repository.deleteTicket(id);
+      final response = await _repository.deleteTicket(id, username);
       log("Quality Refinery Provider deleteTicketById response: $response");
       _setLoadingDelete(false);
 

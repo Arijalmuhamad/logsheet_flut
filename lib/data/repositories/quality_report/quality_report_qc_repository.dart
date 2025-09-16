@@ -14,8 +14,8 @@ class QualityReportQCRepository {
     return await _mySQLService.insertTicket(entity);
   }
 
-  Future<bool> deleteTicket(String id) async {
-    return await _mySQLService.deleteTicket(id);
+  Future<bool> deleteTicket(String id, String username) async {
+    return await _mySQLService.deleteTicket(id, username);
   }
 
   // Fetch all Quality Refinery Report

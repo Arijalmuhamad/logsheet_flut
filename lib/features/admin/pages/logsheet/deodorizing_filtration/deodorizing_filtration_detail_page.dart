@@ -641,12 +641,16 @@ class _DeodorizingFiltrationDetailPageState
                           ? null
                           : () async {
                             try {
-                              await context
-                                  .read<DeodorizingFiltrationProvider>()
-                                  .deleteTicketById(_currentReport.id);
-                              if (!context.mounted) return;
                               final user = context.read<UserProvider>();
                               final plant = context.read<PlantProvider>();
+
+                              await context
+                                  .read<DeodorizingFiltrationProvider>()
+                                  .deleteTicketById(
+                                    _currentReport.id,
+                                    user.currentUser?.username ?? "",
+                                  );
+                              if (!context.mounted) return;
 
                               await context
                                   .read<DeodorizingFiltrationProvider>()

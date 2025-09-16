@@ -1,131 +1,97 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
-import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_input_page.dart';
+import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityReportQCList extends StatefulWidget {
-  const QualityReportQCList({super.key});
+class DailyProductionFractionationListPage extends StatefulWidget {
+  const DailyProductionFractionationListPage({
+    super.key,
+    required this.formData,
+  });
+  final DataFormNoEntity formData;
 
   @override
-  State<QualityReportQCList> createState() => _QualityReportQCListState();
+  State<DailyProductionFractionationListPage> createState() =>
+      _DailyProductionFractionationListPageState();
 }
 
-class _QualityReportQCListState extends State<QualityReportQCList> {
-  DataFormNoEntity? formData;
-
+class _DailyProductionFractionationListPageState
+    extends State<DailyProductionFractionationListPage> {
   @override
   void initState() {
+    super.initState();
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context.read<QualityReportQCProvider>().fetchAllTickets(
-        null,
-        null,
-        username ?? "",
-        role ?? "",
-        plantCode,
-      );
+      await context
+          .read<DailyProductionFractionationProvider>()
+          .fetchAllTickets(null, null, username ?? "", role ?? "", plantCode);
       if (!mounted) return;
       await context.read<ValueProvider>().fetchAllInitialData();
     });
-
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) async => context.read<ValueProvider>().fetchOilTypes(),
-    // );
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final username = context.read<UserProvider>().currentUser?.username;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          log("Tombol tambah report diklik");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      QualityReportInputQCPage(userName: username ?? "Unknown"),
+      floatingActionButton: Consumer<UserProvider>(
+        builder:
+            (context, provider, child) => FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => DailyProductionFractinationInputPage(
+                          dataForm: widget.formData,
+                          userName: provider.currentUser?.username ?? "",
+                        ),
+                  ),
+                );
+              },
+              label: const Text("Tambah Ticket"),
+              icon: Icon(Icons.add),
+              backgroundColor: Color(0xFFB91C1C),
+              foregroundColor: Colors.white,
             ),
-          );
-        },
-        label: const Text("Tambah Quality Report"),
-        icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
       ),
     );
   }
 
-  AppBar _buildAppBar() {
-    formData =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
-            .first;
-    return AppBar(
-      title: Text("Quality List (${formData!.code})"),
-      actions: [
-        context.watch<QualityReportQCProvider>().isLoading
-            ? CircularProgressIndicator()
-            : IconButton(
-              onPressed: () async {
-                final username =
-                    context.read<UserProvider>().currentUser?.username;
-                final role = context.read<UserProvider>().currentUser?.role;
-                final plantCode =
-                    context.read<PlantProvider>().currentPlant?.code ?? "";
-                await context.read<QualityReportQCProvider>().fetchAllTickets(
-                  null,
-                  null,
-                  username ?? "",
-                  role ?? "",
-                  plantCode,
-                );
-              },
-              icon: Consumer<QualityReportQCProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  return const Icon(Icons.replay);
-                },
-              ),
-            ),
-      ],
-    );
-  }
-
   Widget _buildBody() {
-    return Consumer3<QualityReportQCProvider, PlantProvider, UserProvider>(
-      builder: (context, qualityProvider, plantprovider, userProvider, child) {
-        List<QualityReportQcEntity> filteredList =
-            qualityProvider.reportsList
+    return Consumer3<
+      DailyProductionFractionationProvider,
+      PlantProvider,
+      UserProvider
+    >(
+      builder: (
+        context,
+        dailyProdFracProvider,
+        plantprovider,
+        userProvider,
+        child,
+      ) {
+        List<DailyProductionFractionationEntity> filteredList =
+            dailyProdFracProvider.reportsList
                 .where(
                   (e) => e.preparedStatus == null && e.checkedStatus == null,
                 )
                 .toList();
-        if (qualityProvider.isLoading) {
+        if (dailyProdFracProvider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }
 
-        if (qualityProvider.errorMessage != null) {
+        if (dailyProdFracProvider.errorMessage != null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -133,7 +99,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Error: ${qualityProvider.errorMessage!}',
+                    'Error: ${dailyProdFracProvider.errorMessage!}',
                     style: const TextStyle(color: Colors.red, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -141,7 +107,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                     onPressed: () async {
                       final plantCode = plantprovider.currentPlant?.code ?? "";
 
-                      await qualityProvider.fetchAllTickets(
+                      await dailyProdFracProvider.fetchAllTickets(
                         null,
                         null,
                         userProvider.currentUser?.username ?? "",
@@ -171,7 +137,13 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                     onPressed: () async {
                       final plantCode = plantprovider.currentPlant?.code ?? "";
 
-                      await qualityProvider.fetchReportsForManager(plantCode);
+                      await dailyProdFracProvider.fetchAllTickets(
+                        null,
+                        null,
+                        userProvider.currentUser?.username ?? "",
+                        userProvider.currentUser?.role ?? "",
+                        plantCode,
+                      );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -193,7 +165,10 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => QualityDetailQCPage(item: report),
+                        builder:
+                            (context) => DailyProductionFractionationDetailPage(
+                              item: report,
+                            ),
                       ),
                     );
                   },
@@ -264,13 +239,13 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                               color: Colors.grey,
                             ),
                             SizedBox(width: 8),
-                            Text(
-                              DateFormat('HH:mm').format(report.time!),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black87,
-                              ),
-                            ),
+                            // Text(
+                            //   DateFormat('HH:mm').format(report.time!),
+                            //   style: const TextStyle(
+                            //     fontSize: 14,
+                            //     color: Colors.black87,
+                            //   ),
+                            // ),
                             SizedBox(width: 16),
                             const Icon(
                               Icons.timelapse,
@@ -318,7 +293,43 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
     );
   }
 
-  String _getStatusText(QualityReportQcEntity report) {
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text("Fractionation List (${widget.formData.code})"),
+      actions: [
+        context.watch<DailyProductionFractionationProvider>().isLoading
+            ? CircularProgressIndicator()
+            : IconButton(
+              onPressed: () async {
+                final username =
+                    context.read<UserProvider>().currentUser?.username;
+                final role = context.read<UserProvider>().currentUser?.role;
+                final plantCode =
+                    context.read<PlantProvider>().currentPlant?.code ?? "";
+                await context
+                    .read<DailyProductionFractionationProvider>()
+                    .fetchAllTickets(
+                      null,
+                      null,
+                      username ?? "",
+                      role ?? "",
+                      plantCode,
+                    );
+              },
+              icon: Consumer<DailyProductionFractionationProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const CircularProgressIndicator();
+                  }
+                  return const Icon(Icons.replay);
+                },
+              ),
+            ),
+      ],
+    );
+  }
+
+  String _getStatusText(DailyProductionFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -336,7 +347,7 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityReportQcEntity report) {
+  Color _getStatusColor(DailyProductionFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }

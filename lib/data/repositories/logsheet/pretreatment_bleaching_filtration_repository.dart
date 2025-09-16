@@ -45,8 +45,8 @@ class PretreatmentBleachingFiltrationRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> deleteTicket(String id) async {
-    return await _mySQLService.deleteTicket(id);
+  Future<bool> deleteTicket(String id, String username) async {
+    return await _mySQLService.deleteTicket(id, username);
   }
 
   Future<bool> sendApproveRejectReport(

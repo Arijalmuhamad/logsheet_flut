@@ -35,7 +35,7 @@ class DailyProductionRefineryMySQLService {
       });
 
       final String sql =
-          't_daily_production_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
+          'INSERT INTO t_daily_production_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
       log('Generated SQL: $sql');
       log('Data for SQL: $sqlExecuteParams');
       log(
@@ -89,7 +89,7 @@ class DailyProductionRefineryMySQLService {
           JOIN
             m_roles_shift_prepared ON t_daily_production_refinery.shift = m_roles_shift_prepared.shift_code
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_daily_production_refinery.plant = :plantCode AND (t_daily_production_refinery.flag IS NULL OR t_quality_report_qc.flag = 'T')
+            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_daily_production_refinery.plant = :plantCode AND (t_daily_production_refinery.flag IS NULL OR t_daily_production_refinery.flag = 'T')
   
           """;
           params["username"] = username;
@@ -210,6 +210,7 @@ class DailyProductionRefineryMySQLService {
   }
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -217,19 +218,28 @@ class DailyProductionRefineryMySQLService {
         return false;
       }
 
+      connection = connResult.connection!;
+
       final sql =
           "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'PRM'";
       final params = {"autonumber": newAutoNumber, "plantid": plantCode};
 
-      final result = await connResult.connection!.execute(sql, params);
+      final result = await connection.execute(sql, params);
       log(
         'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
       );
-      connResult.connection?.close();
+
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating autonumber: $e');
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection();
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
     }
   }
 
@@ -293,7 +303,7 @@ class DailyProductionRefineryMySQLService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          'Failed to get MySQL connection for Sending approve/reject PBE report.',
+          'Failed to get MySQL connection for Sending approve/reject Daily Production Refinery report.',
         );
         return false;
       }
@@ -369,7 +379,7 @@ class DailyProductionRefineryMySQLService {
     }
   }
 
-  Future<bool> deleteTicket(String id) async {
+  Future<bool> deleteTicket(String id, String username) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -379,8 +389,13 @@ class DailyProductionRefineryMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "UPDATE t_daily_production_refinery SET flag = 'D' WHERE id = :id",
-        {"status": "Deleted", "prepared_date": "${DateTime.now()}", "id": id},
+        "UPDATE t_daily_production_refinery SET flag = 'D', prepared_by= :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id",
+        {
+          "username": username,
+          "prepared_status": "Deleted",
+          "prepared_date": "${DateTime.now()}",
+          "id": id,
+        },
       );
       log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
@@ -412,7 +427,7 @@ class DailyProductionRefineryMySQLService {
           "SELECT * FROM t_daily_production_refinery AND (flag IS NULL OR flag = 'T')";
 
       final result = await connection!.execute(baseQuery);
-      log("Fetched ${result.rows.length} reports for pretreatment.");
+      log("Fetched ${result.rows.length} reports for Daily production.");
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('$e');
@@ -465,17 +480,17 @@ class DailyProductionRefineryMySQLService {
       log("Params: $params");
 
       final IResultSet result = await connection!.execute(query, params);
-      log("PBE Tickets fetched: ${result.rows.length}");
+      log("PRM Tickets fetched: ${result.rows.length}");
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log(
-        "(PBE MySQL) Error getting all pretreatment bleaching filtration tickets: $e",
+        "(PRM MySQL) Error getting all pretreatment bleaching filtration tickets: $e",
       );
       return [];
     } finally {
       if (connection != null) {
         await connection.close();
-        log('(PBE MySQL) MySQL connection closed for getTickets.');
+        log('(PRM MySQL) MySQL connection closed for getTickets.');
       }
     }
   }

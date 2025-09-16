@@ -6,40 +6,37 @@ import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class FraSectionRbdpoRolRps extends StatefulWidget {
+class SectionCpoRpaRps extends StatefulWidget {
   final int? selectedHourAwal;
   final int? selectedHourAkhir;
   final VoidCallback onHourTapAwal;
   final VoidCallback onHourTapAkhir;
-  final TextEditingController flowMaterAwalController;
-  final TextEditingController flowMaterAkhirController;
-  final TextEditingController flowMaterTotalController;
-  final TextEditingController noController;
-  final TextEditingController crController;
-  final List<TankEntity> dummyTanks;
+  final TextEditingController flowRateAwalController;
+  final TextEditingController flowRateAkhirController;
+  final TextEditingController flowRateTotalController;
+  final List<TankEntity>? dummmyTanks;
   String? selectedTank;
   final Function(String?) onTankChanged;
-  FraSectionRbdpoRolRps({
+
+  SectionCpoRpaRps({
     super.key,
-    required this.dummyTanks,
+    required this.dummmyTanks,
     required this.selectedTank,
     required this.onTankChanged,
+    required this.flowRateAwalController,
+    required this.flowRateAkhirController,
+    required this.flowRateTotalController,
     required this.selectedHourAwal,
     required this.selectedHourAkhir,
     required this.onHourTapAwal,
     required this.onHourTapAkhir,
-    required this.flowMaterAwalController,
-    required this.flowMaterAkhirController,
-    required this.flowMaterTotalController,
-    required this.noController,
-    required this.crController,
   });
 
   @override
-  State<FraSectionRbdpoRolRps> createState() => _FraSectionRbdpoRolRpsState();
+  State<SectionCpoRpaRps> createState() => _SectionCpoRpaRpsState();
 }
 
-class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
+class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -51,22 +48,9 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CustomSectionTitle(title: 'RBDPO/ROL/RPS'),
-
+            const CustomSectionTitle(title: 'CPO/RPA/RPS'),
             const SizedBox(height: 12),
-            CustomTextField(
-              controller: widget.noController,
-              label: 'No',
-              icon: Icons.numbers,
-              isNumeric: true,
-            ),
-            CustomTextField(
-              controller: widget.crController,
-              label: 'CR',
-              icon: Icons.numbers_rounded,
-              isNumeric: true,
-            ),
-            const Text("From Tank", style: _sectionTextStyle),
+            const Text("From Tangki", style: _sectionTextStyle),
             const SizedBox(height: 10),
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
@@ -133,7 +117,7 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
               },
             ),
             const SizedBox(height: 12),
-            const Text("Start", style: _sectionTextStyle),
+            const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
               selectedHour: widget.selectedHourAwal,
@@ -141,8 +125,8 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowMaterAwalController,
-              label: 'Flowmeter',
+              controller: widget.flowRateAwalController,
+              label: 'Flow Rate',
               icon: Icons.speed,
               isNumeric: true,
             ),
@@ -155,9 +139,16 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowMaterAkhirController,
-              label: 'Flowmeter',
+              controller: widget.flowRateAkhirController,
+              label: 'Flow Rate',
               icon: Icons.speed,
+              isNumeric: true,
+            ),
+            const SizedBox(height: 12),
+            CustomTextField(
+              controller: widget.flowRateTotalController,
+              label: 'Total Flow Rate',
+              icon: Icons.abc,
               isNumeric: true,
             ),
           ],

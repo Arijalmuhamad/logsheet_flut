@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -565,11 +564,12 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return Consumer2<
+        return Consumer3<
           QualityReportQCProvider,
-          QualityReportProductionProvider
+          QualityReportProductionProvider,
+          UserProvider
         >(
-          builder: (context, providerQC, providerProd, child) {
+          builder: (context, providerQC, providerProd, userProvider, child) {
             bool isLoadingDelete = providerQC.isLoadingDelete;
             return AlertDialog(
               title: const Text('Hapus Ticket'),
@@ -598,9 +598,15 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
                           )
                           : Text('Ya', style: TextStyle(color: Colors.white)),
                   onPressed: () async {
-                    await providerQC.deleteTicketById(_currentReport.id);
+                    await providerQC.deleteTicketById(
+                      _currentReport.id,
+                      userProvider.currentUser?.username ?? "",
+                    );
                     if (!context.mounted) return;
-                    await providerProd.deleteTicketById(_currentReport.id);
+                    await providerProd.deleteTicketById(
+                      _currentReport.id,
+                      userProvider.currentUser?.username ?? "",
+                    );
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     Navigator.pop(context);
@@ -614,37 +620,37 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
     );
 
     // If the user tapped "Delete", shouldDelete will be true.
-    if (shouldDelete == true) {
-      try {
-        // Call your provider's delete method.
-        if (!context.mounted) return;
-        await context.read<QualityReportQCProvider>().deleteTicketById(
-          _currentReport.id,
-        );
+    // if (shouldDelete == true) {
+    //   try {
+    //     // Call your provider's delete method.
+    //     if (!context.mounted) return;
+    //     await context.read<QualityReportQCProvider>().deleteTicketById(
+    //       _currentReport.id,
+    //     );
 
-        // Show a success message.
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Report ${_currentReport.id} has been deleted.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+    //     // Show a success message.
+    //     if (!context.mounted) return;
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text('Report ${_currentReport.id} has been deleted.'),
+    //         backgroundColor: Colors.green,
+    //       ),
+    //     );
 
-        // Go back to the previous screen.
-        if (!context.mounted) return;
-        Navigator.of(context).pop();
-        Navigator.of(context).pop();
-      } catch (e) {
-        // Show an error message if something goes wrong.
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error deleting report: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    //     // Go back to the previous screen.
+    //     if (!context.mounted) return;
+    //     Navigator.of(context).pop();
+    //     Navigator.of(context).pop();
+    //   } catch (e) {
+    //     // Show an error message if something goes wrong.
+    //     if (!context.mounted) return;
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(
+    //         content: Text('Error deleting report: $e'),
+    //         backgroundColor: Colors.red,
+    //       ),
+    //     );
+    //   }
+    // }
   }
 }

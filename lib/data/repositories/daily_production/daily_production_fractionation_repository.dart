@@ -1,15 +1,16 @@
 import 'dart:developer';
 
+import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
-import 'package:logsheet_app/data/services/daily_production/daily_production_refinery_mysql_service.dart';
+import 'package:logsheet_app/data/services/daily_production/daily_production_fractionation_mysql_service.dart';
 
-class DailyProductionRefineryRepository {
-  final DailyProductionRefineryMySQLService _mySQLService;
+class DailyProductionFractionationRepository {
+  final DailyProductionFractionationMySQLService _mySQLService;
 
-  DailyProductionRefineryRepository(this._mySQLService);
+  DailyProductionFractionationRepository(this._mySQLService);
 
   // Insert Ticket
-  Future<bool> insert(DailyProductionRefineryEntity entity) async {
+  Future<bool> insert(DailyProductionFractionationEntity entity) async {
     return await _mySQLService.insertTicket(entity);
   }
 
@@ -18,7 +19,7 @@ class DailyProductionRefineryRepository {
   }
 
   // Fetch all Quality Refinery Report
-  Future<List<DailyProductionRefineryEntity>> getAllTickets(
+  Future<List<DailyProductionFractionationEntity>> getAllTickets(
     DateTime? dateFilter,
     String? time,
     String username,
@@ -32,9 +33,9 @@ class DailyProductionRefineryRepository {
 
     log('converting to list...');
 
-    final List<DailyProductionRefineryEntity> mapToList =
+    final List<DailyProductionFractionationEntity> mapToList =
         reportsData
-            .map((maps) => DailyProductionRefineryEntity.fromMap(maps))
+            .map((maps) => DailyProductionFractionationEntity.fromMap(maps))
             .toList();
 
     log('converted ${mapToList.length.toString()}');
@@ -50,11 +51,13 @@ class DailyProductionRefineryRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> updateReportTicket(DailyProductionRefineryEntity report) async {
+  Future<bool> updateReportTicket(
+    DailyProductionFractionationEntity report,
+  ) async {
     return await _mySQLService.updateTicket(report);
   }
 
-  Future<List<DailyProductionRefineryEntity>> getReportsForManager(
+  Future<List<DailyProductionFractionationEntity>> getReportsForManager(
     String plantCode,
   ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
@@ -62,7 +65,7 @@ class DailyProductionRefineryRepository {
 
     log('converting to list...');
     return reportsData
-        .map((maps) => DailyProductionRefineryEntity.fromMap(maps))
+        .map((maps) => DailyProductionFractionationEntity.fromMap(maps))
         .toList();
   }
 
@@ -102,7 +105,7 @@ class DailyProductionRefineryRepository {
   //       .toList();
   // }
 
-  Future<List<DailyProductionRefineryEntity>> getFilteredTickets(
+  Future<List<DailyProductionFractionationEntity>> getFilteredTickets(
     DateTime? dateFilter,
     String plantCode,
     String? shift,
@@ -110,9 +113,9 @@ class DailyProductionRefineryRepository {
     final List<Map<String, dynamic>> filteredTicketList = await _mySQLService
         .getTickets(dateFilter, plantCode, shift: shift);
 
-    List<DailyProductionRefineryEntity> filteredTicketListFromMap =
+    List<DailyProductionFractionationEntity> filteredTicketListFromMap =
         filteredTicketList
-            .map((map) => DailyProductionRefineryEntity.fromMap(map))
+            .map((map) => DailyProductionFractionationEntity.fromMap(map))
             .toList();
 
     return filteredTicketListFromMap;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
-import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
+import 'package:logsheet_app/data/repositories/daily_production/daily_production_fractionation_repository.dart';
 import 'package:logsheet_app/data/repositories/daily_production/daily_production_refinery_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/deodorizing_filtration_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/pretreatment_bleaching_filtration_repository.dart';
@@ -13,6 +13,7 @@ import 'package:logsheet_app/data/repositories/quality_report/quality_report_pro
 import 'package:logsheet_app/data/repositories/quality_report/quality_report_qc_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
+import 'package:logsheet_app/data/services/daily_production/daily_production_fractionation_mysql_service.dart';
 import 'package:logsheet_app/data/services/daily_production/daily_production_refinery_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
@@ -25,6 +26,7 @@ import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysq
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/auth_wrapper.dart';
+import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
@@ -72,6 +74,9 @@ void main() async {
         // Provide Daily Production Refinery MySQL Service
         Provider<DailyProductionRefineryMySQLService>(
           create: (context) => DailyProductionRefineryMySQLService(),
+        ),
+        Provider<DailyProductionFractionationMySQLService>(
+          create: (context) => DailyProductionFractionationMySQLService(),
         ),
         // Provider Maintenance Lamps And Glass MySQL Service
         Provider<MaintenanceLampsAndGlassMySQLService>(
@@ -130,6 +135,13 @@ void main() async {
           create:
               (context) => DailyProductionRefineryRepository(
                 context.read<DailyProductionRefineryMySQLService>(),
+              ),
+        ),
+        // Provide Daily Production Fractionation Repository
+        Provider<DailyProductionFractionationRepository>(
+          create:
+              (context) => DailyProductionFractionationRepository(
+                context.read<DailyProductionFractionationMySQLService>(),
               ),
         ),
         // Provide Maintenance Lamps And Glass Repository
@@ -191,7 +203,14 @@ void main() async {
                 context.read<QualityReportProductionRepository>(),
               ),
         ),
-        // Provide Quality Report Production Provider
+        // Provide Daily Production Fractionation Provider
+        ChangeNotifierProvider(
+          create:
+              (context) => DailyProductionFractionationProvider(
+                context.read<DailyProductionFractionationRepository>(),
+              ),
+        ),
+        //  Provide Daily Production Refinery Provider
         ChangeNotifierProvider(
           create:
               (context) => DailyProductionRefineryProvider(

@@ -646,15 +646,18 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                           ? null
                           : () async {
                             try {
+                              final user = context.read<UserProvider>();
+                              final plant = context.read<PlantProvider>();
                               await context
                                   .read<
                                     PretreatmentBleachingFiltrationProvider
                                   >()
-                                  .deleteTicketById(_currentReport.id);
-                              if (!context.mounted) return;
-                              final user = context.read<UserProvider>();
-                              final plant = context.read<PlantProvider>();
+                                  .deleteTicketById(
+                                    _currentReport.id,
+                                    user.currentUser?.username ?? "",
+                                  );
 
+                              if (!context.mounted) return;
                               await context
                                   .read<
                                     PretreatmentBleachingFiltrationProvider

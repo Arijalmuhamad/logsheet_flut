@@ -89,7 +89,7 @@ class DeodorizingFiltrationMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD':
+        case 'LEAD' || 'LEAD_PROD':
           // Query untuk Shift Leader: Hanya bisa melihat logsheet dari shift yang dipegangnya.
           baseQuery = """
             SELECT
@@ -99,7 +99,7 @@ class DeodorizingFiltrationMySQLService {
             JOIN
               m_roles_shift_prepared rs ON t.shift = rs.shift_code
             WHERE
-              rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (T.flag IS NULL OR T.flag = 'T')
+              rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (t.flag IS NULL OR t.flag = 'T')
           """;
 
           // baseQuery = """
@@ -417,7 +417,7 @@ class DeodorizingFiltrationMySQLService {
     }
   }
 
-  Future<bool> deleteTicket(String id) async {
+  Future<bool> deleteTicket(String id, String username) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -429,8 +429,13 @@ class DeodorizingFiltrationMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "UPDATE t_deodorizing_filtration SET flag = 'D' WHERE id = :id",
-        {"status": "Deleted", "prepared_date": "${DateTime.now()}", "id": id},
+        "UPDATE t_deodorizing_filtration SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id",
+        {
+          "username": username,
+          "prepared_status": "Deleted",
+          "prepared_date": "${DateTime.now()}",
+          "id": id,
+        },
       );
       log(
         '(DEODORIZING FILTRATION MySQL) Ticket $id terhapus: ${result.affectedRows} row(s) affected.',

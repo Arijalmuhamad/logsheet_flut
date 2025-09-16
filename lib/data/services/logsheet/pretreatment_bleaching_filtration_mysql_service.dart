@@ -88,7 +88,7 @@ class PretreatmentBleachingFiltrationMySQLService {
 
       // 1. Role-based query construction
       switch (role) {
-        case 'LEAD':
+        case 'LEAD' || 'LEAD_PROD':
           // Query untuk Shift Leader: Hanya bisa melihat logsheet dari shift yang dipegangnya.
           baseQuery = """
           SELECT
@@ -393,7 +393,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     }
   }
 
-  Future<bool> deleteTicket(String id) async {
+  Future<bool> deleteTicket(String id, String username) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -403,8 +403,13 @@ class PretreatmentBleachingFiltrationMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "UPDATE t_pretreatment_bleaching_filtration SET flag = 'D' WHERE id = :id",
-        {"status": "Deleted", "prepared_date": "${DateTime.now()}", "id": id},
+        "UPDATE t_pretreatment_bleaching_filtration SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id",
+        {
+          "username": username,
+          "prepared_status": "Deleted",
+          "prepared_date": "${DateTime.now()}",
+          "id": id,
+        },
       );
       log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
