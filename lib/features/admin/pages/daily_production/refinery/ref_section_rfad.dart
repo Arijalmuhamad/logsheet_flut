@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
@@ -15,8 +17,11 @@ class SectionRfad extends StatelessWidget {
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
   final List<TankEntity>? tankLists;
+  final List<String> oilList;
+  String? selectedOil;
   String? selectedTank;
   final Function(String?) onTankChanged;
+  final Function(String?) onOilBpChanged;
 
   SectionRfad({
     super.key,
@@ -30,6 +35,9 @@ class SectionRfad extends StatelessWidget {
     required this.selectedHourAkhir,
     required this.onHourTapAwal,
     required this.onHourTapAkhir,
+    required this.oilList,
+    required this.selectedOil,
+    required this.onOilBpChanged,
   });
 
   @override
@@ -44,6 +52,13 @@ class SectionRfad extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'RFAD'),
+            CustomDropdown.fromStringItems(
+              hint: 'Pilih Oil Type',
+              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
+              stringItems: oilList,
+              value: selectedOil,
+              onChanged: onOilBpChanged,
+            ),
             const SizedBox(height: 12),
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
@@ -76,7 +91,7 @@ class SectionRfad extends StatelessWidget {
             CustomTextField(
               controller: flowRateTotalController,
               label: 'Total Flow Rate',
-              icon: Icons.abc,
+              icon: Icons.functions,
               isNumeric: true,
             ),
             const SizedBox(height: 12),

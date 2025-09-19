@@ -40,7 +40,7 @@ class UserMySQLService {
       log('Error registering user: $e');
       return false;
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log(connection!.connected ? "Connected" : "Disconnected");
     }
   }
@@ -85,7 +85,7 @@ class UserMySQLService {
       );
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -115,7 +115,7 @@ class UserMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -150,7 +150,7 @@ class UserMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -177,7 +177,7 @@ class UserMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -209,7 +209,7 @@ class UserMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');

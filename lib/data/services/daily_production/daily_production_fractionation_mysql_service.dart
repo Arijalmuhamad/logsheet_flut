@@ -51,7 +51,7 @@ class DailyProductionFractionationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -162,7 +162,7 @@ class DailyProductionFractionationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -192,14 +192,14 @@ class DailyProductionFractionationMySQLService {
 
         return latestId;
       }
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       return null;
     } catch (e) {
       log('Error fetching latest ticket id: $e');
       return null;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -233,7 +233,7 @@ class DailyProductionFractionationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -281,7 +281,7 @@ class DailyProductionFractionationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log('$e');
       }
@@ -297,6 +297,7 @@ class DailyProductionFractionationMySQLService {
     final String? remark,
     final String id,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -305,6 +306,7 @@ class DailyProductionFractionationMySQLService {
         );
         return false;
       }
+      connection = connResult.connection;
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       String sql;
       Map<String, dynamic> params;
@@ -339,7 +341,7 @@ class DailyProductionFractionationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -370,7 +372,7 @@ class DailyProductionFractionationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -402,7 +404,7 @@ class DailyProductionFractionationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error closing connection: $e");
@@ -432,16 +434,10 @@ class DailyProductionFractionationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error Closing Connection: $e");
-      } finally {
-        try {
-          await closeMySQLConnection();
-        } catch (e) {
-          log("$e");
-        }
       }
     }
   }

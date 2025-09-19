@@ -168,6 +168,7 @@ class _DailyProductionFractionationListPageState
                         builder:
                             (context) => DailyProductionFractionationDetailPage(
                               item: report,
+                              formData: widget.formData,
                             ),
                       ),
                     );

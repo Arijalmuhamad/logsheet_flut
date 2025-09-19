@@ -9,6 +9,7 @@ class DataFormNoEntity {
   final String? isMenu;
   final String? entryBy;
   final DateTime? entryDate;
+  final String? treeMenu;
 
   DataFormNoEntity({
     required this.id,
@@ -21,6 +22,7 @@ class DataFormNoEntity {
     required this.isMenu,
     required this.entryBy,
     required this.entryDate,
+    required this.treeMenu,
   });
 
   factory DataFormNoEntity.fromMap(Map<String, dynamic> map) {
@@ -47,8 +49,10 @@ class DataFormNoEntity {
       revisionDate: parseDateTime(map['f_revision_date']),
       isActive: map['is_active'] as String?,
       isMenu: map['is_menu'] as String?,
+      treeMenu: map['tree_menu'] as String?,
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
+      // treeMenu: map['tree_menu'] as String?,
     );
   }
 }

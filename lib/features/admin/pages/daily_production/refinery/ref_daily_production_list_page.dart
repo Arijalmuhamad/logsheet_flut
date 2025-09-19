@@ -11,8 +11,8 @@ import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyProductionRefineryListPage extends StatefulWidget {
-  const DailyProductionRefineryListPage({super.key, required this.formData});
-  final DataFormNoEntity formData;
+  const DailyProductionRefineryListPage({super.key, required this.dataForm});
+  final DataFormNoEntity dataForm;
 
   @override
   State<DailyProductionRefineryListPage> createState() =>
@@ -54,7 +54,7 @@ class _DailyProductionRefineryListPageState
                   MaterialPageRoute(
                     builder:
                         (context) => DailyProductionRefineryInputPage(
-                          dataForm: widget.formData,
+                          dataForm: widget.dataForm,
                           userName: provider.currentUser?.username ?? "",
                         ),
                   ),
@@ -167,8 +167,10 @@ class _DailyProductionRefineryListPageState
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder:
-                            (context) =>
-                                DailyProductionRefineryDetailPage(item: report),
+                            (context) => DailyProductionRefineryDetailPage(
+                              item: report,
+                              dataForm: widget.dataForm,
+                            ),
                       ),
                     );
                   },
@@ -295,7 +297,7 @@ class _DailyProductionRefineryListPageState
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: Text("Refinery List (${widget.formData.code})"),
+      title: Text("Refinery List (${widget.dataForm.code})"),
       actions: [
         context.watch<DailyProductionRefineryProvider>().isLoading
             ? CircularProgressIndicator()

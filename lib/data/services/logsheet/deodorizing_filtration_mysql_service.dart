@@ -9,7 +9,7 @@ class DeodorizingFiltrationMySQLService {
   Future<bool> insertTicket(DeodorizingFiltrationEntity entity) async {
     MySQLConnection? connection;
     try {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
@@ -54,7 +54,7 @@ class DeodorizingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log(
           "(DEODORIZING FILTRATION MySQL) Is still connected: ${connection?.connected}",
         );
@@ -110,7 +110,7 @@ class DeodorizingFiltrationMySQLService {
           params["plantCode"] = plantCode;
           break;
 
-        case 'OPR':
+        case 'OPR' || 'OPR_PROD':
           // Query untuk Operator: Dapat melihat semua logsheet di plant-nya.
           baseQuery = """
           SELECT
@@ -121,7 +121,7 @@ class DeodorizingFiltrationMySQLService {
         """;
           params["plantCode"] = plantCode;
           break;
-        case 'MGR':
+        case 'MGR' || 'MGR_PROD':
           // Query untuk Manager: Hanya bisa melihat logsheet yang statusnya sudah 'Approved' oleh Shift Leader.
           baseQuery = """
           SELECT
@@ -188,6 +188,7 @@ class DeodorizingFiltrationMySQLService {
   }
 
   Future<String?> getLatestTicketId(String plantCode) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -196,7 +197,8 @@ class DeodorizingFiltrationMySQLService {
         );
         return null;
       }
-      final result = await connResult.connection!.execute(
+      connection = connResult.connection;
+      final result = await connection!.execute(
         // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
         // {"plant": plantCode},
         "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'FDM'",
@@ -220,7 +222,7 @@ class DeodorizingFiltrationMySQLService {
       return null;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -253,7 +255,7 @@ class DeodorizingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -264,7 +266,7 @@ class DeodorizingFiltrationMySQLService {
     MySQLConnection? connection;
 
     try {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
@@ -313,7 +315,7 @@ class DeodorizingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log(
           "(DEODORIZING FILTRATION MySQL) Is still connected: ${connection?.connected}",
         );
@@ -331,6 +333,7 @@ class DeodorizingFiltrationMySQLService {
     final String? remark,
     final String id,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -339,6 +342,7 @@ class DeodorizingFiltrationMySQLService {
         );
         return false;
       }
+      connection = connResult.connection;
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       String sql;
       Map<String, dynamic> params;
@@ -364,7 +368,7 @@ class DeodorizingFiltrationMySQLService {
           "id": id,
         };
       }
-      final result = await connResult.connection!.execute(sql, params);
+      final result = await connection!.execute(sql, params);
       log("Query Sent: $sql");
       log("Affected Rows: ${result.affectedRows}");
       return result.affectedRows > BigInt.from(0);
@@ -373,7 +377,7 @@ class DeodorizingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -410,7 +414,7 @@ class DeodorizingFiltrationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -446,7 +450,7 @@ class DeodorizingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log(
           "(DEODORIZING FILTRATION MySQL) Is still connected: ${connection?.connected}",
         );

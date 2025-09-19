@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_edit_page.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-// TODO: 1. Import your Production Provider for Refinery
-// import 'package:logsheet_app/providers/transaction/daily_production_refinery_provider.dart';
-
-// TODO: 2. Import the corresponding Edit Page
-// import 'package:logsheet_app/features/admin/pages/production/refinery/daily_production_refinery_edit_page.dart';
-
 class DailyProductionRefineryDetailPage extends StatefulWidget {
   final DailyProductionRefineryEntity item;
+  final DataFormNoEntity dataForm;
   final bool isDisplayed;
 
   const DailyProductionRefineryDetailPage({
     super.key,
     required this.item,
     this.isDisplayed = true,
+    required this.dataForm,
   });
 
   @override
@@ -159,17 +157,20 @@ class _DailyProductionRefineryDetailPageState
         if (_currentReport.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              // TODO: 3. Navigate to your edit page
-              // final result = await Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder: (context) => DailyProductionRefineryEditPage(report: _currentReport),
-              //   ),
-              // );
-              // if (result != null && result is DailyProductionRefineryEntity) {
-              //   setState(() {
-              //     _currentReport = result;
-              //   });
-              // }
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => RefDailyProductionEditPage(
+                        entity: _currentReport,
+                        dataForm: widget.dataForm,
+                      ),
+                ),
+              );
+              if (result != null && result is DailyProductionRefineryEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
             },
             icon: const Icon(Icons.edit),
           ),

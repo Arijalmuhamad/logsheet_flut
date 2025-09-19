@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class FraSectionStearinPmfHstrearin extends StatefulWidget {
+class FraSectionStearinPmfHstrearin extends StatelessWidget {
   final int? selectedHourAwal;
   final int? selectedHourAkhir;
   final VoidCallback onHourTapAwal;
@@ -15,12 +17,15 @@ class FraSectionStearinPmfHstrearin extends StatefulWidget {
   final TextEditingController flowmeterAkhirController;
   final TextEditingController flowmeterTotalController;
   final TextEditingController noController;
-  final List<TankEntity> dummyTanks;
-  final String? selectedTank;
+  final List<TankEntity> tanksList;
+  final List<String> oilList;
+  String? selectedTank;
+  String? selectedOil;
   final Function(String?) onTankChanged;
-  const FraSectionStearinPmfHstrearin({
+  final Function(String?) onOilFgChanged;
+  FraSectionStearinPmfHstrearin({
     super.key,
-    required this.dummyTanks,
+    required this.tanksList,
     required this.selectedTank,
     required this.onTankChanged,
     required this.selectedHourAwal,
@@ -31,15 +36,11 @@ class FraSectionStearinPmfHstrearin extends StatefulWidget {
     required this.flowmeterAkhirController,
     required this.flowmeterTotalController,
     required this.noController,
+    required this.oilList,
+    required this.selectedOil,
+    required this.onOilFgChanged,
   });
 
-  @override
-  State<FraSectionStearinPmfHstrearin> createState() =>
-      _FraSectionStearinPmfHstrearinState();
-}
-
-class _FraSectionStearinPmfHstrearinState
-    extends State<FraSectionStearinPmfHstrearin> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -52,10 +53,16 @@ class _FraSectionStearinPmfHstrearinState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'STEARIN/PMF/HARD STEARIN'),
-
+            CustomDropdown.fromStringItems(
+              hint: 'Pilih Oil Type',
+              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
+              stringItems: oilList,
+              value: selectedOil,
+              onChanged: onOilFgChanged,
+            ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.noController,
+              controller: noController,
               label: 'No',
               icon: Icons.numbers,
               isNumeric: true,
@@ -122,7 +129,7 @@ class _FraSectionStearinPmfHstrearinState
                           child: Text("${tank.code} | ${tank.name}"),
                         );
                       }).toList(),
-                  onChanged: widget.onTankChanged,
+                  onChanged: onTankChanged,
                 );
               },
             ),
@@ -130,12 +137,12 @@ class _FraSectionStearinPmfHstrearinState
             const Text("Start", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAwal,
-              onTap: widget.onHourTapAwal,
+              selectedHour: selectedHourAwal,
+              onTap: onHourTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowmeterAwalController,
+              controller: flowmeterAwalController,
               label: 'Flowmeter',
               icon: Icons.speed,
               isNumeric: true,
@@ -144,14 +151,23 @@ class _FraSectionStearinPmfHstrearinState
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAkhir,
-              onTap: widget.onHourTapAkhir,
+              selectedHour: selectedHourAkhir,
+              onTap: onHourTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowmeterAkhirController,
+              controller: flowmeterAkhirController,
               label: 'Flowmeter',
               icon: Icons.speed,
+              isNumeric: true,
+            ),
+            const SizedBox(height: 12),
+            const Text("Total", style: _sectionTextStyle),
+            const SizedBox(height: 10),
+            CustomTextField(
+              controller: flowmeterTotalController,
+              label: 'Total',
+              icon: Icons.functions,
               isNumeric: true,
             ),
           ],

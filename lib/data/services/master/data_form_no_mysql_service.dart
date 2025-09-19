@@ -7,7 +7,7 @@ class DataFormNoMySQLService {
   Future<List<Map<String, dynamic>>> getAllDataFormNo() async {
     MySQLConnection? connection;
     try {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for business unit registration.');
@@ -21,7 +21,7 @@ class DataFormNoMySQLService {
       log('Error fetching all data forms: $e');
       return [];
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
     }
   }
 }

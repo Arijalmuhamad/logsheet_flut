@@ -6,14 +6,14 @@ import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class FraSectionRbdpoRolRps extends StatefulWidget {
+class FraSectionRbdpoRolRps extends StatelessWidget {
   final int? selectedHourAwal;
   final int? selectedHourAkhir;
   final VoidCallback onHourTapAwal;
   final VoidCallback onHourTapAkhir;
-  final TextEditingController flowMaterAwalController;
-  final TextEditingController flowMaterAkhirController;
-  final TextEditingController flowMaterTotalController;
+  final TextEditingController flowmeterAwalController;
+  final TextEditingController flowmeterAkhirController;
+  final TextEditingController flowmeterTotalController;
   final TextEditingController noController;
   final TextEditingController crController;
   final List<TankEntity> dummyTanks;
@@ -28,18 +28,13 @@ class FraSectionRbdpoRolRps extends StatefulWidget {
     required this.selectedHourAkhir,
     required this.onHourTapAwal,
     required this.onHourTapAkhir,
-    required this.flowMaterAwalController,
-    required this.flowMaterAkhirController,
-    required this.flowMaterTotalController,
+    required this.flowmeterAwalController,
+    required this.flowmeterAkhirController,
+    required this.flowmeterTotalController,
     required this.noController,
     required this.crController,
   });
 
-  @override
-  State<FraSectionRbdpoRolRps> createState() => _FraSectionRbdpoRolRpsState();
-}
-
-class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -55,13 +50,13 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
 
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.noController,
+              controller: noController,
               label: 'No',
               icon: Icons.numbers,
               isNumeric: true,
             ),
             CustomTextField(
-              controller: widget.crController,
+              controller: crController,
               label: 'CR',
               icon: Icons.numbers_rounded,
               isNumeric: true,
@@ -128,20 +123,20 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
                           child: Text("${tank.code} | ${tank.name}"),
                         );
                       }).toList(),
-                  onChanged: widget.onTankChanged,
+                  onChanged: onTankChanged,
                 );
               },
             ),
             const SizedBox(height: 12),
-            const Text("Start", style: _sectionTextStyle),
+            const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAwal,
-              onTap: widget.onHourTapAwal,
+              selectedHour: selectedHourAwal,
+              onTap: onHourTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowMaterAwalController,
+              controller: flowmeterAwalController,
               label: 'Flowmeter',
               icon: Icons.speed,
               isNumeric: true,
@@ -150,14 +145,23 @@ class _FraSectionRbdpoRolRpsState extends State<FraSectionRbdpoRolRps> {
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAkhir,
-              onTap: widget.onHourTapAkhir,
+              selectedHour: selectedHourAkhir,
+              onTap: onHourTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowMaterAkhirController,
+              controller: flowmeterAkhirController,
               label: 'Flowmeter',
               icon: Icons.speed,
+              isNumeric: true,
+            ),
+            const SizedBox(height: 12),
+            const Text("Total", style: _sectionTextStyle),
+            const SizedBox(height: 10),
+            CustomTextField(
+              controller: flowmeterTotalController,
+              label: 'Total',
+              icon: Icons.functions,
               isNumeric: true,
             ),
           ],

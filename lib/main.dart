@@ -26,6 +26,7 @@ import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysq
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/auth_wrapper.dart';
+import 'package:logsheet_app/features/auth/login_page.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
@@ -272,12 +273,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Logsheet Automation',
       theme: AppTheme.lightTheme,
-      // home: const LoginPage(),
+      home: const LoginPage(),
       // home: const MaintenanceLampsGlassPage(userName: "ADMIN"),
       // home: ApprovalListScreen(),
       // home: AdminHomePage(userEntity: dummyEntity, userName: "ADMIN"),
       // home: UserHomePage(userEntity: dummyEntity),
-      home: AuthWrapper(),
+      // home: AuthWrapper(),
     );
   }
 }

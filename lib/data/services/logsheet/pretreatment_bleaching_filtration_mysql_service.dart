@@ -11,7 +11,7 @@ class PretreatmentBleachingFiltrationMySQLService {
   ) async {
     MySQLConnection? connection;
     try {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
@@ -56,7 +56,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error Closing Connection: $e");
@@ -105,7 +105,7 @@ class PretreatmentBleachingFiltrationMySQLService {
           params["plantCode"] = plantCode;
           break;
 
-        case 'OPR':
+        case 'OPR' || 'OPR_PROD':
           // Query untuk Operator: Dapat melihat semua logsheet di plant-nya.
           baseQuery = """
           SELECT
@@ -117,7 +117,7 @@ class PretreatmentBleachingFiltrationMySQLService {
           params["plantCode"] = plantCode;
           break;
 
-        case 'MGR':
+        case 'MGR' || 'MGR_PROD':
           // Query untuk Manager: Hanya bisa melihat logsheet yang statusnya sudah 'Approved' oleh Shift Leader.
           baseQuery = """
           SELECT
@@ -180,13 +180,14 @@ class PretreatmentBleachingFiltrationMySQLService {
   }
 
   Future<String?> getLatestTicketId(String plantCode) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all reports.');
         return null;
       }
-      final result = await connResult.connection!.execute(
+      final result = await connection!.execute(
         // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
         // {"plant": plantCode},
         "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'PBM'",
@@ -208,7 +209,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return null;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -239,7 +240,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -252,7 +253,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     MySQLConnection? connection;
 
     try {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
@@ -297,7 +298,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error Closing Connection: $e");
@@ -313,6 +314,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     final String? remark,
     final String id,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -321,6 +323,7 @@ class PretreatmentBleachingFiltrationMySQLService {
         );
         return false;
       }
+      connection = connResult.connection;
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       String sql;
       Map<String, dynamic> params;
@@ -346,7 +349,7 @@ class PretreatmentBleachingFiltrationMySQLService {
           "id": id,
         };
       }
-      final result = await connResult.connection!.execute(sql, params);
+      final result = await connection!.execute(sql, params);
       log("Query Sent: $sql");
       log("Affected Rows: ${result.affectedRows}");
       return result.affectedRows > BigInt.from(0);
@@ -355,7 +358,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -386,7 +389,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -418,7 +421,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error closing connection: $e");
@@ -448,13 +451,13 @@ class PretreatmentBleachingFiltrationMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error Closing Connection: $e");
       } finally {
         try {
-          await closeMySQLConnection();
+          await closeMySQLConnection(connection);
         } catch (e) {
           log("$e");
         }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class SectionRbdpoRrbdpoRps extends StatefulWidget {
+class SectionRbdpoRrbdpoRps extends StatelessWidget {
   final int? selectedHourAwal;
   final int? selectedHourAkhir;
   final VoidCallback onHourTapAwal;
@@ -14,13 +16,16 @@ class SectionRbdpoRrbdpoRps extends StatefulWidget {
   final TextEditingController flowRateAwalController;
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
-  List<TankEntity>? dummmyTanks;
+  final List<TankEntity>? tankList;
+  final List<String> oilList;
+  String? selectedOil;
   String? selectedTank;
   final Function(String?) onTankChanged;
+  final Function(String?) onOilFgChanged;
 
   SectionRbdpoRrbdpoRps({
     super.key,
-    required this.dummmyTanks,
+    required this.tankList,
     required this.selectedTank,
     required this.onTankChanged,
     required this.flowRateAwalController,
@@ -30,13 +35,11 @@ class SectionRbdpoRrbdpoRps extends StatefulWidget {
     required this.selectedHourAkhir,
     required this.onHourTapAwal,
     required this.onHourTapAkhir,
+    required this.oilList,
+    required this.selectedOil,
+    required this.onOilFgChanged,
   });
 
-  @override
-  State<SectionRbdpoRrbdpoRps> createState() => _SectionRbdpoRrbdpoRpsState();
-}
-
-class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -49,16 +52,23 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'RBDPO/RRBDPO/RPS'),
+            CustomDropdown.fromStringItems(
+              hint: 'Pilih Oil Type',
+              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
+              stringItems: oilList,
+              value: selectedOil,
+              onChanged: onOilFgChanged,
+            ),
             const SizedBox(height: 12),
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAwal,
-              onTap: widget.onHourTapAwal,
+              selectedHour: selectedHourAwal,
+              onTap: onHourTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowRateAwalController,
+              controller: flowRateAwalController,
               label: 'Flow Rate',
               icon: Icons.speed,
               isNumeric: true,
@@ -67,21 +77,21 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
             CustomHourField(
-              selectedHour: widget.selectedHourAkhir,
-              onTap: widget.onHourTapAkhir,
+              selectedHour: selectedHourAkhir,
+              onTap: onHourTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowRateAkhirController,
+              controller: flowRateAkhirController,
               label: 'Flow Rate',
               icon: Icons.speed,
               isNumeric: true,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: widget.flowRateTotalController,
+              controller: flowRateTotalController,
               label: 'Total Flow Rate',
-              icon: Icons.abc,
+              icon: Icons.functions,
               isNumeric: true,
             ),
             const SizedBox(height: 12),
@@ -147,7 +157,7 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                           child: Text("${tank.code} | ${tank.name}"),
                         );
                       }).toList(),
-                  onChanged: widget.onTankChanged,
+                  onChanged: onTankChanged,
                 );
               },
             ),

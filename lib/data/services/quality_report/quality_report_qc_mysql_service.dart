@@ -11,7 +11,7 @@ class QualityReportQCMySQLService {
     MySQLConnection? connection;
     try {
       var connResult = await getMySQLConnection();
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log("closed? ${connResult.connection?.connected}");
       connResult = await getMySQLConnection();
 
@@ -91,7 +91,7 @@ class QualityReportQCMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -201,7 +201,7 @@ class QualityReportQCMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -233,14 +233,14 @@ class QualityReportQCMySQLService {
 
         return latestId;
       }
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       return null;
     } catch (e) {
       log('Error fetching latest ticket id: $e');
       return null;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -333,7 +333,7 @@ class QualityReportQCMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log('$e');
       }
@@ -362,7 +362,7 @@ class QualityReportQCMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -457,7 +457,7 @@ class QualityReportQCMySQLService {
     } catch (e) {
       return [];
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
     }
   }
 
@@ -498,7 +498,7 @@ class QualityReportQCMySQLService {
       log('Error fetching reports ready for manager approval: $e');
       return [];
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
     }
   }
 
@@ -532,7 +532,7 @@ class QualityReportQCMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error closing connection: $e");

@@ -10,7 +10,7 @@ class QualityReportProductionMySQLService {
     MySQLConnection? connection;
     try {
       var connResult = await getMySQLConnection();
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log("closed? ${connResult.connection?.connected}");
       connResult = await getMySQLConnection();
 
@@ -88,7 +88,7 @@ class QualityReportProductionMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -192,7 +192,7 @@ class QualityReportProductionMySQLService {
       log(
         'Fetched ${result.rows.length} reports for user $username with role $role.',
       );
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('Error fetching all reports: $e');
@@ -201,13 +201,15 @@ class QualityReportProductionMySQLService {
   }
 
   Future<String?> getLatestTicketId(String plantCode) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get latest ticket id.');
         return null;
       }
-      final result = await connResult.connection!.execute(
+      connection = connResult.connection;
+      final result = await connection!.execute(
         // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
         // {"plant": plantCode},
         "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'QRRM'",
@@ -222,7 +224,7 @@ class QualityReportProductionMySQLService {
 
         return latestId;
       }
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       return null;
     } catch (e) {
       log('Error fetching latest ticket id: $e');
@@ -231,22 +233,25 @@ class QualityReportProductionMySQLService {
   }
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for updating autonumber.');
         return false;
       }
+      connection = connResult.connection;
 
       final sql =
           "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'QRRM'";
       final params = {"autonumber": newAutoNumber, "plantid": plantCode};
 
-      final result = await connResult.connection!.execute(sql, params);
+      final result = await connection!.execute(sql, params);
       log(
         'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
       );
-      connResult.connection?.close();
+
+      await closeMySQLConnection(connection);
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating autonumber: $e');
@@ -315,7 +320,7 @@ class QualityReportProductionMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log('$e');
       }
@@ -344,7 +349,7 @@ class QualityReportProductionMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -439,7 +444,7 @@ class QualityReportProductionMySQLService {
     } catch (e) {
       return [];
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
     }
   }
 
@@ -480,7 +485,7 @@ class QualityReportProductionMySQLService {
       log('Error fetching reports ready for manager approval: $e');
       return [];
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
     }
   }
 
@@ -514,7 +519,7 @@ class QualityReportProductionMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log("Error closing connection: $e");

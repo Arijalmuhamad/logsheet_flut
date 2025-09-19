@@ -148,7 +148,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
             CustomTextField(
               controller: widget.flowRateTotalController,
               label: 'Total Flow Rate',
-              icon: Icons.abc,
+              icon: Icons.functions,
               isNumeric: true,
             ),
           ],

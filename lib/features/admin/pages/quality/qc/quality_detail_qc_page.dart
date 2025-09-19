@@ -297,6 +297,14 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
     UserEntity? user,
     BuildContext context,
   ) {
+    String _isNull(double? value) {
+      if (value == null) {
+        return '-';
+      } else {
+        return value.toString();
+      }
+    }
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.only(
@@ -336,41 +344,38 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
               _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),
               _buildDataRow('Work Center', _currentReport.workCenter ?? '-'),
               _buildDataRow('Tank Source', _currentReport.rmTankSource ?? '-'),
-              _buildDataRow("Flow Rate", _currentReport.rmFlowRate.toString()),
-              _buildDataRow('Temp (°C)', _currentReport.rmTemp.toString()),
-              _buildDataRow('FFA (%)', _currentReport.rmFFA.toString()),
-              _buildDataRow('IV', _currentReport.rmIV.toString()),
-              _buildDataRow('PV', _currentReport.rmPV.toString()),
-              _buildDataRow('AV', _currentReport.rmAV.toString()),
-              _buildDataRow('DOBI', _currentReport.rmDobi.toString()),
-              _buildDataRow('M&I (%)', _currentReport.rmMNI.toString()),
-              _buildDataRow('Totox', _currentReport.rmToTox.toString()),
-              _buildDataRow('Color R', _currentReport.rmColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.rmColorY.toString()),
-              _buildDataRow('Color B', _currentReport.rmColorB.toString()),
+              _buildDataRow("Flow Rate", _isNull(_currentReport.rmFlowRate)),
+              _buildDataRow('Temp (°C)', _isNull(_currentReport.rmTemp)),
+              _buildDataRow('FFA (%)', _isNull(_currentReport.rmFFA)),
+              _buildDataRow('IV', _isNull(_currentReport.rmIV)),
+              _buildDataRow('PV', _isNull(_currentReport.rmPV)),
+              _buildDataRow('AV', _isNull(_currentReport.rmAV)),
+              _buildDataRow('DOBI', _isNull(_currentReport.rmDobi)),
+              _buildDataRow('M&I (%)', _isNull(_currentReport.rmMNI)),
+              _buildDataRow('Totox', _isNull(_currentReport.rmToTox)),
+              _buildDataRow('Color R', _isNull(_currentReport.rmColorR)),
+              _buildDataRow('Color Y', _isNull(_currentReport.rmColorY)),
+              _buildDataRow('Color B', _isNull(_currentReport.rmColorB)),
             ]),
 
             _buildSection('Bleach Oil', [
-              _buildDataRow('Color R', _currentReport.boColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.boColorY.toString()),
-              _buildDataRow('Color B', _currentReport.boColorB.toString()),
-              _buildDataRow(
-                'Break Test',
-                _currentReport.boBreakTest.toString(),
-              ),
+              _buildDataRow('Color R', _isNull(_currentReport.boColorR)),
+              _buildDataRow('Color Y', _isNull(_currentReport.boColorY)),
+              _buildDataRow('Color B', _isNull(_currentReport.boColorB)),
+              _buildDataRow('Break Test', _currentReport.boBreakTest ?? '-'),
             ]),
 
             _buildSection(finishedGoodsTitle, [
-              _buildDataRow('FFA (%)', _currentReport.fgFFA.toString()),
-              _buildDataRow('IV', _currentReport.fgIV.toString()),
-              _buildDataRow('PV', _currentReport.fgPV.toString()),
-              _buildDataRow('Moisture', _currentReport.fgMoisture.toString()),
+              _buildDataRow('FFA (%)', _isNull(_currentReport.fgFFA)),
+              _buildDataRow('IV', _isNull(_currentReport.fgIV)),
+              _buildDataRow('PV', _isNull(_currentReport.fgPV)),
+              _buildDataRow('Moisture', _isNull(_currentReport.fgMoisture)),
               _buildDataRow(
                 'Impurities',
                 _currentReport.fgImpurities.toString(),
               ),
-              _buildDataRow('Color R', _currentReport.fgColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.fgColorY.toString()),
+              _buildDataRow('Color R', _isNull(_currentReport.fgColorR)),
+              _buildDataRow('Color Y', _isNull(_currentReport.fgColorY)),
               _buildDataRow(
                 'Color B',
                 _currentReport.fgColorB?.toStringAsFixed(0) ?? '-',
@@ -378,19 +383,19 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
               _buildDataRow('Tank Destination', _currentReport.fgTankTo ?? '-'),
               _buildDataRow(
                 'Tank Others Remarks',
-                _currentReport.fgTankToOthersRemarks.toString(),
+                _currentReport.fgTankToOthersRemarks ?? '-',
               ),
             ]),
 
             _buildSection('By-Product', [
-              _buildDataRow('FFA (%)', _currentReport.bpFFA.toString()),
-              _buildDataRow('M&I (%)', _currentReport.bpMNI.toString()),
-              _buildDataRow('To Tank', _currentReport.bpToTank.toString()),
+              _buildDataRow('FFA (%)', _isNull(_currentReport.bpFFA)),
+              _buildDataRow('M&I (%)', _isNull(_currentReport.bpMNI)),
+              _buildDataRow('To Tank', _currentReport.bpToTank ?? '-'),
             ]),
 
             _buildSection('Waste', [
-              _buildDataRow('OC', _currentReport.wSBEQC.toString()),
-              _buildDataRow('M&I', _currentReport.wasteMNI.toString()),
+              _buildDataRow('OC', _isNull(_currentReport.wSBEQC)),
+              _buildDataRow('M&I', _isNull(_currentReport.wasteMNI)),
             ]),
 
             _buildSection('Metadata & Remarks', [

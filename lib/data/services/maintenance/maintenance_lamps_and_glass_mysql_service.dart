@@ -23,7 +23,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -54,7 +54,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -105,7 +105,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Connection closed. Still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -145,7 +145,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return null;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -187,7 +187,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -220,7 +220,7 @@ class MaintenanceLampsAndGlassMySQLService {
       return false;
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
         log("Is still connected: ${connection?.connected}");
       } catch (e) {
         log('Error closing connection: $e');
@@ -262,7 +262,7 @@ class MaintenanceLampsAndGlassMySQLService {
       log('Error submitting to control: $e');
       return false;
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log(connection!.connected ? "Connected" : "Disconnected");
     }
   }
@@ -301,7 +301,7 @@ class MaintenanceLampsAndGlassMySQLService {
       log('Error submitting to control detail: $e');
       return false;
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log(connection!.connected ? "Connected" : "Disconnected");
     }
   }
@@ -328,7 +328,7 @@ class MaintenanceLampsAndGlassMySQLService {
       log("Error Checking if data exists: $e");
       return false;
     } finally {
-      await closeMySQLConnection();
+      await closeMySQLConnection(connection);
       log(connection!.connected ? "Connected" : "Disconnected");
     }
   }

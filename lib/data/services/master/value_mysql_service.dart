@@ -1,9 +1,11 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:mysql_client/mysql_client.dart';
 
 class ValueMySQLService {
   Future<List<Map<String, dynamic>>> getAllOilType() async {
+    MySQLConnection? connection;
     try {
       // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
@@ -11,7 +13,7 @@ class ValueMySQLService {
         log('Failed to get MySQL connection for get all oil type.');
         return [];
       }
-      final result = await connResult.connection!.execute(
+      final result = await connection!.execute(
         "SELECT * FROM m_mastervalue WHERE`group` = :oil_type",
         {"oil_type": "OIL_TYPE"},
       );
@@ -22,7 +24,7 @@ class ValueMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -30,16 +32,15 @@ class ValueMySQLService {
   }
 
   Future<List<Map<String, dynamic>>> getAllToTankGroup() async {
+    MySQLConnection? connection;
     try {
-      // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for get all tank group.');
         return [];
       }
-      final result = await connResult.connection!.execute(
-        "SELECT * FROM m_tank",
-      );
+      connection = connResult.connection;
+      final result = await connection!.execute("SELECT * FROM m_tank");
       log('Fetched ${result.rows.length} tank group(s) from master value.');
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
@@ -47,7 +48,7 @@ class ValueMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -55,6 +56,7 @@ class ValueMySQLService {
   }
 
   Future<List<Map<String, dynamic>>> getAllTankSource() async {
+    MySQLConnection? connection;
     try {
       // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
@@ -62,7 +64,7 @@ class ValueMySQLService {
         log('Failed to get MySQL connection for get all tank source.');
         return [];
       }
-      final result = await connResult.connection!.execute(
+      final result = await connection!.execute(
         "SELECT * FROM m_mastervalue WHERE`group` =:source_tank",
         {"source_tank": "SOURCE_TANK"},
       );
@@ -73,7 +75,7 @@ class ValueMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }
@@ -81,6 +83,7 @@ class ValueMySQLService {
   }
 
   Future<List<Map<String, dynamic>>> getAllWorkCenters() async {
+    MySQLConnection? connection;
     try {
       // await closeMySQLConnection();
       final connResult = await getMySQLConnection();
@@ -88,7 +91,8 @@ class ValueMySQLService {
         log('Failed to get MySQL connection for get all Work Centers.');
         return [];
       }
-      final result = await connResult.connection!.execute(
+      connection = connResult.connection;
+      final result = await connection!.execute(
         "SELECT * FROM m_mastervalue WHERE`group` =:refinery",
         {"refinery": "REFINERY"},
       );
@@ -101,7 +105,7 @@ class ValueMySQLService {
       return [];
     } finally {
       try {
-        await closeMySQLConnection();
+        await closeMySQLConnection(connection);
       } catch (e) {
         log("$e");
       }

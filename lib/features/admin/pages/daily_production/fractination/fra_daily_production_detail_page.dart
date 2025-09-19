@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_edit_page.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-// TODO: 1. Import your Production Provider for Fractionation
-// import 'package:logsheet_app/providers/transaction/daily_production_fractionation_provider.dart';
-
-// TODO: 2. Import the corresponding Edit Page
-// import 'package:logsheet_app/features/admin/pages/production/fractionation/daily_production_fractionation_edit_page.dart';
-
 class DailyProductionFractionationDetailPage extends StatefulWidget {
   final DailyProductionFractionationEntity item;
+  final DataFormNoEntity formData;
   final bool isDisplayed;
 
   const DailyProductionFractionationDetailPage({
     super.key,
     required this.item,
     this.isDisplayed = true,
+    required this.formData,
   });
 
   @override
@@ -159,17 +157,22 @@ class _DailyProductionFractionationDetailPageState
         if (_currentReport.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              // TODO: 3. Navigate to your edit page
-              // final result = await Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder: (context) => DailyProductionFractionationEditPage(report: _currentReport),
-              //   ),
-              // );
-              // if (result != null && result is DailyProductionFractionationEntity) {
-              //   setState(() {
-              //     _currentReport = result;
-              //   });
-              // }
+              // Navigate to your edit page
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => FraDailyProductionEditPage(
+                        dataForm: widget.formData,
+                        entity: _currentReport,
+                      ),
+                ),
+              );
+              if (result != null &&
+                  result is DailyProductionFractionationEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
             },
             icon: const Icon(Icons.edit),
           ),

@@ -102,23 +102,25 @@ class UserProvider with ChangeNotifier {
       final result = await _repository.login(username, password);
       if (result.errorMessage != null) {
         _setErrorMessage(result.errorMessage);
-        _setLoading(false);
+        _currentUser = null;
         return null;
       } else if (result.user == null) {
         _setErrorMessage('Invalid username or password.');
-        _setLoading(false);
+        _currentUser = null;
         return null;
       } else {
         _setErrorMessage(null);
-        _setLoading(false);
         await Future.delayed(const Duration(seconds: 1));
         _currentUser = result.user;
         return result.user;
       }
     } catch (e) {
       _setErrorMessage('Failed to fetch users: $e');
-      _setLoading(false);
+      _currentUser = null;
       return null;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
     }
   }
 

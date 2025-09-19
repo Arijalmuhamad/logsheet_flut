@@ -5,14 +5,13 @@ import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/admin/admin_home_page.dart';
+import 'package:logsheet_app/features/user/user_home_page.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:mysql_client/mysql_client.dart';
 import 'package:provider/provider.dart';
 
-import '../admin/admin_home_page.dart';
-import '../user/user_home_page.dart';
 import '../../providers/master/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,154 +28,128 @@ class _LoginPageState extends State<LoginPage> {
   String? _errorMessage;
   bool _isPasswordVisible = false;
 
-  MySQLConnection? _connection;
-
   String? selectedPlant;
   String? selectedBusinessUnit;
 
   bool _isLoggingIn = false;
+  bool _isInitialDataLoading = true;
 
   @override
   void initState() {
     super.initState();
 
+    _isInitialDataLoading = true;
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await context.read<BusinessUnitProvider>().fetchAllBusinessUnits();
-      if (!mounted) return;
-      await context.read<DataFormNoProvider>().fetchAll();
+      final businessUnitProvider = context.read<BusinessUnitProvider>();
+
+      await businessUnitProvider.fetchAllBusinessUnits();
+      if (mounted) {
+        setState(() {
+          _isInitialDataLoading = false;
+        });
+      }
     });
   }
 
   Future<void> _handleLogin() async {
     if (_isLoggingIn) return;
-
     setState(() {
       _isLoggingIn = true;
       _errorMessage = null;
     });
 
-    log(selectedBusinessUnit ?? "no biz unit selected");
-    log(selectedPlant ?? "no plant unit selected");
-
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (username.isEmpty || password.isEmpty) {
+    // Simplified validation
+    if (username.isEmpty ||
+        password.isEmpty ||
+        selectedBusinessUnit == null ||
+        selectedPlant == null) {
       setState(() {
-        _errorMessage = 'Please enter username and password.';
-        _isLoggingIn = false; // Re-enable the login button
+        _errorMessage = 'Please fill in all fields.';
+        _isLoggingIn = false;
       });
       return;
     }
 
-    if (selectedBusinessUnit == null) {
-      setState(() {
-        _errorMessage = 'Please select a Business Unit.';
-        _isLoggingIn = false; // Re-enable the login button
-      });
-      return; // Stop the login process
-    }
-
-    if (selectedPlant == null) {
-      setState(() {
-        _errorMessage = 'Please select a Plant.';
-        _isLoggingIn = false; // Re-enable the login button
-      });
-      return; // Stop the login process
-    }
-
-    // User Provider
     final userProvider = context.read<UserProvider>();
     final businessUnitProvider = context.read<BusinessUnitProvider>();
     final plantProvider = context.read<PlantProvider>();
 
     try {
-      //login to the mysql database
       final user = await userProvider.loginUser(username, password);
+      log("$user");
 
       if (user != null) {
-        if (user.role == 'ADM') {
-          final selectedBusinessUnitEntity = businessUnitProvider
-              .listBusinessUnits
-              .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
-          businessUnitProvider.setCurrentBusinessUnit(
-            selectedBusinessUnitEntity,
-          );
-          final selectedPlantEntity = plantProvider.plantList.firstWhere(
-            (plant) => plant.code == selectedPlant,
-          );
+        // Find the selected entities
+        final selectedBusinessUnitEntity = businessUnitProvider
+            .listBusinessUnits
+            .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
 
-          log("Selected Plant: $selectedPlant");
-          log("Founded Plant: ${selectedPlantEntity.name}");
+        final selectedPlantEntity = plantProvider.plantList.firstWhere(
+          (plant) => plant.code == selectedPlant,
+        );
+        if (!mounted) return;
+        final dataFormProvider = context.read<DataFormNoProvider>();
 
-          plantProvider.setCurrentPlant(selectedPlantEntity);
+        await dataFormProvider.fetchAll();
 
-          log("login plant in provider: ${plantProvider.currentPlant?.code}");
+        // Set the providers
+        businessUnitProvider.setCurrentBusinessUnit(selectedBusinessUnitEntity);
+        plantProvider.setCurrentPlant(selectedPlantEntity);
 
-          // Save to StorageService
-          await _saveToStorageService(
-            user: user,
-            plant: selectedPlantEntity,
-            bu: selectedBusinessUnitEntity,
-            password: password,
-          );
+        // Save credentials for next time
+        // await _saveToStorageService(
+        //   user: user,
+        //   plant: selectedPlantEntity,
+        //   bu: selectedBusinessUnitEntity,
+        //   password: password,
+        // );
 
+        if (user.role == "ADM" && !_isInitialDataLoading) {
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder:
-                  (context) =>
-                      AdminHomePage(userEntity: user, userName: user.username),
+                  (context) => AdminHomePage(
+                    userEntity: userProvider.currentUser!,
+                    userName: userProvider.currentUser!.username,
+                  ),
             ),
           );
         } else {
-          final selectedBusinessUnitEntity = businessUnitProvider
-              .listBusinessUnits
-              .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
-          businessUnitProvider.setCurrentBusinessUnit(
-            selectedBusinessUnitEntity,
-          );
-          final selectedPlantEntity = plantProvider.plantList.firstWhere(
-            (plant) => plant.code == selectedPlant,
-          );
-
-          log("Selected Plant: $selectedPlant");
-          log("Founded Plant: ${selectedPlantEntity.name}");
-
-          plantProvider.setCurrentPlant(selectedPlantEntity);
-
-          // Save to StorageService
-          await _saveToStorageService(
-            user: user,
-            plant: selectedPlantEntity,
-            bu: selectedBusinessUnitEntity,
-            password: password,
-          );
-
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => UserHomePage(userEntity: user),
-            ),
-          );
+          if (!_isInitialDataLoading) {
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        UserHomePage(userEntity: userProvider.currentUser!),
+              ),
+            );
+          }
         }
       } else {
         setState(() {
           _errorMessage =
-              userProvider.errorMessage ?? 'Login gagal. Silakan coba lagi.';
+              userProvider.errorMessage ?? 'Login failed. Please try again.';
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Terjadi kesalahan tidak terduga: $e';
-      });
       log('Error during login: $e');
-    } finally {
       setState(() {
-        _isLoggingIn = false;
+        _errorMessage = 'An unexpected error occurred.';
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+      }
     }
   }
 
@@ -184,7 +157,6 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
-    _connection?.close();
     super.dispose();
   }
 
@@ -552,14 +524,14 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "Version 1.0.1",
+                            "Version 1.0.4",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
                             ),
                           ),
                           Text(
-                            "Build 2025-09-16",
+                            "Build 2025-09-19",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],

@@ -35,6 +35,10 @@ class DataFormNoProvider extends ChangeNotifier {
     try {
       _dataFormNoList = await _repository.getAllDataFormNo();
       _setLoading(false);
+      for (DataFormNoEntity data in _dataFormNoList) {
+        log("${data.treeMenu}");
+        log("${data.code}");
+      }
     } catch (e) {
       _setErrorMessage("Error: $e");
       log("Error in Data Form No Provider: $e");
