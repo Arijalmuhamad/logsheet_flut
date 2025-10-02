@@ -219,7 +219,7 @@ class QualityReportQCProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(report);
+      final result = await _repository.updateReportTicket(report, role);
       log(result.toString());
       fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -256,8 +256,13 @@ class QualityReportQCProvider with ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllTickets(null, null, username, role, plantCode);
-      return result;
+
+      if (result) {
+        await fetchAllTickets(null, null, username, role, plantCode);
+        return result;
+      } else {
+        return false;
+      }
     } catch (e) {
       _setErrorMessage('Failed to send approval or rejection report: $e');
       _setLoading(false);

@@ -32,19 +32,26 @@ class _LoginPageState extends State<LoginPage> {
   String? selectedBusinessUnit;
 
   bool _isLoggingIn = false;
+
   bool _isInitialDataLoading = true;
 
   @override
   void initState() {
     super.initState();
-
-    _isInitialDataLoading = true;
+    setState(() {
+      _isInitialDataLoading = true;
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final businessUnitProvider = context.read<BusinessUnitProvider>();
+      try {
+        final businessUnitProvider = context.read<BusinessUnitProvider>();
 
-      await businessUnitProvider.fetchAllBusinessUnits();
-      if (mounted) {
+        await businessUnitProvider.fetchAllBusinessUnits();
+      } catch (e) {
+        setState(() {
+          _errorMessage = "Failed to load initial data.";
+        });
+      } finally {
         setState(() {
           _isInitialDataLoading = false;
         });
@@ -54,6 +61,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _handleLogin() async {
     if (_isLoggingIn) return;
+
     setState(() {
       _isLoggingIn = true;
       _errorMessage = null;
@@ -77,6 +85,7 @@ class _LoginPageState extends State<LoginPage> {
     final userProvider = context.read<UserProvider>();
     final businessUnitProvider = context.read<BusinessUnitProvider>();
     final plantProvider = context.read<PlantProvider>();
+    final dataForm = context.read<DataFormNoProvider>();
 
     try {
       final user = await userProvider.loginUser(username, password);
@@ -92,14 +101,14 @@ class _LoginPageState extends State<LoginPage> {
           (plant) => plant.code == selectedPlant,
         );
         if (!mounted) return;
-        final dataFormProvider = context.read<DataFormNoProvider>();
-
-        await dataFormProvider.fetchAll();
 
         // Set the providers
         businessUnitProvider.setCurrentBusinessUnit(selectedBusinessUnitEntity);
         plantProvider.setCurrentPlant(selectedPlantEntity);
 
+        await dataForm.fetchAll();
+
+        if (!mounted) return;
         // Save credentials for next time
         // await _saveToStorageService(
         //   user: user,
@@ -107,8 +116,7 @@ class _LoginPageState extends State<LoginPage> {
         //   bu: selectedBusinessUnitEntity,
         //   password: password,
         // );
-
-        if (user.role == "ADM" && !_isInitialDataLoading) {
+        if (user.role == "ADM") {
           if (!mounted) return;
           Navigator.pushReplacement(
             context,
@@ -142,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       log('Error during login: $e');
       setState(() {
-        _errorMessage = 'An unexpected error occurred.';
+        _errorMessage = 'Error: $e';
       });
     } finally {
       if (mounted) {
@@ -494,7 +502,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _handleLogin,
+                        onPressed: _isLoggingIn ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
@@ -524,14 +532,14 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "Version 1.0.4",
+                            "Version 1.0.12",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
                             ),
                           ),
                           Text(
-                            "Build 2025-09-19",
+                            "Build 2025-09-30",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],

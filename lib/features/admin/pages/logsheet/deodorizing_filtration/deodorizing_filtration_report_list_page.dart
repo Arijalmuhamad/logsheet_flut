@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
@@ -363,6 +364,27 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                             fontSize: 14,
                                             color: Colors.black87,
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/icons/oil-refinery-tanks.svg',
+                                          height: 20,
+                                          width: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text("${report.refineryMachine}"),
+                                        const SizedBox(width: 50),
+
+                                        Icon(Icons.oil_barrel_rounded),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          report.oilType == null
+                                              ? "N/A"
+                                              : "${report.oilType}",
                                         ),
                                       ],
                                     ),

@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class SectionRbdpoRrbdpoRps extends StatelessWidget {
-  final int? selectedHourAwal;
-  final int? selectedHourAkhir;
-  final VoidCallback onHourTapAwal;
-  final VoidCallback onHourTapAkhir;
+class SectionRbdpoRrbdpoRps extends StatefulWidget {
+  final TimeOfDay? selectedTimeAwal;
+  final TimeOfDay? selectedTimeAkhir;
+  final VoidCallback onTimeTapAwal;
+  final VoidCallback onTimeTapAkhir;
   final TextEditingController flowRateAwalController;
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
   final List<TankEntity>? tankList;
-  final List<String> oilList;
+  final List<MasterValueEntity> oilList;
   String? selectedOil;
   String? selectedTank;
   final Function(String?) onTankChanged;
@@ -31,14 +32,55 @@ class SectionRbdpoRrbdpoRps extends StatelessWidget {
     required this.flowRateAwalController,
     required this.flowRateAkhirController,
     required this.flowRateTotalController,
-    required this.selectedHourAwal,
-    required this.selectedHourAkhir,
-    required this.onHourTapAwal,
-    required this.onHourTapAkhir,
+    required this.selectedTimeAwal,
+    required this.selectedTimeAkhir,
+    required this.onTimeTapAwal,
+    required this.onTimeTapAkhir,
     required this.oilList,
     required this.selectedOil,
     required this.onOilFgChanged,
   });
+
+  @override
+  State<SectionRbdpoRrbdpoRps> createState() => _SectionRbdpoRrbdpoRpsState();
+}
+
+class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
+  void _calculateTotalFlowRate() {
+    String awalText = widget.flowRateAwalController.text;
+    String akhirText = widget.flowRateAkhirController.text;
+
+    //parse to double
+    double flowRateAwal = double.tryParse(awalText) ?? 0.0;
+    double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+
+    double totalFlowRate = flowRateAkhir - flowRateAwal;
+
+    String newTotal = totalFlowRate.toStringAsFixed(3);
+
+    if (widget.flowRateTotalController.text != newTotal) {
+      setState(() {
+        widget.flowRateTotalController.text = newTotal;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.flowRateAwalController.addListener(_calculateTotalFlowRate);
+    widget.flowRateAkhirController.addListener(_calculateTotalFlowRate);
+
+    _calculateTotalFlowRate();
+  }
+
+  @override
+  void dispose() {
+    widget.flowRateAwalController.removeListener(_calculateTotalFlowRate);
+    widget.flowRateAkhirController.removeListener(_calculateTotalFlowRate);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,23 +94,57 @@ class SectionRbdpoRrbdpoRps extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'RBDPO/RRBDPO/RPS'),
-            CustomDropdown.fromStringItems(
-              hint: 'Pilih Oil Type',
-              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-              stringItems: oilList,
-              value: selectedOil,
-              onChanged: onOilFgChanged,
+
+            // CustomDropdown.fromStringItems(
+            //   hint: 'Pilih Oil Type',
+            //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
+            //   stringItems: widget.oilList,
+            //   value: widget.selectedOil,
+            //   onChanged: widget.onOilFgChanged,
+            // ),
+            DropdownButtonFormField<MasterValueEntity>(
+              value:
+                  widget.selectedOil != null &&
+                          widget.oilList.any(
+                            (oil) => oil.code == widget.selectedOil,
+                          )
+                      ? widget.oilList.firstWhere(
+                        (oil) => oil.code == widget.selectedOil,
+                      )
+                      : null,
+              items:
+                  widget.oilList.map((oil) {
+                    return DropdownMenuItem<MasterValueEntity>(
+                      value: oil,
+                      child: Text(" ${oil.name}"),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  widget.onOilFgChanged(value.code); // simpan code-nya saja
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'Pilih Oil Type',
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.category),
+              ),
             ),
             const SizedBox(height: 12),
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: selectedHourAwal,
-              onTap: onHourTapAwal,
+            CustomHourMinuteField(
+              selectedTime: widget.selectedTimeAwal,
+              onTap: widget.onTimeTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: flowRateAwalController,
+              controller: widget.flowRateAwalController,
               label: 'Flow Rate',
               icon: Icons.speed,
               isNumeric: true,
@@ -76,23 +152,31 @@ class SectionRbdpoRrbdpoRps extends StatelessWidget {
             const SizedBox(height: 12),
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: selectedHourAkhir,
-              onTap: onHourTapAkhir,
+            CustomHourMinuteField(
+              selectedTime: widget.selectedTimeAkhir,
+              onTap: widget.onTimeTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(
-              controller: flowRateAkhirController,
+              controller: widget.flowRateAkhirController,
               label: 'Flow Rate',
               icon: Icons.speed,
               isNumeric: true,
             ),
             const SizedBox(height: 12),
-            CustomTextField(
-              controller: flowRateTotalController,
-              label: 'Total Flow Rate',
-              icon: Icons.functions,
-              isNumeric: true,
+            Row(
+              children: [
+                Text(
+                  "Total Flowrate: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  widget.flowRateTotalController.text.isEmpty
+                      ? '0.000'
+                      : widget.flowRateTotalController.text,
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             const Text("To Tangki", style: _sectionTextStyle),
@@ -157,7 +241,8 @@ class SectionRbdpoRrbdpoRps extends StatelessWidget {
                           child: Text("${tank.code} | ${tank.name}"),
                         );
                       }).toList(),
-                  onChanged: onTankChanged,
+                  onChanged: widget.onTankChanged,
+                  decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
             ),

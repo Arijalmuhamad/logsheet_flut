@@ -171,7 +171,7 @@ class _PretreatmentBleachingFiltrationApprovalDetailPageState
 
     // Helper to format dates or return a default string
     String formatDate(DateTime? date) {
-      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : 'N/A';
+      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : '-';
     }
 
     final isApproved = report.checkedStatus == 'Approved';
@@ -246,11 +246,8 @@ class _PretreatmentBleachingFiltrationApprovalDetailPageState
                   _buildDetailRow('Shift', report.shift.toString()),
                   const Divider(),
                   _buildDetailRow('Ticket ID', report.id),
-                  _buildDetailRow(
-                    'Work Center',
-                    report.refineryMachine ?? 'N/A',
-                  ),
-                  _buildDetailRow('Company', report.company ?? 'N/A'),
+                  _buildDetailRow('Work Center', report.refineryMachine ?? '-'),
+                  _buildDetailRow('Company', report.company ?? '-'),
 
                   const Divider(),
 
@@ -263,153 +260,141 @@ class _PretreatmentBleachingFiltrationApprovalDetailPageState
                     'Tanggal Posting',
                     formatDate(report.postingDate),
                   ),
-                  _buildDetailRow('Shift', report.shift?.toString() ?? 'N/A'),
+                  _buildDetailRow('Shift', report.shift?.toString() ?? '-'),
                   _buildDetailRow(
                     'Jam',
                     report.time != null
                         ? DateFormat('HH:mm').format(report.time!)
-                        : 'N/A',
+                        : '-',
                   ),
-                  _buildDetailRow(
-                    'Work Center',
-                    report.refineryMachine ?? 'N/A',
-                  ),
-                  _buildDetailRow('Plant', report.plant ?? 'N/A'),
+                  _buildDetailRow('Work Center', report.refineryMachine ?? '-'),
+                  _buildDetailRow('Plant', report.plant ?? '-'),
                   const SizedBox(height: 16),
 
                   // Section: Pre-Treatment
                   _buildDetailRow(
                     'Fit 001 (CPO) - Tph',
-                    report.ptFit001?.toString() ?? 'N/A',
+                    report.ptFit001?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'E001A Inlet (CPO) - C',
-                    report.ptE001aInlet?.toString() ?? 'N/A',
+                    report.ptE001aInlet?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'F001/2 Str - bar',
-                    report.ptF0012?.toString() ?? 'N/A',
+                    report.ptF0012?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'H3PO4 - % (Dosing)',
-                    report.ptH3po4?.toString() ?? 'N/A',
+                    report.ptH3po4?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'BE - % (Dosing)',
-                    report.ptBe?.toString() ?? 'N/A',
+                    report.ptBe?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
                   // Section: Bleaching
                   _buildDetailRow(
                     'Vacum - mmHg',
-                    report.blVacum?.toString() ?? 'N/A',
+                    report.blVacum?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'T-Inlet - C',
-                    report.blTInlet?.toString() ?? 'N/A',
+                    report.blTInlet?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'T B602 - C',
-                    report.blTB602?.toString() ?? 'N/A',
+                    report.blTB602?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Spurge - Bar',
-                    report.blSpurge?.toString() ?? 'N/A',
+                    report.blSpurge?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
                   // Section: Pump
-                  _buildDetailRow(
-                    'Pump A - Bar',
-                    report.pA?.toString() ?? 'N/A',
-                  ),
-                  _buildDetailRow(
-                    'Pump B - Bar',
-                    report.pB?.toString() ?? 'N/A',
-                  ),
-                  _buildDetailRow(
-                    'Pump C - Bar',
-                    report.pC?.toString() ?? 'N/A',
-                  ),
+                  _buildDetailRow('Pump A - Bar', report.pA?.toString() ?? '-'),
+                  _buildDetailRow('Pump B - Bar', report.pB?.toString() ?? '-'),
+                  _buildDetailRow('Pump C - Bar', report.pC?.toString() ?? '-'),
                   const SizedBox(height: 16),
 
                   // Section: Filtration
                   _buildDetailRow(
                     'Niagara Filter - 601 - Bar',
-                    report.fnF601?.toString() ?? 'N/A',
+                    report.fnF601?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Niagara Filter - 602 - Bar',
-                    report.fnF602?.toString() ?? 'N/A',
+                    report.fnF602?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Niagara Filter - 603 - Bar',
-                    report.fnF603?.toString() ?? 'N/A',
+                    report.fnF603?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Bag Filter - 604A - Bar',
-                    report.fb604a?.toString() ?? 'N/A',
+                    report.fb604a?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Bag Filter - 604B - Bar',
-                    report.fb604b?.toString() ?? 'N/A',
+                    report.fb604b?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Bag Filter - 604C - Bar',
-                    report.fb604c?.toString() ?? 'N/A',
+                    report.fb604c?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Catridge Filter - 605A - Bar',
-                    report.fc605a?.toString() ?? 'N/A',
+                    report.fc605a?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Catridge Filter - 605B - Bar',
-                    report.fc605b?.toString() ?? 'N/A',
+                    report.fc605b?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
                   // Section: Result & Remarks
-                  _buildDetailRow('Clarity', report.clarity ?? 'N/A'),
-                  _buildDetailRow('Remarks', report.remarks ?? 'N/A'),
+                  _buildDetailRow('Clarity', report.clarity ?? '-'),
+                  _buildDetailRow('Remarks', report.remarks ?? '-'),
                   const SizedBox(height: 16),
 
                   // Section: Signatories
                   _buildDetailRow(
                     'Diinput oleh',
-                    '${report.entryBy ?? 'N/A'} pada ${formatDate(report.entryDate)}',
+                    '${report.entryBy ?? '-'} pada ${formatDate(report.entryDate)}',
                   ),
                   _buildDetailRow(
                     'Disiapkan oleh',
-                    '${report.preparedBy ?? 'N/A'} pada ${formatDate(report.preparedDate)}',
+                    '${report.preparedBy ?? '-'} pada ${formatDate(report.preparedDate)}',
                   ),
                   _buildDetailRow(
                     'Status (Prepared)',
-                    report.preparedStatus ?? 'N/A',
+                    report.preparedStatus ?? '-',
                   ),
                   _buildDetailRow(
                     'Remarks (Prepared)',
-                    report.preparedStatusRemarks ?? 'N/A',
+                    report.preparedStatusRemarks ?? '-',
                   ),
                   _buildDetailRow(
                     'Diperiksa oleh',
-                    '${report.checkedBy ?? 'N/A'} pada ${formatDate(report.checkedDate)}',
+                    '${report.checkedBy ?? '-'} pada ${formatDate(report.checkedDate)}',
                   ),
                   _buildDetailRow(
                     'Status (Checked)',
-                    report.checkedStatus ?? 'N/A',
+                    report.checkedStatus ?? '-',
                   ),
                   _buildDetailRow(
                     'Diupdate oleh',
-                    '${report.updatedBy ?? 'N/A'} pada ${formatDate(report.updatedDate)}',
+                    '${report.updatedBy ?? '-'} pada ${formatDate(report.updatedDate)}',
                   ),
 
                   _buildDetailRow(
                     'Remark (Checked)',
-                    report.checkedStatusRemarks ?? 'N/A',
+                    report.checkedStatusRemarks ?? '-',
                   ),
                   const SizedBox(height: 24),
-                  _buildDetailRow('Form No', report.formNo ?? 'N/A'),
+                  _buildDetailRow('Form No', report.formNo ?? '-'),
                   _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
                   _buildDetailRow('Revision No', report.revisionNo.toString()),
                   _buildDetailRow(
@@ -461,107 +446,121 @@ class _PretreatmentBleachingFiltrationApprovalDetailPageState
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              return showModalBottomSheet(
-                context: context,
-                builder:
-                    (context) => Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          TextFormField(
-                            controller: _remarkController,
-                            maxLines: 7,
-                            decoration: InputDecoration(
-                              labelText: "Remark untuk Reject",
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF655F5B),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              hintStyle: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          SizedBox(height: 14),
-                          if (_remarkController.text.trim() == "")
-                            Text(
-                              "Mohon isi remark.",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  height: 55,
-                                  child: ElevatedButton.icon(
-                                    onPressed:
-                                        _remarkController.text.trim() == ""
-                                            ? null
-                                            : () async {
-                                              await _handleAction(
-                                                context,
-                                                report,
-                                                username,
-                                                role,
-                                                'Rejected',
-                                                onStatusChange,
-                                              );
-                                            },
-                                    icon: const Icon(Icons.close),
-                                    label: const Text('Reject'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                    ),
+          child: Consumer<PretreatmentBleachingFiltrationProvider>(
+            builder: (context, provider, child) {
+              return ElevatedButton.icon(
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () async {
+                          return showModalBottomSheet(
+                            context: context,
+                            builder:
+                                (context) => Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      TextFormField(
+                                        controller: _remarkController,
+                                        maxLines: 7,
+                                        decoration: InputDecoration(
+                                          labelText: "Remark untuk Reject",
+                                          labelStyle: const TextStyle(
+                                            color: Color(0xFF655F5B),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          hintStyle: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 14),
+                                      if (_remarkController.text.trim() == "")
+                                        Text(
+                                          "Mohon isi remark.",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: 55,
+                                              child: ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  await _handleAction(
+                                                    context,
+                                                    report,
+                                                    username,
+                                                    role,
+                                                    'Rejected',
+                                                    onStatusChange,
+                                                  );
+                                                  if (!context.mounted) return;
+
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.close),
+                                                label: const Text('Reject'),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                          );
+                        },
+                icon: const Icon(Icons.close),
+                label: const Text('Reject'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
               );
-              // Handle Reject logic
-              // await _handleAction(
-              //   context,
-              //   report,
-              //   username,
-              //   role,
-              //   'Rejected'
-              //   onStatusChange,
-              // );
             },
-            icon: const Icon(Icons.close),
-            label: const Text('Reject'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              // Handle Approve logic
-              await _handleAction(
-                context,
-                report,
-                username,
-                role,
-                'Approved',
-                onStatusChange,
+          child: Consumer<PretreatmentBleachingFiltrationProvider>(
+            builder: (context, provider, child) {
+              return ElevatedButton.icon(
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () async {
+                          // Handle Approve logic
+                          await _handleAction(
+                            context,
+                            report,
+                            username,
+                            role,
+                            'Approved',
+                            onStatusChange,
+                          );
+                        },
+                icon:
+                    provider.isLoading
+                        ? SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(),
+                        )
+                        : Icon(Icons.check),
+                label: const Text('Approve'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
               );
             },
-            icon: const Icon(Icons.check),
-            label: const Text('Approve'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
           ),
         ),
       ],
@@ -579,29 +578,50 @@ class _PretreatmentBleachingFiltrationApprovalDetailPageState
     final provider = context.read<PretreatmentBleachingFiltrationProvider>();
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
-    await provider.sendApproveRejectReport(
-      username,
-      status,
-      role,
-      report.shift!,
-      _remarkController.text == "" ? null : _remarkController.text,
-      report.id,
-      role,
-      plantCode,
-    );
+    try {
+      final result = await provider.sendApproveRejectReport(
+        username,
+        status,
+        role,
+        report.shift!,
+        _remarkController.text == "" ? null : _remarkController.text,
+        report.id,
+        role,
+        plantCode,
+      );
 
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Report ${report.id} berhasil di$status.'),
-        backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
-        duration: Duration(milliseconds: 500),
-      ),
-    );
-
-    // Call the callback to update the UI
-    onStatusChange(status);
-
-    Navigator.of(context).pop(); // Dismiss the bottom sheet
+      if (result) {
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ticket ${report.id} berhasil di$status.'),
+            backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+            duration: Duration(milliseconds: 500),
+          ),
+        );
+        // Call the callback to update the UI
+        onStatusChange(status);
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${provider.errorMessage}'),
+            backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+            duration: Duration(milliseconds: 500),
+          ),
+        );
+      }
+    } catch (e) {
+      log("Error updating ticket: $e");
+      if (!context.mounted) return;
+      // Show an error message if the API call fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal Approve/Reject: $e'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
   }
 }

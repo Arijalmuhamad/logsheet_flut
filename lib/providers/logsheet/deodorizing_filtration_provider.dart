@@ -11,6 +11,9 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isLoadingTicket = false;
+  bool get isLoadingTicket => _isLoadingTicket;
+
   bool _isLoadingReset = false;
   bool get isLoadingReset => _isLoadingReset;
 
@@ -54,20 +57,26 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _setLoadingTicket(bool value) {
+    _isLoadingTicket = value;
+    notifyListeners();
+  }
+
   void _setErrorMessage(String? value) {
     _errorMessage = value;
     notifyListeners();
   }
 
   Future<String?> fetchLatestId(String plantCode) async {
-    _setLoading(false);
+    _setLoadingTicket(true);
+    _setLoading(true);
     _setErrorMessage(null);
     try {
       _latestId = await _repository.getLatestTicketId(plantCode);
       log("(Deodorizing Filtration Provider) latest ID = $_latestId");
       return _latestId;
     } catch (e) {
-      _setLoading(false);
+      _setLoadingTicket(false);
       _setErrorMessage(
         '(Deodorizing Filtration Provider) Failed to get latest id: $e',
       );
@@ -76,10 +85,11 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
   }
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    _setLoadingTicket(true);
     _setLoading(true);
     _setErrorMessage(null);
     try {
-      _setLoading(false);
+      _setLoadingTicket(false);
       log('Update auto number...');
       final result = await _repository.updateAutoNumber(
         plantCode,
@@ -91,21 +101,20 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
       _setErrorMessage(
         '(Deodorizing Filtration Provider) Failed to update autonumber: $e',
       );
-      _setLoading(false);
+      _setLoadingTicket(false);
       return false;
     }
   }
 
   Future<bool> insert(DeodorizingFiltrationEntity entity) async {
+    _setLoadingTicket(true);
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
       final result = await _repository.insert(entity);
-      Future.delayed(Duration(milliseconds: 300));
 
       if (result) {
-        _setLoading(false);
         _setErrorMessage(null);
         return result;
       } else {
@@ -116,27 +125,31 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setLoading(false);
       _setErrorMessage(
         '(Deodorizing Filtration Provider) Failed to insert report: $e',
       );
       return false;
+    } finally {
+      log("FINISHED INSERTING FROM THE PROVIDER");
+      _setLoading(false);
     }
   }
 
   Future<bool> updateTicket(DeodorizingFiltrationEntity entity) async {
+    _setLoadingTicket(true);
     _setLoading(true);
+
     _setErrorMessage(null);
 
     try {
       final result = await _repository.update(entity);
-      _setLoading(false);
+      _setLoadingTicket(false);
       _setErrorMessage(null);
 
       return result;
     } catch (e) {
       log("$e");
-      _setLoading(false);
+      _setLoadingTicket(false);
       _setErrorMessage("$e");
       return false;
     }
@@ -177,7 +190,7 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
     String plantCode, {
     bool filter = true,
   }) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
@@ -274,8 +287,13 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllTicket(null, null, username, role, plantCode);
-      return result;
+
+      if (result) {
+        fetchAllTicket(null, null, username, role, plantCode);
+        return result;
+      } else {
+        return false;
+      }
     } catch (e) {
       _setErrorMessage(
         '(Deodorizing Filtration Provider) Failed to send approval or rejection report: $e',

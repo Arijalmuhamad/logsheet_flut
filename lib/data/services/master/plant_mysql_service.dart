@@ -2,18 +2,20 @@ import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/master/plant_entity.dart';
+import 'package:mysql_client/mysql_client.dart';
 
 class PlantMySQLService {
   // Create Plant
   Future<bool> createPlant(PlantEntity plant) async {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log('Failed to get MySQL connection for plant registration.');
-      return false;
-    }
-
+    MySQLConnection? connection;
     try {
-      final result = await connResult.connection!.execute(
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for plant registration.');
+        return false;
+      }
+      connection = connResult.connection;
+      final result = await connection!.execute(
         "INSERT INTO m_plant (plant_code, plant_name, bu_code, isactive) VALUES (:plant_code, :plant_name, :bu_code, :isactive)",
         {
           "plant_code": plant.code,
@@ -31,17 +33,25 @@ class PlantMySQLService {
     } catch (e) {
       log('Error registering plant: $e');
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
   // Get All Plants
   Future<List<Map<String, dynamic>>> getAllPlants() async {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log('Failed to get MySQL connection for get all plants.');
-      return [];
-    }
+    MySQLConnection? connection;
     try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all plants.');
+        return [];
+      }
+      connection = connResult.connection;
       final result = await connResult.connection!.execute(
         "SELECT * FROM m_plant",
       );
@@ -51,6 +61,12 @@ class PlantMySQLService {
     } catch (e) {
       log('Error fetching all plants: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
@@ -58,16 +74,17 @@ class PlantMySQLService {
   Future<List<Map<String, dynamic>>> getPlantsByBusinessUnits(
     String buCode,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
           'Failed to get MySQL connection for get plants by business units code',
         );
-        connResult.connection?.close();
         return [];
       }
-      final result = await connResult.connection!.execute(
+      connection = connResult.connection;
+      final result = await connection!.execute(
         "SELECT * FROM m_plant WHERE bu_code = :bu_code",
         {"bu_code": buCode},
       );
@@ -77,19 +94,26 @@ class PlantMySQLService {
     } catch (e) {
       log('Error fetching all plants by business units code: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 
   // Update Plant
   Future<bool> updatePlant(PlantEntity plant) async {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log('Failed to get MySQL connection for updating plant.');
-      return false;
-    }
-
+    MySQLConnection? connection;
     try {
-      final result = await connResult.connection!.execute(
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updating plant.');
+        return false;
+      }
+      connection = connResult.connection;
+      final result = await connection!.execute(
         "UPDATE m_plant SET bu_code = :bu_code, isactive = :isactive WHERE plant_code = :plant_code",
         {
           "bu_code": plant.buCode,
@@ -103,6 +127,12 @@ class PlantMySQLService {
     } catch (e) {
       log('Error updating plant: $e');
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("$e");
+      }
     }
   }
 

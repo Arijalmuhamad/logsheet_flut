@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
@@ -13,7 +14,7 @@ class DeodorizingFiltrationMySQLService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          '(DEODORIZING FILTRATION MySQL) Failed to get MySQL connection for inserting pretreatment bleaching filtration ticket.',
+          '(DEODORIZING MySQL) Failed to get MySQL connection for inserting pretreatment bleaching filtration ticket.',
         );
         return false;
       }
@@ -38,12 +39,12 @@ class DeodorizingFiltrationMySQLService {
       final String sql =
           'INSERT INTO t_deodorizing_filtration (${columns.join(', ')}) VALUES (${params.join(', ')})';
 
-      log("Generated SQL: $sql");
-      log('Data for SQL: $sqlExecuteParams');
+      log("(DEODORIZING MySQL) Generated SQL: $sql");
+      log('(DEODORIZING MySQL) Data for SQL: $sqlExecuteParams');
       log(
         connection.connected
-            ? "Connected to the database"
-            : "Not Connected to the database",
+            ? "(DEODORIZING MySQL) Connected to the database"
+            : "(DEODORIZING MySQL) Not Connected to the database",
       );
 
       final result = await connection.execute(sql, sqlExecuteParams);
@@ -55,11 +56,9 @@ class DeodorizingFiltrationMySQLService {
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log(
-          "(DEODORIZING FILTRATION MySQL) Is still connected: ${connection?.connected}",
-        );
+        log("(DEODORIZING MySQL) Is still connected: ${connection?.connected}");
       } catch (e) {
-        log("(DEODORIZING FILTRATION MySQL) Error Closing Connection: $e");
+        log("(DEODORIZING MySQL) Error Closing Connection: $e");
       }
     }
   }
@@ -74,12 +73,12 @@ class DeodorizingFiltrationMySQLService {
     MySQLConnection? connection;
     try {
       log(
-        "(DEODORIZING FILTRATION MySQL) mysql function getAllLogsheet for user: $username, role: $role, plant: $plantCode",
+        "(DEODORIZING MySQL) mysql function getAllLogsheet for user: $username, role: $role, plant: $plantCode",
       );
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          '(DEODORIZING FILTRATION MySQL) Failed to get MySQL connection for getAllLogsheet.',
+          '(DEODORIZING MySQL) Failed to get MySQL connection for getAllLogsheet.',
         );
         return [];
       }
@@ -129,7 +128,7 @@ class DeodorizingFiltrationMySQLService {
           FROM
             t_deodorizing_filtration
           WHERE
-            prepared_status = :status AND plant = :plantCode AND (T.flag IS NULL OR T.flag = 'T')
+            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -137,13 +136,13 @@ class DeodorizingFiltrationMySQLService {
         case 'ADM':
           // Query untuk Admin: Dapat melihat semua logsheet di plant-nya.
           baseQuery =
-              "SELECT * FROM t_deodorizing_filtration WHERE plant = :plantCode AND (T.flag IS NULL OR T.flag = 'T')";
+              "SELECT * FROM t_deodorizing_filtration WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
           params["plantCode"] = plantCode;
           break;
 
         default:
           log(
-            '(DEODORIZING FILTRATION MySQL) User role $role is not authorized to view logsheets.',
+            '(DEODORIZING MySQL) User role $role is not authorized to view logsheets.',
           );
           return [];
       }
@@ -161,9 +160,9 @@ class DeodorizingFiltrationMySQLService {
 
       // 3. Add the ORDER BY clause for consistent sorting
       if (role == 'LEAD') {
-        baseQuery += " ORDER BY t.transaction_date ASC, t.time ASC";
+        baseQuery += " ORDER BY t.transaction_date DESC, t.time ASC";
       } else {
-        baseQuery += " ORDER BY transaction_date ASC, time ASC";
+        baseQuery += " ORDER BY transaction_date DESC, time ASC";
       }
 
       final IResultSet result = await connection!.execute(baseQuery, params);
@@ -171,7 +170,7 @@ class DeodorizingFiltrationMySQLService {
       log("baseQuery: $baseQuery");
 
       log(
-        '(DEODORIZING FILTRATION MySQL) Fetched ${result.rows.length} deodorizing filtration logsheet records for user $username with role $role.',
+        '(DEODORIZING MySQL) Fetched ${result.rows.length} deodorizing filtration logsheet records for user $username with role $role.',
       );
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
@@ -343,11 +342,11 @@ class DeodorizingFiltrationMySQLService {
         return false;
       }
       connection = connResult.connection;
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final date = DateTime.now();
       String sql;
       Map<String, dynamic> params;
 
-      if (userRole == "MGR") {
+      if (AppRoles.managerProd.contains(userRole)) {
         sql =
             "UPDATE t_deodorizing_filtration SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
         params = {

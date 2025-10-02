@@ -15,7 +15,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          'Failed to get MySQL connection for inserting pretreatment bleaching filtration ticket.',
+          '(PBE MySQL) Failed to get MySQL connection for inserting pretreatment bleaching filtration ticket.',
         );
         return false;
       }
@@ -44,8 +44,8 @@ class PretreatmentBleachingFiltrationMySQLService {
       log('Data for SQL: $sqlExecuteParams');
       log(
         connection.connected
-            ? "Connected to the database"
-            : "Not Connected to the database",
+            ? "(PBE MySQL) Connected to the database"
+            : "(PBE MySQL) Not Connected to the database",
       );
 
       final result = await connection.execute(sql, sqlExecuteParams);
@@ -57,9 +57,9 @@ class PretreatmentBleachingFiltrationMySQLService {
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
+        log("(PBE MySQL) Is still connected: ${connection?.connected}");
       } catch (e) {
-        log("Error Closing Connection: $e");
+        log("(PBE MySQL) Error Closing Connection: $e");
       }
     }
   }
@@ -74,12 +74,12 @@ class PretreatmentBleachingFiltrationMySQLService {
     MySQLConnection? connection;
     try {
       log(
-        "mysql function getAllLogsheet for user: $username, role: $role, plant: $plantCode",
+        "(PBE MySQL) mysql function getAllLogsheet for user: $username, role: $role, plant: $plantCode",
       );
 
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for getAllLogsheet.');
+        log('(PBE MySQL) Failed to get MySQL connection for getAllLogsheet.');
         return [];
       }
       connection = connResult.connection;
@@ -156,25 +156,27 @@ class PretreatmentBleachingFiltrationMySQLService {
 
       // 3. Add the ORDER BY clause for consistent sorting
       if (role == 'LEAD') {
-        baseQuery += " ORDER BY t.transaction_date ASC, t.time ASC";
+        baseQuery += " ORDER BY t.transaction_date DESC, t.time DESC";
       } else {
-        baseQuery += " ORDER BY transaction_date ASC, time ASC";
+        baseQuery += " ORDER BY transaction_date DESC, time ASC";
       }
 
       final IResultSet result = await connection!.execute(baseQuery, params);
 
       log(
-        'Fetched ${result.rows.length} pretreatment bleaching filtration logsheet records for user $username with role $role.',
+        '(PBE MySQL) Fetched ${result.rows.length} pretreatment bleaching filtration logsheet records for user $username with role $role.',
       );
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error getting all pretreatment bleaching filtration logsheet: $e');
+      log(
+        '(PBE MySQL) Error getting all pretreatment bleaching filtration logsheet: $e',
+      );
       return [];
     } finally {
       // 4. Ensure connection is always closed
       if (connection != null) {
         await connection.close();
-        log('MySQL connection closed for getAllLogsheet.');
+        log('(PBE MySQL) MySQL connection closed for getAllLogsheet.');
       }
     }
   }
@@ -184,9 +186,11 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get all reports.');
+        log('(PBE MySQL) Failed to get MySQL connection for get all reports.');
         return null;
       }
+      connection = connResult.connection;
+      log("(PBE MySQL) CURRENT PLANT CODE: $plantCode");
       final result = await connection!.execute(
         // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
         // {"plant": plantCode},
@@ -198,20 +202,20 @@ class PretreatmentBleachingFiltrationMySQLService {
         final row = result.rows.first.assoc();
 
         final latestId = row['ticket'];
-        log("ticket id from database: ${row['ticket']}");
+        log("(PBE MySQL) ticket id from database: ${row['ticket']}");
 
         return latestId;
       }
 
       return null;
     } catch (e) {
-      log('Error fetching latest ticket id: $e');
+      log('(PBE MySQL) Error fetching latest ticket id: $e');
       return null;
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log("$e");
+        log("(PBE MySQL) $e");
       }
     }
   }
@@ -221,7 +225,9 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for updating autonumber.');
+        log(
+          '(PBE MySQL) Failed to get MySQL connection for updating autonumber.',
+        );
         return false;
       }
       connection = connResult.connection;
@@ -232,17 +238,17 @@ class PretreatmentBleachingFiltrationMySQLService {
 
       final result = await connection!.execute(sql, params);
       log(
-        'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
+        '(PBE MySQL) Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error updating autonumber: $e');
+      log('(PBE MySQL) Error updating autonumber: $e');
       return false;
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log("$e");
+        log("(PBE MySQL) $e");
       }
     }
   }
@@ -257,7 +263,7 @@ class PretreatmentBleachingFiltrationMySQLService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          'Failed to get MySQL connection for editing pretreatment bleaching filtration.',
+          '(PBE MySQL) Failed to get MySQL connection for editing pretreatment bleaching filtration.',
         );
         return false;
       }
@@ -280,28 +286,28 @@ class PretreatmentBleachingFiltrationMySQLService {
       final String sql =
           'UPDATE t_pretreatment_bleaching_filtration SET ${setClause.join(', ')} WHERE id = :id';
 
-      log("Generated SQL: $sql");
-      log('Data for SQL: $sqlExecuteParams');
+      log("(PBE MySQL) Generated SQL: $sql");
+      log('(PBE MySQL) Data for SQL: $sqlExecuteParams');
       log(
         connection!.connected
-            ? "Connected to the database"
-            : "Not Connected to the database",
+            ? "(PBE MySQL) Connected to the database"
+            : "(PBE MySQL) Not Connected to the database",
       );
 
       final result = await connection.execute(sql, sqlExecuteParams);
-      log('PBT updated: ${result.affectedRows} row(s) affected.');
+      log('(PBE MySQL) updated: ${result.affectedRows} row(s) affected.');
 
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('$e');
-      log("Is still connected: ${connection?.connected}");
+      log("(PBE MySQL) Is still connected: ${connection?.connected}");
       return false;
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
+        log("(PBE MySQL) Is still connected: ${connection?.connected}");
       } catch (e) {
-        log("Error Closing Connection: $e");
+        log("(PBE MySQL) Error Closing Connection: $e");
       }
     }
   }
@@ -319,12 +325,12 @@ class PretreatmentBleachingFiltrationMySQLService {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log(
-          'Failed to get MySQL connection for Sending approve/reject PBE report.',
+          '(PBE MySQL) Failed to get MySQL connection for Sending approve/reject PBE report.',
         );
         return false;
       }
       connection = connResult.connection;
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final date = DateTime.now();
       String sql;
       Map<String, dynamic> params;
 
@@ -350,17 +356,17 @@ class PretreatmentBleachingFiltrationMySQLService {
         };
       }
       final result = await connection!.execute(sql, params);
-      log("Query Sent: $sql");
-      log("Affected Rows: ${result.affectedRows}");
+      log("(PBE MySQL) Query Sent: $sql");
+      log("(PBE MySQL) Affected Rows: ${result.affectedRows}");
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log("$e");
+      log("(PBE MySQL) $e");
       return false;
     } finally {
       try {
         await closeMySQLConnection(connection);
       } catch (e) {
-        log("$e");
+        log("(PBE MySQL) $e");
       }
     }
   }
@@ -372,7 +378,9 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get reports for manager.');
+        log(
+          '(PBE MySQL) Failed to get MySQL connection for get reports for manager.',
+        );
         return [];
       }
       connection = connResult.connection;
@@ -382,10 +390,10 @@ class PretreatmentBleachingFiltrationMySQLService {
         ORDER BY posting_date DESC
       """;
       final result = await connection!.execute(sql, {"plantCode": plantCode});
-      log("Fetched ${result.rows.length} reports for manager.");
+      log("(PBE MySQL) Fetched ${result.rows.length} reports for manager.");
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching reports for manager: $e');
+      log('(PBE MySQL) Error fetching reports for manager: $e');
       return [];
     } finally {
       try {
@@ -401,7 +409,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log("Failed to get MySQL connection for deleting ticket");
+        log("(PBE MySQL) Failed to get MySQL connection for deleting ticket");
         return false;
       }
       connection = connResult.connection!;
@@ -414,17 +422,19 @@ class PretreatmentBleachingFiltrationMySQLService {
           "id": id,
         },
       );
-      log('Ticket $id terhapus: ${result.affectedRows} row(s) affected.');
+      log(
+        '(PBE MySQL) Ticket $id terhapus: ${result.affectedRows} row(s) affected.',
+      );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error deleting ticket: $e');
+      log('(PBE MySQL) Error deleting ticket: $e');
       return false;
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
+        log("(PBE MySQL) Is still connected: ${connection?.connected}");
       } catch (e) {
-        log("Error closing connection: $e");
+        log("(PBE MySQL) Error closing connection: $e");
       }
     }
   }
@@ -434,7 +444,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get all reports.');
+        log('(PBE MySQL) Failed to get MySQL connection for get all reports.');
         return [];
       }
       connection = connResult.connection;
@@ -444,7 +454,9 @@ class PretreatmentBleachingFiltrationMySQLService {
           "SELECT * FROM t_pretreatment_bleaching_filtrationt_pretreatment_bleaching_filtration AND (flag IS NULL OR flag = 'T')";
 
       final result = await connection!.execute(baseQuery);
-      log("Fetched ${result.rows.length} reports for pretreatment.");
+      log(
+        "(PBE MySQL) Fetched ${result.rows.length} reports for pretreatment.",
+      );
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('$e');
@@ -452,9 +464,9 @@ class PretreatmentBleachingFiltrationMySQLService {
     } finally {
       try {
         await closeMySQLConnection(connection);
-        log("Is still connected: ${connection?.connected}");
+        log("(PBE MySQL) Is still connected: ${connection?.connected}");
       } catch (e) {
-        log("Error Closing Connection: $e");
+        log("(PBE MySQL) Error Closing Connection: $e");
       } finally {
         try {
           await closeMySQLConnection(connection);
@@ -474,7 +486,7 @@ class PretreatmentBleachingFiltrationMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for getTickets.');
+        log('(PBE MySQL) Failed to get MySQL connection for getTickets.');
         return [];
       }
       connection = connResult.connection;

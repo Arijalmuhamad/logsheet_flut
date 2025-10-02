@@ -29,6 +29,7 @@ class _FiltrationPerformInputPageState
   int? selectedHour;
   int currentStep = 0;
   String? selectedWorkCenter;
+  String? selectedOilType;
   DataFormNoEntity? formData;
   // final List<String> filterOptions = [
   //   'Niagara Filter',
@@ -73,9 +74,9 @@ class _FiltrationPerformInputPageState
   final TextEditingController fnF601Controller = TextEditingController();
   final TextEditingController fnF602Controller = TextEditingController();
   final TextEditingController fnF603Controller = TextEditingController();
-  final TextEditingController fnF604AController = TextEditingController();
-  final TextEditingController fnF604BController = TextEditingController();
-  final TextEditingController fnF604CController = TextEditingController();
+  final TextEditingController fbF604AController = TextEditingController();
+  final TextEditingController fbF604BController = TextEditingController();
+  final TextEditingController fbF604CController = TextEditingController();
 
   // Filter Bag
 
@@ -389,9 +390,9 @@ class _FiltrationPerformInputPageState
       fnF601Controller,
       fnF602Controller,
       fnF603Controller,
-      fnF604AController,
-      fnF604BController,
-      fnF604CController,
+      fbF604AController,
+      fbF604BController,
+      fbF604CController,
       fcF605AController,
       fcF605BController,
       clarityController,
@@ -411,10 +412,15 @@ class _FiltrationPerformInputPageState
   @override
   void initState() {
     super.initState();
+    final valueProvider = context.read<ValueProvider>();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await valueProvider.fetchWorkCenterLists();
+
+      if (valueProvider.oilTypeLists.isEmpty) {
+        await valueProvider.fetchOilTypes();
+      }
+    });
   }
 
   @override
@@ -460,6 +466,7 @@ class _FiltrationPerformInputPageState
       currentStep = 0;
       selectedWorkCenter = null;
       selectedHour = null;
+      selectedOilType = null;
       final controllers = [
         cleanlinessController,
         tekananAwalController,
@@ -480,9 +487,9 @@ class _FiltrationPerformInputPageState
         fnF601Controller,
         fnF602Controller,
         fnF603Controller,
-        fnF604AController,
-        fnF604BController,
-        fnF604CController,
+        fbF604AController,
+        fbF604BController,
+        fbF604CController,
         fcF605AController,
         fcF605BController,
         clarityController,
@@ -527,7 +534,7 @@ class _FiltrationPerformInputPageState
 
               Consumer<ValueProvider>(
                 builder: (context, provider, child) {
-                  if (provider.workCenterLists.isEmpty) {
+                  if (provider.isWorkCenterLoading) {
                     return DropdownButtonFormField<String>(
                       value: null,
                       items: [],
@@ -547,6 +554,31 @@ class _FiltrationPerformInputPageState
                             width: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (provider.workCenterLists.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Work Center tidak ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            provider.fetchWorkCenterLists();
+                          },
                         ),
                       ),
                     );
@@ -587,7 +619,7 @@ class _FiltrationPerformInputPageState
                 },
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               InkWell(
                 onTap: () => _showHourPicker(context),
                 child: InputDecorator(
@@ -615,6 +647,90 @@ class _FiltrationPerformInputPageState
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(height: 6),
+              // OIL TYPE DROPDOWN
+              Consumer<ValueProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isOilTypeLoading) {
+                    return DropdownButtonFormField<String>(
+                      value: null,
+                      items: [],
+                      onChanged: null,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Loading Work Center...',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (provider.oilTypeLists.isEmpty) {
+                    return TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Oil Types tidak ditemukan.',
+                        prefixIcon: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Icon(Icons.warning_amber_rounded),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            provider.fetchOilTypes();
+                          },
+                        ),
+                      ),
+                    );
+                  }
+
+                  return DropdownButtonFormField(
+                    value: selectedOilType,
+                    items:
+                        provider.oilTypeLists.map((oil) {
+                          return DropdownMenuItem<String>(
+                            value: oil.code,
+                            child: Text(oil.name),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedOilType = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Pilih Oil Type',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Icon(Icons.oil_barrel_rounded),
+                      ),
+                    ),
+                  );
+                },
               ),
               // const SizedBox(height: 16),
               // DropdownButtonFormField<String>(
@@ -656,7 +772,9 @@ class _FiltrationPerformInputPageState
               //   ),
               // ),
               // _buildFilterForm(),
-              if (selectedWorkCenter != null && selectedHour != null) ...[
+              if (selectedWorkCenter != null &&
+                  selectedHour != null &&
+                  selectedOilType != null) ...[
                 // Step indicator
                 SizedBox(height: 40),
                 Row(
@@ -725,7 +843,7 @@ class _FiltrationPerformInputPageState
                   padding: const EdgeInsets.symmetric(vertical: 24.0),
                   child: Center(
                     child: Text(
-                      'Silakan pilih Work Center dan Jam Input.',
+                      'Silakan pilih Work Center, Oil Type, dan Jam Input.',
                       style: TextStyle(
                         color: Colors.red.shade600,
                         fontWeight: FontWeight.w500,
@@ -778,9 +896,9 @@ class _FiltrationPerformInputPageState
 
   double? parseDouble(TextEditingController c) {
     final text = c.text.trim();
-    return text.isEmpty || text == "-"
+    return text.isEmpty || text == "-" || double.parse(text) == 0
         ? null
-        : double.parse(double.parse(text).toStringAsFixed(4));
+        : double.tryParse(text);
   }
 
   DateTime getPostingDate() {
@@ -929,8 +1047,10 @@ class _FiltrationPerformInputPageState
     final buProvider = context.read<BusinessUnitProvider>();
     final plantProvider = context.read<PlantProvider>();
 
-    if (selectedWorkCenter == null || selectedHour == null) {
-      _showSnackBar('Mohon lengkapi Work Center dan Jam Input.');
+    if (selectedWorkCenter == null ||
+        selectedHour == null ||
+        selectedOilType == null) {
+      _showSnackBar('Mohon lengkapi Work Center, Oil Type, dan Jam Input.');
       return;
     }
 
@@ -950,9 +1070,14 @@ class _FiltrationPerformInputPageState
       final businessUnitCode = buProvider.currentBusinessUnit?.buCode ?? "";
       final plantCode = plantProvider.currentPlant?.code ?? "";
       final currentUser = userProvider.currentUser;
+      final ticketId = await buildTicketNumber();
+
+      if (ticketId == "") {
+        return;
+      }
 
       final entity = PretreatmentBleachingFiltrationEntity(
-        id: await buildTicketNumber(),
+        id: ticketId,
         company: businessUnitCode,
         plant: plantCode,
         transactionDate: transactionDate,
@@ -962,6 +1087,7 @@ class _FiltrationPerformInputPageState
         shift: shift,
 
         //Pretreatment
+        oilType: selectedOilType,
         ptFit001: parseDouble(ptFit001Controller),
         ptE001aInlet: parseDouble(ptE001aInletController),
         ptF0012: parseDouble(ptFit0012Controller),
@@ -978,13 +1104,16 @@ class _FiltrationPerformInputPageState
         pA: parseDouble(pAController),
         pB: parseDouble(pBController),
         pC: parseDouble(pCController),
+
         // Niagara Filter
         fnF601: parseDouble(fnF601Controller),
         fnF602: parseDouble(fnF602Controller),
         fnF603: parseDouble(fnF603Controller),
-        fb604a: parseDouble(fnF604BController),
-        fb604b: parseDouble(fnF604BController),
-        fb604c: parseDouble(fnF604BController),
+
+        // Filter Bag
+        fb604a: parseDouble(fbF604AController),
+        fb604b: parseDouble(fbF604BController),
+        fb604c: parseDouble(fbF604CController),
 
         // Catridge Filters
         fc605a: parseDouble(fcF605AController),
@@ -1018,7 +1147,7 @@ class _FiltrationPerformInputPageState
 
       bool? success;
 
-      log("attemp to insert");
+      log("attemp to insert deodorizing ticket $ticketId");
       success = await provider.insert(entity);
 
       if (success) {
@@ -1055,14 +1184,14 @@ class _FiltrationPerformInputPageState
           children: [
             _buildTextField(
               controller: ptFit001Controller,
-              label: 'FIT001 (CPO)',
+              label: 'FIT001 ($selectedOilType)',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai FIT001 (Tph)',
             ),
             _buildTextField(
               controller: ptE001aInletController,
-              label: 'E001A INLET CPO',
+              label: 'E001A INLET $selectedOilType',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai E001A INLET CPO (°C)',
@@ -1180,21 +1309,21 @@ class _FiltrationPerformInputPageState
         return Column(
           children: [
             _buildTextField(
-              controller: fnF604AController,
+              controller: fbF604AController,
               label: 'F604A',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai F604A (bar)',
             ),
             _buildTextField(
-              controller: fnF604BController,
+              controller: fbF604BController,
               label: 'F604B',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai F604B (bar)',
             ),
             _buildTextField(
-              controller: fnF604CController,
+              controller: fbF604CController,
               label: 'F604C',
               icon: Icons.bubble_chart,
               isNumeric: true,

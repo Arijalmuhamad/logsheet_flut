@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
@@ -80,7 +81,7 @@ class DailyProductionFractionationMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD' || 'LEAD_QC':
+        case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
             t_daily_production_fractionation.*
@@ -307,11 +308,11 @@ class DailyProductionFractionationMySQLService {
         return false;
       }
       connection = connResult.connection;
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final date = DateTime.now();
       String sql;
       Map<String, dynamic> params;
 
-      if (userRole == "MGR") {
+      if (AppRoles.managerProd.contains(userRole)) {
         sql =
             "UPDATE t_daily_production_fractionation SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
         params = {
@@ -360,7 +361,7 @@ class DailyProductionFractionationMySQLService {
       }
       connection = connResult.connection;
       const sql = """
-        SELECT * FROM t_daily_production_refinery 
+        SELECT * FROM t_daily_production_fractionation 
         WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
         ORDER BY posting_date DESC
       """;

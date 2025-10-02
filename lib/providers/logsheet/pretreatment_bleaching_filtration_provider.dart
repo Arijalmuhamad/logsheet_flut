@@ -168,7 +168,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
     String plantCode, {
     bool filter = true,
   }) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
@@ -258,7 +258,7 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllTicket(null, null, username, role, plantCode);
+      await fetchAllTicket(null, null, username, role, plantCode);
       return result;
     } catch (e) {
       _setErrorMessage(

@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
-import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/data/services/daily_production/daily_production_fractionation_mysql_service.dart';
 
 class DailyProductionFractionationRepository {

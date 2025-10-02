@@ -22,11 +22,14 @@ class DeodorizingFiltrationEntity {
   /// time shift
   final DateTime? time;
 
+  /// Oil Type
+  final String? oilType;
+
   // Shift
   final int? shift;
 
-  /// FIT 701 ( BPO ) - tph
-  final double? fit701Bpo;
+  /// FIT 701 - tph
+  final double? fit701;
 
   /// D701 - Vacum - cmHg
   final double? d701Vacum;
@@ -79,14 +82,20 @@ class DeodorizingFiltrationEntity {
   /// F702 C - bar
   final double? f702C;
 
-  /// FIT 704 ( RPO ) - tph
-  final double? fit704Rpo;
+  /// Oil Type Finished Goods
+  final String? oilTypeFg;
+
+  /// FIT 704 - tph
+  final double? fit704;
 
   /// E 704 - c
   final double? e704;
 
-  /// FIT 705 ( PFAD ) - bar
-  final double? fit705Pfad;
+  /// Oil Type By Product
+  final String? oilTypeBp;
+
+  /// FIT 705 - bar
+  final double? fit705;
 
   /// E705 - c
   final double? e705;
@@ -156,8 +165,9 @@ class DeodorizingFiltrationEntity {
     required this.postingDate,
     required this.refineryMachine,
     required this.time,
+    required this.oilType,
     required this.shift,
-    required this.fit701Bpo,
+    required this.fit701,
     required this.d701Vacum,
     required this.d701Td701,
     required this.e702,
@@ -175,9 +185,11 @@ class DeodorizingFiltrationEntity {
     required this.f702A,
     required this.f702B,
     required this.f702C,
-    required this.fit704Rpo,
+    required this.oilTypeFg,
+    required this.fit704,
     required this.e704,
-    required this.fit705Pfad,
+    required this.oilTypeBp,
+    required this.fit705,
     required this.e705,
     required this.clarity,
     required this.remarks,
@@ -279,7 +291,9 @@ class DeodorizingFiltrationEntity {
       postingDate: tryParseDateTime(map['posting_date']),
       refineryMachine: map['refinery_machine'] as String?,
       time: parseTime(map['time']),
+      oilType: map['oil_type'] as String?,
       shift: parseInt(map['shift']),
+      fit701: tryParseDouble(map['fit701_bpo']),
       d701Vacum: tryParseDouble(map['d701_vacum']),
       d701Td701: tryParseDouble(map['d701_td701']),
       e702: tryParseDouble(map['e702']),
@@ -297,9 +311,11 @@ class DeodorizingFiltrationEntity {
       f702A: tryParseDouble(map['f702_a']),
       f702B: tryParseDouble(map['f702_b']),
       f702C: tryParseDouble(map['f702_c']),
-      fit704Rpo: tryParseDouble(map['fit704_rpo']),
+      oilTypeFg: map['oil_type_fg'] as String?,
+      fit704: tryParseDouble(map['fit704_rpo']),
       e704: tryParseDouble(map['e704']),
-      fit705Pfad: tryParseDouble(map['fit_705_pfad']),
+      oilTypeBp: map['oil_type_bp'] as String?,
+      fit705: tryParseDouble(map['fit_705_pfad']),
       e705: tryParseDouble(map['e705']),
       clarity: map['clarity'] as String?,
       remarks: map['remarks'] as String?,
@@ -320,7 +336,6 @@ class DeodorizingFiltrationEntity {
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
       updatedDate: tryParseDateTime(map['updated_date']),
       updatedBy: map['updated_by'] as String?,
-      fit701Bpo: tryParseDouble(map['fit701_bpo']),
     );
   }
 
@@ -336,8 +351,9 @@ class DeodorizingFiltrationEntity {
       'posting_date': postingDate?.toIso8601String(),
       'refinery_machine': refineryMachine,
       'time': formatTime(time),
+      'oil_type': oilType,
       'shift': shift,
-      'fit701_bpo': fit701Bpo,
+      'fit701_bpo': fit701,
       'd701_vacum': d701Vacum,
       'd701_td701': d701Td701,
       'e702': e702,
@@ -355,9 +371,11 @@ class DeodorizingFiltrationEntity {
       'f702_a': f702A,
       'f702_b': f702B,
       'f702_c': f702C,
-      'fit704_rpo': fit704Rpo,
+      'oil_type_fg': oilTypeFg,
+      'fit704_rpo': fit704,
       'e704': e704,
-      'fit_705_pfad': fit705Pfad,
+      'oil_type_bp': oilTypeBp,
+      'fit_705_pfad': fit705,
       'e705': e705,
       'clarity': clarity,
       'remarks': remarks,

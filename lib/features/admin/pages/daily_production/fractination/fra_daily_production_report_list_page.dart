@@ -1,41 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
+import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_detail_page.dart';
+import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
+import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
+import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
-class QualityReportListPage extends StatefulWidget {
-  final String userName;
-  final String role;
-
-  const QualityReportListPage({
+class DailyProductionFractionationReportListPage extends StatefulWidget {
+  const DailyProductionFractionationReportListPage({
     super.key,
     required this.userName,
     required this.role,
   });
 
+  final String userName;
+  final String role;
+
   @override
-  State<QualityReportListPage> createState() => _QualityReportListPageState();
+  State<DailyProductionFractionationReportListPage> createState() =>
+      _LogsheetPretreatmentBleachingFiltrationReportListsPageState();
 }
 
-class _QualityReportListPageState extends State<QualityReportListPage> {
+class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
+    extends State<DailyProductionFractionationReportListPage> {
   final TextEditingController _dateController = TextEditingController();
-
-  DateTime? _selectedDate;
+  DateTime? _selectedDate = DateTime.now();
   String? _tempSelectedShift = "All";
   final List<String> shifts = ["1", "2", "3", "4", "5"];
 
-  // final List<String> _hours = List.generate(
-  //   24,
-  //   (index) => '${index.toString().padLeft(2, '0')}:00',
-  // );
   DataFormNoEntity? formData;
 
   @override
@@ -45,8 +44,8 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context
-          .read<QualityReportQCProvider>()
+      (timeStamp) async => await context
+          .read<DailyProductionFractionationProvider>()
           .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
     );
   }
@@ -54,23 +53,16 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
   @override
   void dispose() {
     _dateController.dispose();
-
     super.dispose();
   }
 
-  void _resetFormAndRefresh() async {
+  void _resetFormAndRefresh() {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
-      _tempSelectedShift = "All";
+      _tempSelectedShift = null;
+      // _fetchReports();
     });
-    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-
-    await context.read<QualityReportQCProvider>().fetchFilteredTickets(
-      _selectedDate,
-      plantCode,
-      _tempSelectedShift,
-    );
   }
 
   void _showSnackbar(String message) {
@@ -101,55 +93,6 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     }
   }
 
-  Future<void> _deleteData(String id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              'Konfirmasi Hapus',
-              style: TextStyle(
-                color: Color(0xFF655F5B),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: const Text(
-              'Apakah Anda yakin ingin menghapus data ini?',
-              style: TextStyle(color: Color(0xFF655F5B)),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                style: TextButton.styleFrom(foregroundColor: Colors.black87),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFAB2F2B),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Hapus'),
-              ),
-            ],
-          ),
-    );
-
-    if (confirm == true) {
-      // Assuming you have a delete method in your provider
-      // await Provider.of<QualityReportRefineryProvider>(context, listen: false).delete(id);
-      _showSnackbar('🗑️ Data berhasil dihapus');
-      // _fetchReports();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -159,7 +102,36 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  AppBar _buildAppBar() {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Daily_Production_Fractionation")
+            .first;
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      centerTitle: true,
+      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
+      title: Text(
+        'Daily Fractionation List (${formData!.code})',
+        style: TextStyle(
+          color: Color(0xFF655F5B),
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _resetFormAndRefresh,
+        ),
+      ],
+    );
+  }
+
+  Stack _buildBody(BuildContext context) {
     return Stack(
       children: [
         Padding(
@@ -176,36 +148,8 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                   elevation: 4,
                   shadowColor: Colors.black26,
                   margin: const EdgeInsets.only(top: 16),
-                  child: Consumer<QualityReportQCProvider>(
+                  child: Consumer<DailyProductionFractionationProvider>(
                     builder: (context, provider, child) {
-                      // List<QualityRefineryEntity> filteredTickets =
-                      //     provider.reportsList;
-
-                      // if (_selectedDate != null) {
-                      //   filteredTickets =
-                      //       filteredTickets.where((ticket) {
-                      //         // This ensures we only compare the Year, Month, and Day, ignoring the time.
-                      //         return ticket.transactionDate?.year ==
-                      //                 _selectedDate!.year &&
-                      //             ticket.transactionDate?.month ==
-                      //                 _selectedDate!.month &&
-                      //             ticket.transactionDate?.day ==
-                      //                 _selectedDate!.day;
-                      //       }).toList();
-                      // }
-
-                      // // 3. Apply the hour filter if an hour is selected.
-                      // if (_tempSelectedShift != null) {
-                      //   // We parse the selected hour string "HH:00" to get the hour as an integer.
-                      //   final selectedShift = int.tryParse(_tempSelectedShift!);
-                      //   if (selectedShift != null) {
-                      //     filteredTickets =
-                      //         filteredTickets.where((report) {
-                      //           return report.shift == selectedShift;
-                      //         }).toList();
-                      //   }
-                      // }
-
                       if (provider.filteredTickets.isEmpty) {
                         return Center(
                           child: Column(
@@ -222,7 +166,9 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                       "";
 
                                   await context
-                                      .read<QualityReportQCProvider>()
+                                      .read<
+                                        DailyProductionFractionationProvider
+                                      >()
                                       .fetchFilteredTickets(
                                         _selectedDate,
                                         plantCode,
@@ -251,10 +197,12 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => QualityDetailQCPage(
-                                          item: report,
-                                          isDisplayed: false,
-                                        ),
+                                        (context) =>
+                                            DailyProductionFractionationDetailPage(
+                                              formData: formData!,
+                                              item: report,
+                                              isDisplayed: false,
+                                            ),
                                   ),
                                 );
                               },
@@ -328,16 +276,6 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                           color: Colors.grey,
                                         ),
                                         SizedBox(width: 8),
-                                        Text(
-                                          DateFormat(
-                                            'HH:mm',
-                                          ).format(report.time!),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        SizedBox(width: 16),
                                         const Icon(
                                           Icons.timelapse,
                                           size: 18,
@@ -350,6 +288,27 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
                                             fontSize: 14,
                                             color: Colors.black87,
                                           ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(
+                                          'assets/icons/oil-refinery-tanks.svg',
+                                          height: 20,
+                                          width: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text("${report.workCenter}"),
+                                        const SizedBox(width: 50),
+
+                                        Icon(Icons.oil_barrel_rounded),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          report.oilTypeRm == null
+                                              ? "N/A"
+                                              : "${report.oilTypeRm}",
                                         ),
                                       ],
                                     ),
@@ -454,10 +413,17 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
         ),
         const SizedBox(width: 10),
         ElevatedButton.icon(
-          onPressed: () {
-            setState(() {
-              // _fetchReports();
-            });
+          onPressed: () async {
+            final plantCode =
+                context.read<PlantProvider>().currentPlant?.code ?? "";
+
+            await context
+                .read<DeodorizingFiltrationProvider>()
+                .fetchFilteredTickets(
+                  _selectedDate,
+                  plantCode,
+                  _tempSelectedShift,
+                );
           },
           icon: const Icon(Icons.search),
           label: const Text('Cari'),
@@ -474,36 +440,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     );
   }
 
-  AppBar _buildAppBar() {
-    formData =
-        context
-            .read<DataFormNoProvider>()
-            .dataFormNoList
-            .where((form) => form.isMenu == "Quality_Report")
-            .first;
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 1,
-      centerTitle: true,
-      iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
-      title: Text(
-        'Quality Report List (${formData!.code})',
-        style: TextStyle(
-          color: Color(0xFF655F5B),
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.refresh),
-          onPressed: _resetFormAndRefresh,
-        ),
-      ],
-    );
-  }
-
-  String _getStatusText(QualityReportQcEntity report) {
+  String _getStatusText(DailyProductionFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -521,7 +458,7 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     return "Submitted";
   }
 
-  Color _getStatusColor(QualityReportQcEntity report) {
+  Color _getStatusColor(DailyProductionFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }
@@ -538,16 +475,5 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
       return Colors.red;
     }
     return Colors.grey;
-  }
-}
-
-extension QualityReportRefineryEntityExtension
-    on QualityReportProductionEntity {
-  String get shift {
-    if (time == null) return '-';
-    final hour = time!.hour;
-    if (hour >= 7 && hour < 15) return '1';
-    if (hour >= 15 && hour < 23) return '2';
-    return '3';
   }
 }

@@ -28,6 +28,10 @@ class DailyProductionFractionationProvider with ChangeNotifier {
   List<DailyProductionFractionationEntity> _reportsList = [];
   List<DailyProductionFractionationEntity> get reportsList => _reportsList;
 
+  List<DailyProductionFractionationEntity> _reportsForManager = [];
+  List<DailyProductionFractionationEntity> get reportsForManager =>
+      _reportsForManager;
+
   List<DailyProductionFractionationEntity> _filteredTickets = [];
   List<DailyProductionFractionationEntity> get filteredTickets =>
       _filteredTickets;
@@ -241,7 +245,6 @@ class DailyProductionFractionationProvider with ChangeNotifier {
     int shift,
     String? remark,
     String id,
-    String role,
     String plantCode,
   ) async {
     _setLoading(true);
@@ -258,12 +261,51 @@ class DailyProductionFractionationProvider with ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllTickets(null, null, username, role, plantCode);
+      fetchAllTickets(null, null, username, userRole, plantCode);
       return result;
     } catch (e) {
       _setErrorMessage('Failed to send approval or rejection report: $e');
       _setLoading(false);
       return false;
+    }
+  }
+
+  Future<void> fetchReportsForManager(String plantCode) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      _reportsForManager = await _repository.getReportsForManager(plantCode);
+      log(_reportsForManager.length.toString());
+      _setLoading(false);
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to fetch reports for manager: $e',
+      );
+      _setLoading(false);
+    }
+  }
+
+  Future<void> fetchFilteredTickets(
+    DateTime? dateFilter,
+    String plantCode,
+    String? shift,
+  ) async {
+    _setLoadingFilterTicket(true);
+    _setErrorMessage(null);
+
+    try {
+      _filteredTickets = await _repository.getFilteredTickets(
+        dateFilter,
+        plantCode,
+        shift,
+      );
+      _setLoadingFilterTicket(false);
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed fetch filtered PBE ticket: $e',
+      );
+      _setLoading(false);
     }
   }
 }

@@ -307,9 +307,18 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
 
       log("PROD ID: ${updatedItem.id}, QC ID: ${updatedItem.idFk}");
 
+      if (!mounted) return;
+      final currentUser = context.read<UserProvider>().currentUser;
+
       success = await context
           .read<QualityReportProductionProvider>()
-          .updateReport(updatedItem, userName ?? "", role ?? "", plantCode);
+          .updateReport(
+            updatedItem,
+            userName ?? "",
+            role ?? "",
+            plantCode,
+            currentUser!,
+          );
 
       if (success) {
         _showSnackBar('Data berhasil diperbarui ✅');

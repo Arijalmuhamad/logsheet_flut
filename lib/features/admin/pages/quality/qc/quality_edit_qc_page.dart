@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -304,6 +305,18 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
         revisionDate: widget.report.revisionDate,
       );
 
+      updatedItem.checkedBy = null;
+      updatedItem.checkedDate = null;
+      updatedItem.checkedStatus = null;
+      updatedItem.checkedStatusRemarks = null;
+
+      if (AppRoles.leadQC.contains(role)) {
+        updatedItem.preparedBy = userName;
+        updatedItem.preparedDate = DateTime.now();
+        updatedItem.preparedStatus = "Approved";
+        updatedItem.preparedStatusRemarks = null;
+      }
+
       bool? success;
 
       success = await context.read<QualityReportQCProvider>().updateReport(
@@ -316,6 +329,8 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       if (success) {
         QualityReportProductionEntity prodEntity =
             updatedItem.toProductionEntity();
+        if (!mounted) return;
+        final currentUser = context.read<UserProvider>().currentUser;
         if (!mounted) return;
         final formDataProd =
             context
@@ -336,7 +351,13 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
 
         final prodSuccess = await context
             .read<QualityReportProductionProvider>()
-            .updateReport(prodEntity, userName ?? "", role ?? "", plantCode);
+            .updateReport(
+              prodEntity,
+              userName ?? "",
+              role ?? "",
+              plantCode,
+              currentUser!,
+            );
 
         if (prodSuccess) {
           _showSnackBar('Data berhasil diperbarui ✅');

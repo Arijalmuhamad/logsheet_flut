@@ -94,8 +94,8 @@ class DeodorizingFiltrationApprovalDetailPageState
                             trailingIcon = Icons.check_rounded;
                             iconColor = Colors.green;
                           } else if (isRejected) {
-                            trailingIcon = Icons.check_rounded;
-                            iconColor = Colors.green;
+                            trailingIcon = Icons.close_rounded;
+                            iconColor = Colors.red;
                           } else {
                             trailingIcon = Icons.arrow_forward_ios;
                             iconColor = Colors.grey;
@@ -171,7 +171,11 @@ class DeodorizingFiltrationApprovalDetailPageState
 
     // Helper to format dates or return a default string
     String formatDate(DateTime? date) {
-      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : 'N/A';
+      return date != null ? DateFormat('yyyy-MM-dd HH:mm').format(date) : '-';
+    }
+
+    String formatDouble(double? value) {
+      return value != null ? value.toString() : '-';
     }
 
     final isApproved = report.checkedStatus == 'Approved';
@@ -246,11 +250,8 @@ class DeodorizingFiltrationApprovalDetailPageState
                   _buildDetailRow('Shift', report.shift.toString()),
                   const Divider(),
                   _buildDetailRow('Ticket ID', report.id),
-                  _buildDetailRow(
-                    'Work Center',
-                    report.refineryMachine ?? 'N/A',
-                  ),
-                  _buildDetailRow('Company', report.company ?? 'N/A'),
+                  _buildDetailRow('Work Center', report.refineryMachine ?? '-'),
+                  _buildDetailRow('Company', report.company ?? '-'),
 
                   const Divider(),
 
@@ -263,153 +264,132 @@ class DeodorizingFiltrationApprovalDetailPageState
                     'Tanggal Posting',
                     formatDate(report.postingDate),
                   ),
-                  _buildDetailRow('Shift', report.shift?.toString() ?? 'N/A'),
+                  _buildDetailRow('Shift', report.shift?.toString() ?? '-'),
                   _buildDetailRow(
                     'Jam',
                     report.time != null
                         ? DateFormat('HH:mm').format(report.time!)
-                        : 'N/A',
+                        : '-',
                   ),
-                  _buildDetailRow(
-                    'Work Center',
-                    report.refineryMachine ?? 'N/A',
-                  ),
-                  _buildDetailRow('Plant', report.plant ?? 'N/A'),
+                  _buildDetailRow('Work Center', report.refineryMachine ?? '-'),
+                  _buildDetailRow('Plant', report.plant ?? '-'),
                   const SizedBox(height: 16),
 
                   _buildDetailRow(
                     'FIT 701 (BPO) - tph',
-                    report.fit701Bpo?.toString() ?? 'N/A',
+                    report.fit701?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'D701 (Vacum) - cmHg',
-                    report.d701Vacum?.toString() ?? 'N/A',
+                    report.d701Vacum?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'D701 (T D701) - °C',
-                    report.d701Td701?.toString() ?? 'N/A',
+                    report.d701Td701?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
-                  _buildDetailRow(
-                    'E702 - °C',
-                    report.e702?.toString() ?? 'N/A',
-                  ),
+                  _buildDetailRow('E702 - °C', report.e702?.toString() ?? '-'),
                   _buildDetailRow(
                     'Thermopac - Inlet',
-                    report.thermopacInlet?.toString() ?? 'N/A',
+                    report.thermopacInlet?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'Thermopac - Outlet',
-                    report.thermopacOutlet?.toString() ?? 'N/A',
+                    report.thermopacOutlet?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
                   _buildDetailRow(
                     'D702 - Inlet - °C',
-                    report.d702Inlet?.toString() ?? 'N/A',
+                    report.d702Inlet?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'D702 - Outlet - °C',
-                    report.d702Outlet?.toString() ?? 'N/A',
+                    report.d702Outlet?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'D702 - Vacum - mbar',
-                    report.d702Vacum?.toString() ?? 'N/A',
+                    report.d702Vacum?.toString() ?? '-',
                   ),
-                  _buildDetailRow(
-                    'Sparging A - bar',
-                    report.spargingA ?? 'N/A',
-                  ),
-                  _buildDetailRow(
-                    'Sparging B - bar',
-                    report.spargingB ?? 'N/A',
-                  ),
+                  _buildDetailRow('Sparging A - bar', report.spargingA ?? '-'),
+                  _buildDetailRow('Sparging B - bar', report.spargingB ?? '-'),
                   const SizedBox(height: 16),
 
-                  _buildDetailRow(
-                    'E 730 Inlet - °C',
-                    report.e730Inlet ?? 'N/A',
-                  ),
+                  _buildDetailRow('E 730 Inlet - °C', report.e730Inlet ?? '-'),
                   _buildDetailRow(
                     'Steam Inlet - bar',
-                    report.steamInlet ?? 'N/A',
+                    report.steamInlet ?? '-',
                   ),
-                  _buildDetailRow('Pish 706 - bar', report.pish706 ?? 'N/A'),
-                  _buildDetailRow('TIWH 706 - °C', report.tiwh706 ?? 'N/A'),
+                  _buildDetailRow('Pish 706 - bar', report.pish706 ?? '-'),
+                  _buildDetailRow('TIWH 706 - °C', report.tiwh706 ?? '-'),
                   const SizedBox(height: 16),
 
                   _buildDetailRow(
                     'F702 A - bar',
-                    report.f702A?.toString() ?? 'N/A',
+                    report.f702A?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'F702 B - bar',
-                    report.f702B?.toString() ?? 'N/A',
+                    report.f702B?.toString() ?? '-',
                   ),
                   _buildDetailRow(
                     'F702 C - bar',
-                    report.f702C?.toString() ?? 'N/A',
+                    report.f702C?.toString() ?? '-',
                   ),
                   const SizedBox(height: 16),
 
                   _buildDetailRow(
                     'FIT 704 (RPO) - tph',
-                    report.fit704Rpo?.toString() ?? 'N/A',
+                    report.fit704?.toString() ?? '-',
                   ),
-                  _buildDetailRow(
-                    'E 704 - °C',
-                    report.e704?.toString() ?? 'N/A',
-                  ),
+                  _buildDetailRow('E 704 - °C', report.e704?.toString() ?? '-'),
                   _buildDetailRow(
                     'FIT 705 (PFAD) - bar',
-                    report.fit705Pfad?.toString() ?? 'N/A',
+                    report.fit705?.toString() ?? '-',
                   ),
-                  _buildDetailRow(
-                    'E705 - °C',
-                    report.e705?.toString() ?? 'N/A',
-                  ),
-                  _buildDetailRow('Clarity', report.clarity ?? 'N/A'),
-                  _buildDetailRow('Remarks', report.remarks ?? 'N/A'),
+                  _buildDetailRow('E705 - °C', report.e705?.toString() ?? '-'),
+                  _buildDetailRow('Clarity', report.clarity ?? '-'),
+                  _buildDetailRow('Remarks', report.remarks ?? '-'),
 
                   const SizedBox(height: 16),
 
                   // Section: Signatories
                   _buildDetailRow(
                     'Diinput oleh',
-                    '${report.entryBy ?? 'N/A'} pada ${formatDate(report.entryDate)}',
+                    '${report.entryBy ?? '-'} pada ${formatDate(report.entryDate)}',
                   ),
                   _buildDetailRow(
                     'Disiapkan oleh',
-                    '${report.preparedBy ?? 'N/A'} pada ${formatDate(report.preparedDate)}',
+                    '${report.preparedBy ?? '-'} pada ${formatDate(report.preparedDate)}',
                   ),
                   _buildDetailRow(
                     'Status (Prepared)',
-                    report.preparedStatus ?? 'N/A',
+                    report.preparedStatus ?? '-',
                   ),
                   _buildDetailRow(
                     'Remarks (Prepared)',
-                    report.preparedStatusRemarks ?? 'N/A',
+                    report.preparedStatusRemarks ?? '-',
                   ),
                   _buildDetailRow(
                     'Diperiksa oleh',
-                    '${report.checkedBy ?? 'N/A'} pada ${formatDate(report.checkedDate)}',
+                    '${report.checkedBy ?? '-'} pada ${formatDate(report.checkedDate)}',
                   ),
                   _buildDetailRow(
                     'Status (Checked)',
-                    report.checkedStatus ?? 'N/A',
+                    report.checkedStatus ?? '-',
                   ),
                   _buildDetailRow(
                     'Diupdate oleh',
-                    '${report.updatedBy ?? 'N/A'} pada ${formatDate(report.updatedDate)}',
+                    '${report.updatedBy ?? '-'} pada ${formatDate(report.updatedDate)}',
                   ),
 
                   _buildDetailRow(
                     'Remark (Checked)',
-                    report.checkedStatusRemarks ?? 'N/A',
+                    report.checkedStatusRemarks ?? '-',
                   ),
                   const SizedBox(height: 24),
-                  _buildDetailRow('Form No', report.formNo ?? 'N/A'),
+                  _buildDetailRow('Form No', report.formNo ?? '-'),
                   _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
                   _buildDetailRow('Revision No', report.revisionNo.toString()),
                   _buildDetailRow(
@@ -461,107 +441,121 @@ class DeodorizingFiltrationApprovalDetailPageState
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              return showModalBottomSheet(
-                context: context,
-                builder:
-                    (context) => Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          TextFormField(
-                            controller: _remarkController,
-                            maxLines: 7,
-                            decoration: InputDecoration(
-                              labelText: "Remark untuk Reject",
-                              labelStyle: const TextStyle(
-                                color: Color(0xFF655F5B),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              hintStyle: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          SizedBox(height: 14),
-                          if (_remarkController.text.trim() == "")
-                            Text(
-                              "Mohon isi remark.",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  height: 55,
-                                  child: ElevatedButton.icon(
-                                    onPressed:
-                                        _remarkController.text.trim() == ""
-                                            ? null
-                                            : () async {
-                                              await _handleAction(
-                                                context,
-                                                report,
-                                                username,
-                                                role,
-                                                'Rejected',
-                                                onStatusChange,
-                                              );
-                                            },
-                                    icon: const Icon(Icons.close),
-                                    label: const Text('Reject'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
-                                    ),
+          child: Consumer<DeodorizingFiltrationProvider>(
+            builder: (context, provider, child) {
+              return ElevatedButton.icon(
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () async {
+                          return showModalBottomSheet(
+                            context: context,
+                            builder:
+                                (context) => Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      TextFormField(
+                                        controller: _remarkController,
+                                        maxLines: 7,
+                                        decoration: InputDecoration(
+                                          labelText: "Remark untuk Reject",
+                                          labelStyle: const TextStyle(
+                                            color: Color(0xFF655F5B),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          hintStyle: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 14),
+                                      if (_remarkController.text.trim() == "")
+                                        Text(
+                                          "Mohon isi remark.",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: SizedBox(
+                                              height: 55,
+                                              child: ElevatedButton.icon(
+                                                onPressed: () async {
+                                                  await _handleAction(
+                                                    context,
+                                                    report,
+                                                    username,
+                                                    role,
+                                                    'Rejected',
+                                                    onStatusChange,
+                                                  );
+
+                                                  if (!context.mounted) return;
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.close),
+                                                label: const Text('Reject'),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.red,
+                                                  foregroundColor: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                          );
+                        },
+                icon: const Icon(Icons.close),
+                label: const Text('Reject'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
               );
-              // Handle Reject logic
-              // await _handleAction(
-              //   context,
-              //   report,
-              //   username,
-              //   role,
-              //   'Rejected'
-              //   onStatusChange,
-              // );
             },
-            icon: const Icon(Icons.close),
-            label: const Text('Reject'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              // Handle Approve logic
-              await _handleAction(
-                context,
-                report,
-                username,
-                role,
-                'Approved',
-                onStatusChange,
+          child: Consumer<DeodorizingFiltrationProvider>(
+            builder: (context, provider, child) {
+              return ElevatedButton.icon(
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () async {
+                          // Handle Approve logic
+                          await _handleAction(
+                            context,
+                            report,
+                            username,
+                            role,
+                            'Approved',
+                            onStatusChange,
+                          );
+                        },
+                icon:
+                    provider.isLoading
+                        ? SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(),
+                        )
+                        : Icon(Icons.check),
+                label: const Text('Approve'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
               );
             },
-            icon: const Icon(Icons.check),
-            label: const Text('Approve'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
           ),
         ),
       ],
@@ -579,29 +573,52 @@ class DeodorizingFiltrationApprovalDetailPageState
     final provider = context.read<DeodorizingFiltrationProvider>();
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
-    await provider.sendApproveRejectReport(
-      username,
-      status,
-      role,
-      report.shift!,
-      _remarkController.text == "" ? null : _remarkController.text,
-      report.id,
-      role,
-      plantCode,
-    );
+    log("STATUS: $status");
 
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Report ${report.id} berhasil di$status.'),
-        backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
-        duration: Duration(milliseconds: 500),
-      ),
-    );
+    try {
+      final result = await provider.sendApproveRejectReport(
+        username,
+        status,
+        role,
+        report.shift!,
+        _remarkController.text == "" ? null : _remarkController.text,
+        report.id,
+        role,
+        plantCode,
+      );
 
-    // Call the callback to update the UI
-    onStatusChange(status);
-
-    Navigator.of(context).pop(); // Dismiss the bottom sheet
+      if (result) {
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ticket ${report.id} berhasil di$status.'),
+            backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+            duration: Duration(milliseconds: 500),
+          ),
+        );
+        // Call the callback to update the UI
+        onStatusChange(status);
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${provider.errorMessage}'),
+            backgroundColor: status == 'Approved' ? Colors.green : Colors.red,
+            duration: Duration(milliseconds: 500),
+          ),
+        );
+      }
+    } catch (e) {
+      log("Error updating ticket: $e");
+      if (!context.mounted) return;
+      // Show an error message if the API call fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal Approve/Reject: $e'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
   }
 }

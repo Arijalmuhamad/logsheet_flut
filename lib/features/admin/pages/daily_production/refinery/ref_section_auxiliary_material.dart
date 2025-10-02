@@ -7,6 +7,8 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
   final List<String> shiftOptions;
   final String? selectedShiftBleaching;
   final String? selectedShiftPhosphoric;
+  final String? selectedRefineryMachine;
+  final String? paValue;
 
   final TextEditingController bleachingBagController;
   final TextEditingController bleachingTypeController;
@@ -19,17 +21,14 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
   final TextEditingController phosphoricVolumeController;
   final TextEditingController phosphoricYieldController;
   final TextEditingController phosphoricBatchController;
+  final TextEditingController phosporicTotalController;
 
   final bool ref500Phosphoric;
   final bool ref150Phosphoric;
 
   final void Function(String?) onBleachingShiftChanged;
-  final void Function(bool?) onRef500BleachingChanged;
-  final void Function(bool?) onRef150BleachingChanged;
 
   final void Function(String?) onPhosphoricShiftChanged;
-  final void Function(bool?) onRef500PhosphoricChanged;
-  final void Function(bool?) onRef150PhosphoricChanged;
 
   const SectionAuxiliaryMaterial({
     super.key,
@@ -48,11 +47,10 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
     required this.ref500Phosphoric,
     required this.ref150Phosphoric,
     required this.onBleachingShiftChanged,
-    required this.onRef500BleachingChanged,
-    required this.onRef150BleachingChanged,
     required this.onPhosphoricShiftChanged,
-    required this.onRef500PhosphoricChanged,
-    required this.onRef150PhosphoricChanged,
+    required this.selectedRefineryMachine,
+    required this.paValue,
+    required this.phosporicTotalController,
   });
 
   @override
@@ -71,8 +69,10 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
             // === BLEACHING EARTH ===
             const SizedBox(height: 20),
             const Text('Bleaching Earth', style: _sectionTextStyle),
-            const SizedBox(height: 12),
 
+            const Text('1 Bag = 1000 Kg'),
+
+            const SizedBox(height: 12),
             CustomDropdown.fromStringItems(
               hint: 'Shift',
               value: selectedShiftBleaching,
@@ -91,7 +91,7 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
 
             CustomTextField(
               controller: bleachingTypeController,
-              label: 'Jenis (SSA)',
+              label: 'Jenis',
               icon: Icons.category,
             ),
             const SizedBox(height: 12),
@@ -105,16 +105,10 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
 
             Row(
               children: [
-                Checkbox(
-                  value: ref500Bleaching,
-                  onChanged: onRef500BleachingChanged,
-                ),
+                Checkbox(value: ref500Bleaching, onChanged: null),
                 const Text('Ref 500'),
                 const SizedBox(width: 20),
-                Checkbox(
-                  value: ref150Bleaching,
-                  onChanged: onRef150BleachingChanged,
-                ),
+                Checkbox(value: ref150Bleaching, onChanged: null),
                 const Text('Ref 150'),
               ],
             ),
@@ -122,67 +116,45 @@ class SectionAuxiliaryMaterial extends StatelessWidget {
             // === PHOSPHORIC ACID ===
             const SizedBox(height: 30),
             const Text('Phosphoric Acid', style: _sectionTextStyle),
+            const SizedBox(height: 2),
+            Text("Value: $paValue"),
             const SizedBox(height: 12),
 
             CustomDropdown.fromStringItems(
               hint: 'Shift',
-              value: selectedShiftPhosphoric,
+              value: selectedShiftBleaching,
               stringItems: shiftOptions,
               onChanged: onPhosphoricShiftChanged,
             ),
             const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    controller: phosphoricWeightController,
-                    label: 'Berat (kg)',
-                    icon: Icons.monitor_weight,
-                    isNumeric: true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomTextField(
-                    controller: phosphoricVolumeController,
-                    label: 'Volume (cm³)',
-                    icon: Icons.compress,
-                    isNumeric: true,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: CustomTextField(
-                    controller: phosphoricYieldController,
-                    label: 'Yield (%)',
-                    icon: Icons.percent,
-                    isNumeric: true,
-                  ),
-                ),
-              ],
+            const SizedBox(width: 12),
+            CustomTextField(
+              controller: phosporicTotalController,
+              label: 'Total',
+              icon: Icons.functions_rounded,
+              isNumeric: true,
             ),
-            const SizedBox(height: 12),
-
             CustomTextField(
               controller: phosphoricBatchController,
               label: 'Lot Batch Number',
               icon: Icons.numbers,
             ),
+            const SizedBox(width: 12),
+            CustomTextField(
+              controller: phosphoricYieldController,
+              label: 'Yield (%)',
+              icon: Icons.percent,
+              isNumeric: true,
+            ),
+
             const SizedBox(height: 12),
 
             Row(
               children: [
-                Checkbox(
-                  value: ref500Phosphoric,
-                  onChanged: onRef500PhosphoricChanged,
-                ),
+                Checkbox(value: ref500Phosphoric, onChanged: null),
                 const Text('Ref 500'),
                 const SizedBox(width: 20),
-                Checkbox(
-                  value: ref150Phosphoric,
-                  onChanged: onRef150PhosphoricChanged,
-                ),
+                Checkbox(value: ref150Phosphoric, onChanged: null),
                 const Text('Ref 150'),
               ],
             ),

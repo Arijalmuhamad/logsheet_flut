@@ -13,6 +13,7 @@ class ValueMySQLService {
         log('Failed to get MySQL connection for get all oil type.');
         return [];
       }
+      connection = connResult.connection;
       final result = await connection!.execute(
         "SELECT * FROM m_mastervalue WHERE`group` = :oil_type",
         {"oil_type": "OIL_TYPE"},
@@ -95,6 +96,36 @@ class ValueMySQLService {
       final result = await connection!.execute(
         "SELECT * FROM m_mastervalue WHERE`group` =:refinery",
         {"refinery": "REFINERY"},
+      );
+      log(
+        'Fetched ${result.rows.length} refinery machine(s) from master value.',
+      );
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all refinery machines from master value table: $e');
+      return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log("$e");
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllFractlWorkCenters() async {
+    MySQLConnection? connection;
+    try {
+      // await closeMySQLConnection();
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all Work Centers.');
+        return [];
+      }
+      connection = connResult.connection;
+      final result = await connection!.execute(
+        "SELECT * FROM m_mastervalue WHERE`group` =:fractionation",
+        {"fractionation": "FRACTINATION"},
       );
       log(
         'Fetched ${result.rows.length} refinery machine(s) from master value.',

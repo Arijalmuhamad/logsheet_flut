@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
@@ -222,13 +223,18 @@ class _DailyProductionFractionationDetailPageState
               _buildDataRow('Ticket ID', _currentReport.id),
               _buildDataRow('Company', _displayValue(_currentReport.company)),
               _buildDataRow('Plant', _displayValue(_currentReport.plant)),
-              _buildDataRow('CPO Tank', _displayValue(_currentReport.cpoTank)),
             ]),
 
             _buildSection('Raw Material (RM)', [
               _buildDataRow(
                 'Oil Type',
                 _displayValue(_currentReport.oilTypeRm),
+              ),
+              _buildDataRow('No', _displayValue(_currentReport.oilTypeRmNo)),
+              _buildDataRow('Cr', _displayValue(_currentReport.oilTypeRmCr)),
+              _buildDataRow(
+                'From Tank',
+                _displayValue(_currentReport.oilTypeRmFromTank),
               ),
               _buildDataRow(
                 'Awal Jam',
@@ -255,122 +261,92 @@ class _DailyProductionFractionationDetailPageState
             _buildSection('Finished Goods (FG)', [
               _buildDataRow(
                 'Oil Type',
-                _displayValue(_currentReport.oilTypeFg),
+                _displayValue(_currentReport.oilTypeFgs),
               ),
+              _buildDataRow('No', _displayValue(_currentReport.oilTypeFgsNo)),
+              _buildDataRow('Cr', _displayValue(_currentReport.oilTypeFgsCr)),
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeFgAwalJam),
+                _displayValue(_currentReport.oilTypeFgsAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
-                _displayValue(_currentReport.oilTypeFgAwalFlowmeter),
+                _displayValue(_currentReport.oilTypeFgsAwalFlowmeter),
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeFgAkhirJam),
+                _displayValue(_currentReport.oilTypeFgsAkhirJam),
               ),
               _buildDataRow(
                 'Akhir Flowmeter',
-                _displayValue(_currentReport.oilTypeFgAkhirFlowmeter),
+                _displayValue(_currentReport.oilTypeFgsAkhirFlowmeter),
               ),
               _buildDataRow(
                 'Total',
-                _displayValue(_currentReport.oilTypeFgTotal),
+                _displayValue(_currentReport.oilTypeFgsTotal),
               ),
               _buildDataRow(
                 'To Tank',
-                _displayValue(_currentReport.oilTypeFgToTank),
+                _displayValue(_currentReport.oilTypeFgsToTank),
               ),
             ]),
 
             _buildSection('By-Product (BP)', [
               _buildDataRow(
+                'Oil Type',
+                _displayValue(_currentReport.oilTypeFgh),
+              ),
+              _buildDataRow('No', _displayValue(_currentReport.oilTypeFghNo)),
+              _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.bpAwalJam),
+                _displayValue(_currentReport.oilTypeFghAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
-                _displayValue(_currentReport.bpAwalFlowmeter),
+                _displayValue(_currentReport.oilTypeFghAwalFlowmeter),
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.bpAkhirJam),
+                _displayValue(_currentReport.oilTypeFghAkhirJam),
               ),
               _buildDataRow(
                 'Akhir Flowmeter',
-                _displayValue(_currentReport.bpAkhirFlowmeter),
-              ),
-              _buildDataRow('Total', _displayValue(_currentReport.bpTotal)),
-              _buildDataRow('To Tank', _displayValue(_currentReport.bpToTank)),
-            ]),
-
-            _buildSection('Bleaching Earth (BE)', [
-              _buildDataRow(
-                'Ref. Tank',
-                _displayValue(_currentReport.beRefTank),
-              ),
-              _buildDataRow('Ref. Qty', _displayValue(_currentReport.beRefQty)),
-              _buildDataRow(
-                'Total Bag',
-                _displayValue(_currentReport.beTotalBag),
+                _displayValue(_currentReport.oilTypeFghAkhirFlowmeter),
               ),
               _buildDataRow(
-                'Total Jenis',
-                _displayValue(_currentReport.beTotalJenis),
+                'Total',
+                _displayValue(_currentReport.oilTypeFghTotal),
               ),
               _buildDataRow(
-                'Lot Batch Number',
-                _displayValue(_currentReport.beLotBatchNumber),
-              ),
-              _buildDataRow(
-                'Yield (%)',
-                _displayValue(_currentReport.beYieldPercent),
-              ),
-            ]),
-
-            _buildSection('Phosphoric Acid (PA)', [
-              _buildDataRow(
-                'Ref. Tank',
-                _displayValue(_currentReport.paRefTank),
-              ),
-              _buildDataRow('Ref. Qty', _displayValue(_currentReport.paRefQty)),
-              _buildDataRow('Total', _displayValue(_currentReport.paTotal)),
-              _buildDataRow(
-                'Lot Batch Number',
-                _displayValue(_currentReport.paLotBatchNumber),
-              ),
-              _buildDataRow(
-                'Yield (%)',
-                _displayValue(_currentReport.paYieldPercent),
+                'To Tank',
+                _displayValue(_currentReport.oilTypeFghToTank),
               ),
             ]),
 
             _buildSection('Utility Usage (UU)', [
               _buildDataRow('Item', _displayValue(_currentReport.uuItem)),
               _buildDataRow(
-                'Budget Ref Tank',
-                _displayValue(_currentReport.uuBudgetRefTank),
+                'Budget Ref Qty',
+                _displayValue(_currentReport.uuBudgetRefQty),
               ),
               _buildDataRow(
-                'Budget Qty',
-                _displayValue(_currentReport.uuBudgetQty),
+                'Flowmeter Before',
+                _displayValue(_currentReport.uuFlowmeterBefore),
               ),
               _buildDataRow(
-                'Total CPO',
-                _displayValue(_currentReport.uuTotalCPO),
+                'Flowmeter After',
+                _displayValue(_currentReport.uuFlowmeterAfter),
               ),
               _buildDataRow(
-                'Total Steam',
-                _displayValue(_currentReport.uuTotalSteam),
-              ),
-              _buildDataRow(
-                'Steam / CPO',
-                _displayValue(_currentReport.uuSteamCPO),
+                'Flowmeter Total',
+                _displayValue(_currentReport.uuFlowmeterTotal),
               ),
               _buildDataRow(
                 'Yield (%)',
                 _displayValue(_currentReport.uuYieldPercent),
               ),
+              _buildDataRow('Listrik', _displayValue(_currentReport.uuListrik)),
+              _buildDataRow('Air', _displayValue(_currentReport.uuAir)),
             ]),
 
             _buildSection('Metadata & Remarks', [
@@ -465,9 +441,8 @@ class _DailyProductionFractionationDetailPageState
             ]),
 
             // Action Buttons
-            if ((user?.role == 'ADM' ||
-                user?.role == 'LEAD' ||
-                user?.role == 'LEAD_QC'))
+            // user?.role
+            if (AppRoles.leadProd.contains(user?.role))
               if (widget.isDisplayed)
                 Row(
                   children: [
@@ -529,10 +504,6 @@ class _DailyProductionFractionationDetailPageState
     await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        // TODO: 4. Use a Consumer for your production provider
-        // return Consumer<DailyProductionFractionationProvider>(
-        //   builder: (context, provider, child) {
-        //     bool isLoadingDelete = provider.isLoadingDelete;
         return Consumer2<DailyProductionFractionationProvider, UserProvider>(
           builder:
               (context, provider, userProvider, child) => AlertDialog(
@@ -628,22 +599,43 @@ class _DailyProductionFractionationDetailPageState
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async {
-                    // TODO: 6. Call the approve/reject method from your provider
-                    // await context.read<DailyProductionFractionationProvider>()
-                    //      .sendApproveRejectReport(...);
+                    final result = await context
+                        .read<DailyProductionFractionationProvider>()
+                        .sendApproveRejectReport(
+                          user.username,
+                          isApproved ? "Approved" : "Rejected",
+                          user.role,
+                          int.parse(shift),
+                          isApproved ? null : _remarkController.text,
+                          widget.item.id,
+                          widget.item.plant!,
+                        );
 
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isApproved
-                              ? "Number ${_currentReport.id} berhasil diapprove"
-                              : "Number ${_currentReport.id} berhasil direject",
+                    if (result) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "N ${_currentReport.id} berhasil diapprove"
+                                : "Number ${_currentReport.id} berhasil direject",
+                          ),
                         ),
-                      ),
-                    );
-                    Navigator.of(context).pop(); // Close bottom sheet
-                    Navigator.of(context).pop(); // Go back from detail page
+                      );
+                      Navigator.of(context).pop(); // Close bottom sheet
+                      Navigator.of(context).pop(); // Go back from detail page
+                    } else {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "ID Transaksi ${_currentReport.id} gagal diapprove"
+                                : "ID Transaksi ${_currentReport.id} gagal direject",
+                          ),
+                        ),
+                      );
+                    }
                   },
                   child: Text(
                     isApproved ? 'Submit Approval' : 'Submit Rejection',

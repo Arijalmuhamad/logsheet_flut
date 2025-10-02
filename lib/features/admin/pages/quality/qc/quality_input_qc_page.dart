@@ -1257,7 +1257,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                   // Refinery Dropdown
                   Consumer<ValueProvider>(
                     builder: (context, provider, child) {
-                      if (provider.isLoading) {
+                      if (provider.isWorkCenterLoading) {
                         // Return a disabled dropdown with a loading indicator or message
                         return DropdownButtonFormField<String>(
                           value: null,
@@ -1352,7 +1352,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                   // Oil Type Dropdown
                   Consumer<ValueProvider>(
                     builder: (context, provider, child) {
-                      if (provider.isLoading) {
+                      if (provider.isOilTypeLoading) {
                         // Return a disabled dropdown with a loading indicator or message
                         return DropdownButtonFormField<String>(
                           value: null,
@@ -1442,7 +1442,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                   // Tank Source Dropdown
                   Consumer<ValueProvider>(
                     builder: (context, provider, child) {
-                      if (provider.isLoading) {
+                      if (provider.isTankSourceLoading) {
                         // Return a disabled dropdown with a loading indicator or message
                         return DropdownButtonFormField<String>(
                           value: null,

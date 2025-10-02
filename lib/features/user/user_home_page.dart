@@ -6,6 +6,11 @@ import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -285,7 +290,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.4"), Text("Build 2025-09-19")],
+              children: [Text("Version 1.0.12"), Text("Build 2025-09-30")],
             ),
           ],
         ),
@@ -423,7 +428,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                '${formQualityRefineryQC?.treeMenu} \n${formQualityRefineryQC?.code} ',
+                '${formQualityRefineryQC?.treeMenu} \n${formQualityRefineryQC?.name} ',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -436,7 +441,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 // Manager-only Approval item
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'Quality List (${formQualityRefineryQC?.code})',
+                  title: 'Quality List (${formQualityRefineryQC?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -449,7 +454,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 )) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formQualityRefineryQC?.code})',
+                    title: 'Approval (${formQualityRefineryQC?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -462,7 +467,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formQualityRefineryQC?.code})',
+                  title: 'Reports (${formQualityRefineryQC?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -489,7 +494,7 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
               title: Text(
                 // 'Quality Refinery List \n(${formQualityReportProduction?.code})',
-                '${formQualityReportProduction?.treeMenu} \n(${formQualityReportProduction?.code})',
+                '${formQualityReportProduction?.treeMenu} \n(${formQualityReportProduction?.name})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -501,7 +506,7 @@ class _UserHomePageState extends State<UserHomePage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'Quality List ${formQualityReportProduction?.code})',
+                  title: 'Quality List ${formQualityReportProduction?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -517,7 +522,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 )) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formQualityReportProduction?.code})',
+                    title: 'Approval (${formQualityReportProduction?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -530,7 +535,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formQualityReportProduction?.code})',
+                  title: 'Reports (${formQualityReportProduction?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -554,7 +559,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                '${formPretreatment?.treeMenu}\n (${formPretreatment?.code})',
+                '${formPretreatment?.treeMenu}\n (${formPretreatment?.name})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -566,7 +571,7 @@ class _UserHomePageState extends State<UserHomePage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List ${formPretreatment?.code})',
+                  title: 'List ${formPretreatment?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -582,7 +587,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formPretreatment?.code})',
+                    title: 'Approval (${formPretreatment?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -597,7 +602,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formPretreatment?.code})',
+                  title: 'Reports (${formPretreatment?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -623,7 +628,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                '${formDeodorizing?.treeMenu} \n(${formDeodorizing?.code})',
+                '${formDeodorizing?.treeMenu} \n(${formDeodorizing?.name})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -635,7 +640,7 @@ class _UserHomePageState extends State<UserHomePage> {
               children: [
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List (${formDeodorizing?.code})',
+                  title: 'List (${formDeodorizing?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -649,7 +654,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDeodorizing?.code})',
+                    title: 'Approval (${formDeodorizing?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -663,7 +668,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDeodorizing?.code})',
+                  title: 'Reports (${formDeodorizing?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -682,146 +687,140 @@ class _UserHomePageState extends State<UserHomePage> {
           ],
 
           // Daily Productions
-          // if ([
-          //   "ADM",
-          //   "LEAD",
-          //   "LEAD_PROD",
-          //   "OPR",
-          //   "OPR_PROD",
-          //   "MGR",
-          //   "MGR_PROD",
-          // ].contains(userRole)) ...[
-          //   _buildDrawerSubheader("Daily Production"),
-          //   ExpansionTile(
-          //     leading: const Icon(
-          //       Icons.article_rounded,
-          //       color: Color(0xFF655F5B),
-          //     ),
-          //     title: const Text(
-          //       'Refinery',
-          //       style: TextStyle(
-          //         color: Colors.black87,
-          //         fontWeight: FontWeight.w600,
-          //       ),
-          //     ),
-          //     childrenPadding: const EdgeInsets.only(left: 20.0),
-          //     iconColor: const Color(0xFFAB2F2B),
-          //     collapsedIconColor: Colors.grey,
-          //     children: [
-          //       // Manager-only Approval item
-          //       if (["MGR", "MGR_PROD", "ADM"].contains(userRole)) ...[
-          //         _buildDrawerItem(
-          //           icon: Icons.check_circle_outline,
-          //           title: 'Approval (${formDailyProduction?.code})',
-          //           onTap: () {
-          //             Navigator.push(
-          //               context,
-          //               MaterialPageRoute(
-          //                 builder:
-          //                     (_) => DeodorizingFiltrationApprovalListPage(),
-          //               ),
-          //             );
-          //           },
-          //         ),
-          //       ],
-          //       _buildDrawerItem(
-          //         icon: Icons.list_alt_outlined,
-          //         title: 'List (${formDailyProduction?.code})',
-          //         onTap: () {
-          //           Navigator.push(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder:
-          //                   (_) => DailyProductionRefineryListPage(
-          //                     dataForm: formDailyProduction!,
-          //                   ),
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //       _buildDrawerItem(
-          //         icon: Icons.receipt_long_outlined,
-          //         title: 'Reports (${formDailyProduction?.code})',
-          //         onTap: () {
-          //           Navigator.push(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder:
-          //                   (_) => DailyProductionFractionationListPage(
-          //                     formData: formDailyProduction!,
-          //                   ),
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          //   ExpansionTile(
-          //     leading: const Icon(
-          //       Icons.article_rounded,
-          //       color: Color(0xFF655F5B),
-          //     ),
-          //     title: const Text(
-          //       'Fractionation',
-          //       style: TextStyle(
-          //         color: Colors.black87,
-          //         fontWeight: FontWeight.w600,
-          //       ),
-          //     ),
-          //     childrenPadding: const EdgeInsets.only(left: 20.0),
-          //     iconColor: const Color(0xFFAB2F2B),
-          //     collapsedIconColor: Colors.grey,
-          //     children: [
-          //       // Manager-only Approval item
-          //       if (["MGR", "MGR_PROD", "ADM"].contains(userRole)) ...[
-          //         _buildDrawerItem(
-          //           icon: Icons.check_circle_outline,
-          //           title: 'Approval (${formDailyProduction?.code})',
-          //           onTap: () {
-          //             Navigator.push(
-          //               context,
-          //               MaterialPageRoute(
-          //                 builder:
-          //                     (_) => DeodorizingFiltrationApprovalListPage(),
-          //               ),
-          //             );
-          //           },
-          //         ),
-          //       ],
-          //       _buildDrawerItem(
-          //         icon: Icons.list_alt_outlined,
-          //         title: 'List (${formDailyProduction?.code})',
-          //         onTap: () {
-          //           Navigator.push(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder:
-          //                   (_) => DailyProductionFractionationListPage(
-          //                     formData: formDailyProduction!,
-          //                   ),
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //       _buildDrawerItem(
-          //         icon: Icons.receipt_long_outlined,
-          //         title: 'Reports (${formDailyProduction?.code})',
-          //         onTap: () {
-          //           Navigator.push(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder:
-          //                   (_) => DeodorizingFiltrationReportListPage(
-          //                     userName: user.username,
-          //                     role: user.role,
-          //                   ),
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          // ],
+          if (AppRoles.logsheetAccess.contains(userRole)) ...[
+            _buildDrawerSubheader("Daily Production"),
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: const Text(
+                'Refinery',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List (${formDailyProductionRefinery?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionRefineryListPage(
+                              dataForm: formDailyProductionRefinery!,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formDailyProductionRefinery?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => DailyProductionRefineryApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDailyProductionRefinery?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionFractionationListPage(
+                              formData: formDailyProductionRefinery!,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: const Text(
+                'Fractionation',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List (${formDailyProductionFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionFractionationListPage(
+                              formData: formDailyProductionFractionation!,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title:
+                        'Approval (${formDailyProductionFractionation?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  DailyProductionFractionationApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDailyProductionFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DeodorizingFiltrationReportListPage(
+                              userName: user.username,
+                              role: user.role,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
 
           // Show Maintenance section for all roles (as per your original code)
           // _buildDrawerSubheader("Maintenance"),
@@ -896,6 +895,7 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
             onTap: _logout,
           ),
+          SizedBox(height: 24),
         ],
       ),
     );

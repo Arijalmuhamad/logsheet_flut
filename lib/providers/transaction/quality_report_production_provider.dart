@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
@@ -215,12 +216,13 @@ class QualityReportProductionProvider with ChangeNotifier {
     String username,
     String role,
     String plantCode,
+    UserEntity currentUser,
   ) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(report);
+      final result = await _repository.updateReportTicket(report, currentUser);
       log(result.toString());
       fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
@@ -257,8 +259,13 @@ class QualityReportProductionProvider with ChangeNotifier {
         id,
       );
       log("status from provider: $result");
-      fetchAllTickets(null, null, username, role, plantCode);
-      return result;
+
+      if (result) {
+        await fetchAllTickets(null, null, username, role, plantCode);
+        return result;
+      } else {
+        return false;
+      }
     } catch (e) {
       _setErrorMessage('Failed to send approval or rejection report: $e');
       _setLoading(false);

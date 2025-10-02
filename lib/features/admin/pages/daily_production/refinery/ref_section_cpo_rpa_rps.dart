@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 class SectionCpoRpaRps extends StatefulWidget {
-  final int? selectedHourAwal;
-  final int? selectedHourAkhir;
-  final VoidCallback onHourTapAwal;
-  final VoidCallback onHourTapAkhir;
+  final TimeOfDay? selectedTimeAwal;
+  final TimeOfDay? selectedTimeAkhir;
+  final VoidCallback onTimeTapAwal;
+  final VoidCallback onTimeTapAkhir;
   final TextEditingController flowRateAwalController;
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
@@ -26,10 +26,10 @@ class SectionCpoRpaRps extends StatefulWidget {
     required this.flowRateAwalController,
     required this.flowRateAkhirController,
     required this.flowRateTotalController,
-    required this.selectedHourAwal,
-    required this.selectedHourAkhir,
-    required this.onHourTapAwal,
-    required this.onHourTapAkhir,
+    required this.selectedTimeAwal,
+    required this.selectedTimeAkhir,
+    required this.onTimeTapAwal,
+    required this.onTimeTapAkhir,
   });
 
   @override
@@ -37,6 +37,43 @@ class SectionCpoRpaRps extends StatefulWidget {
 }
 
 class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
+  void _calculateTotalFlowRate() {
+    String awalText = widget.flowRateAwalController.text;
+    String akhirText = widget.flowRateAkhirController.text;
+
+    //parse to double
+    double flowRateAwal = double.tryParse(awalText) ?? 0.0;
+    double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+
+    double totalFlowRate = flowRateAkhir - flowRateAwal;
+
+    String newTotal = totalFlowRate.toStringAsFixed(3);
+
+    if (widget.flowRateTotalController.text != newTotal) {
+      setState(() {
+        widget.flowRateTotalController.text = newTotal;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.flowRateAwalController.addListener(_calculateTotalFlowRate);
+    widget.flowRateAkhirController.addListener(_calculateTotalFlowRate);
+
+    _calculateTotalFlowRate();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.flowRateAwalController.removeListener(_calculateTotalFlowRate);
+    widget.flowRateAkhirController.removeListener(_calculateTotalFlowRate);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -48,7 +85,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const CustomSectionTitle(title: 'CPO/RPA/RPS'),
+            const CustomSectionTitle(title: 'Raw Material'),
             const SizedBox(height: 12),
             const Text("From Tangki", style: _sectionTextStyle),
             const SizedBox(height: 10),
@@ -113,16 +150,21 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                         );
                       }).toList(),
                   onChanged: widget.onTankChanged,
+                  decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
             ),
             const SizedBox(height: 12),
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: widget.selectedHourAwal,
-              onTap: widget.onHourTapAwal,
+            CustomHourMinuteField(
+              selectedTime: widget.selectedTimeAwal,
+              onTap: widget.onTimeTapAwal,
             ),
+            // CustomHourField(
+            //   selectedHour: widget.selectedHourAwal,
+            //   onTap: widget.onTimeTapAwal,
+            // ),
             const SizedBox(height: 12),
             CustomTextField(
               controller: widget.flowRateAwalController,
@@ -133,10 +175,14 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
             const SizedBox(height: 12),
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: widget.selectedHourAkhir,
-              onTap: widget.onHourTapAkhir,
+            CustomHourMinuteField(
+              selectedTime: widget.selectedTimeAkhir,
+              onTap: widget.onTimeTapAkhir,
             ),
+            // CustomHourField(
+            //   selectedHour: widget.selectedHourAkhir,
+            //   onTap: widget.onTimeTapAkhir,
+            // ),
             const SizedBox(height: 12),
             CustomTextField(
               controller: widget.flowRateAkhirController,
@@ -145,16 +191,32 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
               isNumeric: true,
             ),
             const SizedBox(height: 12),
-            CustomTextField(
-              controller: widget.flowRateTotalController,
-              label: 'Total Flow Rate',
-              icon: Icons.functions,
-              isNumeric: true,
+            Row(
+              children: [
+                Text(
+                  "Total Flowrate: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  widget.flowRateTotalController.text.isEmpty
+                      ? '0.000'
+                      : widget.flowRateTotalController.text,
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _calculateFlowrate(String awal, String akhir) {
+    double flowrateAwal = double.tryParse(awal) ?? 0.0;
+    double flowrateAkhir = double.tryParse(akhir) ?? 0.0;
+    double flowrateTotal = flowrateAkhir - flowrateAwal;
+
+    return flowrateTotal.toStringAsFixed(3);
   }
 }
 

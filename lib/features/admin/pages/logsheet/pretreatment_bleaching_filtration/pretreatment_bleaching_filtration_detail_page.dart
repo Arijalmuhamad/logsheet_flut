@@ -120,16 +120,17 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
             _buildDataRow('Plant', plant),
             _buildDataRow('Plant', _currentReport.plant ?? '-'),
             _buildDataRow('Work Center', _currentReport.refineryMachine ?? '-'),
+            _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),
           ]),
 
           // Section for Pre-Treatment data
           _buildSection('Pre-Treatment', [
             _buildDataRow(
-              'Fit 001 (CPO) - Tph',
+              'Fit 001 (${_currentReport.oilType}) - Tph',
               _currentReport.ptFit001?.toString() ?? '-',
             ),
             _buildDataRow(
-              'E001A Inlet (CPO) - °C',
+              'E001A Inlet (${_currentReport.oilType}) - °C',
               _currentReport.ptE001aInlet?.toString() ?? '-',
             ),
             _buildDataRow(
@@ -506,7 +507,7 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
         if (widget.item.preparedStatus == null)
           IconButton(
             onPressed: _showDeleteConfirmationDialog,
-            icon: Icon(Icons.delete_rounded),
+            icon: Icon(Icons.delete_rounded, color: Colors.red),
           ),
       ],
     );

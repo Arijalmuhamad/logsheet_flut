@@ -1,5 +1,5 @@
 name: logsheet_app
-description: "A new Flutter project."
+description: 'A new Flutter project.'
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.12+6
 
 environment:
   sdk: ^3.7.2
@@ -40,7 +40,7 @@ dependencies:
   uuid: ^4.0.0
   drift: ^2.14.0
   provider: ^6.1.1
-  intl: ^0.20.2 
+  intl: ^0.20.2
   flutter_vector_icons: ^2.0.0
   font_awesome_flutter: ^10.7.0
   flutter_svg: ^2.0.10
@@ -61,7 +61,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  drift_dev: ^2.14.0 
+  drift_dev: ^2.14.0
   build_runner: ^2.4.8
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -73,15 +73,14 @@ dev_dependencies:
 
 flutter_icons:
   android: true
-  ios: true 
-  image_path: "assets/images/logo-kpn-1.png"
+  ios: true
+  image_path: 'assets/images/logo-kpn-1.png'
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

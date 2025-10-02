@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   final IconData icon;
   final String? hintText;
   final bool isNumeric;
+  final bool readOnly;
 
   const CustomTextField({
     super.key,
@@ -14,6 +15,7 @@ class CustomTextField extends StatelessWidget {
     required this.icon,
     this.hintText,
     this.isNumeric = false,
+    this.readOnly = false,
   });
 
   @override
@@ -23,6 +25,7 @@ class CustomTextField extends StatelessWidget {
       child: TextField(
         controller: controller,
         keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+        readOnly: readOnly,
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,

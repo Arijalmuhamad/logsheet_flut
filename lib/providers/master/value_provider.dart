@@ -19,11 +19,26 @@ class ValueProvider with ChangeNotifier {
   List<MasterValueEntity> _workCenterLists = [];
   List<MasterValueEntity> get workCenterLists => _workCenterLists;
 
+  List<MasterValueEntity> _workCenterFractLists = [];
+  List<MasterValueEntity> get workCenterFractLists => _workCenterFractLists;
+
   List<TankEntity> _tankSourceLists = [];
   List<TankEntity> get tankSourceList => _tankSourceLists;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isWorkCenterLoading = false;
+  bool get isWorkCenterLoading => _isWorkCenterLoading;
+
+  bool _isWorkCenterFractLoading = false;
+  bool get isWorkCenterFractLoading => _isWorkCenterFractLoading;
+
+  bool _isOilTypeLoading = false;
+  bool get isOilTypeLoading => _isOilTypeLoading;
+
+  bool _isTankSourceLoading = false;
+  bool get isTankSourceLoading => _isTankSourceLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -35,13 +50,33 @@ class ValueProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void _setWorkCenterLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setOilTypesLoading(bool value) {
+    _isOilTypeLoading = value;
+    notifyListeners();
+  }
+
+  void _setTankSourceLoading(bool value) {
+    _isTankSourceLoading = value;
+    notifyListeners();
+  }
+
+  void _setWorkCenterFractLoading(bool value) {
+    _isWorkCenterFractLoading = value;
+    notifyListeners();
+  }
+
   void _setErrorMessage(String? message) {
     _errorMessage = message;
     notifyListeners();
   }
 
   Future<void> fetchOilTypes() async {
-    _setLoading(true);
+    _setOilTypesLoading(true);
     _setErrorMessage(null);
 
     try {
@@ -52,7 +87,8 @@ class ValueProvider with ChangeNotifier {
       log("(ValueProvider) oil type list length: $_oilTypeLists");
     } catch (e) {
       _setErrorMessage('(ValueProvider) Failed to fetch Oil Type: $e');
-      _setLoading(false);
+    } finally {
+      _setOilTypesLoading(false);
     }
   }
 
@@ -73,7 +109,7 @@ class ValueProvider with ChangeNotifier {
   }
 
   Future<void> fetchTankSourceLists() async {
-    _setLoading(true);
+    _setTankSourceLoading(true);
     _setErrorMessage(null);
 
     try {
@@ -84,12 +120,13 @@ class ValueProvider with ChangeNotifier {
       log("(ValueProvider) Tank Source list length: $_tankSourceLists");
     } catch (e) {
       _setErrorMessage('(ValueProvider) Failed to fetch Tank Source list: $e');
-      _setLoading(false);
+    } finally {
+      _setTankSourceLoading(false);
     }
   }
 
   Future<void> fetchWorkCenterLists() async {
-    _setLoading(true);
+    _setWorkCenterLoading(true);
     _setErrorMessage(null);
 
     try {
@@ -102,7 +139,27 @@ class ValueProvider with ChangeNotifier {
       _setErrorMessage(
         '(ValueProvider) Failed to fetch Refinery Machine list: $e',
       );
-      _setLoading(false);
+    } finally {
+      _setWorkCenterLoading(false);
+    }
+  }
+
+  Future<void> fetchWorkCenterFractLists() async {
+    _setWorkCenterFractLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      _workCenterFractLists = await _valueRepository
+          .getAllFractWorkCenters()
+          .timeout(const Duration(seconds: 60));
+      notifyListeners();
+      log("(ValueProvider) FRACT Machine list length: $_workCenterFractLists");
+    } catch (e) {
+      _setErrorMessage(
+        '(ValueProvider) Failed to fetch FRACT Machine list: $e',
+      );
+    } finally {
+      _setWorkCenterFractLoading(false);
     }
   }
 
@@ -118,51 +175,14 @@ class ValueProvider with ChangeNotifier {
       await fetchWorkCenterLists();
       await fetchTankSourceLists();
       await fetchToTankGroupLists();
+      await fetchWorkCenterFractLists();
       await fetchOilTypes();
-      _setLoading(false);
-      _setErrorMessage(null);
     } catch (e) {
       _setErrorMessage('Failed to fetch initial data: $e');
     } finally {
       _setLoading(false);
+      _setErrorMessage(null);
     }
     // }
   }
-
-  // Future<void> fetchAllInitialData() async {
-  //   // Guard clause to prevent fetching if data already exists or is already loading.
-  //   if (_isLoading ||
-  //       (_workCenterLists.isNotEmpty &&
-  //           _tankSourceLists.isNotEmpty &&
-  //           _toTankGroupLists.isNotEmpty &&
-  //           _oilTypeLists.isNotEmpty)) {
-  //     return;
-  //   }
-
-  //   _setLoading(true);
-  //   _setErrorMessage(null);
-
-  //   try {
-  //     _workCenterLists = await _valueRepository.getAllWorkCenters().timeout(
-  //       const Duration(seconds: 5),
-  //     );
-  //     _tankSourceLists = await _valueRepository.getAllTankSource().timeout(
-  //       const Duration(seconds: 5),
-  //     );
-
-  //     _toTankGroupLists = await _valueRepository.getAllToTankGroup().timeout(
-  //       const Duration(seconds: 5),
-  //     );
-
-  //     _oilTypeLists = await _valueRepository.getAllOilTypes().timeout(
-  //       const Duration(seconds: 5),
-  //     );
-  //   } catch (e) {
-  //     _setErrorMessage('(ValueProvider) Failed to fetch initial data: $e');
-  //     log('(ValueProvider) Failed to fetch initial data: $e');
-  //   } finally {
-  //     // This will now correctly be called only after all fetches are complete or have failed.
-  //     _setLoading(false);
-  //   }
-  // }
 }

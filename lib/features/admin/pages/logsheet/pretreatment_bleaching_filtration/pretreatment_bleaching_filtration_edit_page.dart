@@ -32,6 +32,7 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
   int? selectedHour;
   int currentStep = 0;
   String? selectedWorkCenter;
+  String? selectedOilType;
   DataFormNoEntity? formData;
 
   final Map<String, TextEditingController> pressureControllers = {};
@@ -65,9 +66,9 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
   final TextEditingController fnF601Controller = TextEditingController();
   final TextEditingController fnF602Controller = TextEditingController();
   final TextEditingController fnF603Controller = TextEditingController();
-  final TextEditingController fnF604AController = TextEditingController();
-  final TextEditingController fnF604BController = TextEditingController();
-  final TextEditingController fnF604CController = TextEditingController();
+  final TextEditingController fbF604AController = TextEditingController();
+  final TextEditingController fbF604BController = TextEditingController();
+  final TextEditingController fbF604CController = TextEditingController();
 
   // Filter Bag
 
@@ -84,6 +85,7 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
     final logsheet = widget.logsheet;
     selectedWorkCenter = logsheet.refineryMachine;
     selectedHour = logsheet.time?.hour;
+    selectedOilType = logsheet.oilType;
 
     // Pretreatment
     ptFit001Controller.text = logsheet.ptFit001?.toString() ?? '';
@@ -107,9 +109,11 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
     fnF601Controller.text = logsheet.fnF601?.toString() ?? '';
     fnF602Controller.text = logsheet.fnF602?.toString() ?? '';
     fnF603Controller.text = logsheet.fnF603?.toString() ?? '';
-    fnF604AController.text = logsheet.fb604a?.toString() ?? '';
-    fnF604BController.text = logsheet.fb604b?.toString() ?? '';
-    fnF604CController.text = logsheet.fb604c?.toString() ?? '';
+
+    // Bag Filter
+    fbF604AController.text = logsheet.fb604a?.toString() ?? '';
+    fbF604BController.text = logsheet.fb604b?.toString() ?? '';
+    fbF604CController.text = logsheet.fb604c?.toString() ?? '';
 
     // Catridge Filters
     fcF605AController.text = logsheet.fc605a?.toString() ?? '';
@@ -124,7 +128,8 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => context.read<ValueProvider>().fetchWorkCenterLists(),
+      (timeStamp) async =>
+          await context.read<ValueProvider>().fetchWorkCenterLists(),
     );
 
     _populateFields();
@@ -148,9 +153,9 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
       fnF601Controller,
       fnF602Controller,
       fnF603Controller,
-      fnF604AController,
-      fnF604BController,
-      fnF604CController,
+      fbF604AController,
+      fbF604BController,
+      fbF604CController,
       fcF605AController,
       fcF605BController,
       clarityController,
@@ -308,6 +313,90 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
                 ),
               ),
             ),
+          ),
+
+          // OIL TYPE DROPDOWN
+          Consumer<ValueProvider>(
+            builder: (context, provider, child) {
+              if (provider.isOilTypeLoading) {
+                return DropdownButtonFormField<String>(
+                  value: null,
+                  items: [],
+                  onChanged: null,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Loading Work Center...',
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (provider.oilTypeLists.isEmpty) {
+                return TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Oil Types tidak ditemukan.',
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Icon(Icons.warning_amber_rounded),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        provider.fetchOilTypes();
+                      },
+                    ),
+                  ),
+                );
+              }
+
+              return DropdownButtonFormField(
+                value: selectedOilType,
+                items:
+                    provider.oilTypeLists.map((oil) {
+                      return DropdownMenuItem<String>(
+                        value: oil.code,
+                        child: Text(oil.name),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedOilType = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  hintText: 'Pilih Oil Type',
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Icon(Icons.oil_barrel_rounded),
+                  ),
+                ),
+              );
+            },
           ),
 
           const SizedBox(height: 40),
@@ -551,21 +640,21 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
         return Column(
           children: [
             _buildTextField(
-              controller: fnF604AController,
+              controller: fbF604AController,
               label: 'F604A',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai F604A (bar)',
             ),
             _buildTextField(
-              controller: fnF604BController,
+              controller: fbF604BController,
               label: 'F604B',
               icon: Icons.bubble_chart,
               isNumeric: true,
               hintText: 'Masukkan nilai F604B (bar)',
             ),
             _buildTextField(
-              controller: fnF604CController,
+              controller: fbF604CController,
               label: 'F604C',
               icon: Icons.bubble_chart,
               isNumeric: true,
@@ -817,6 +906,7 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
         id: widget.logsheet.id,
 
         // Pretreatment
+        oilType: selectedOilType,
         ptFit001: parseDouble(ptFit001Controller),
         ptE001aInlet: parseDouble(ptE001aInletController),
         ptF0012: parseDouble(ptFit0012Controller),
@@ -838,9 +928,9 @@ class _LogsheetPretreatmentBleachingFiltrationEditPageState
         fnF601: parseDouble(fnF601Controller),
         fnF602: parseDouble(fnF602Controller),
         fnF603: parseDouble(fnF603Controller),
-        fb604a: parseDouble(fnF604AController),
-        fb604b: parseDouble(fnF604BController),
-        fb604c: parseDouble(fnF604CController),
+        fb604a: parseDouble(fbF604AController),
+        fb604b: parseDouble(fbF604BController),
+        fb604c: parseDouble(fbF604CController),
 
         // Catridge Filters
         fc605a: parseDouble(fcF605AController),

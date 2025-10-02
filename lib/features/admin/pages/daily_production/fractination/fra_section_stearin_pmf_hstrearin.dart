@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
@@ -18,7 +19,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
   final TextEditingController flowmeterTotalController;
   final TextEditingController noController;
   final List<TankEntity> tanksList;
-  final List<String> oilList;
+  final List<MasterValueEntity> oilList;
   String? selectedTank;
   String? selectedOil;
   final Function(String?) onTankChanged;
@@ -53,12 +54,34 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomSectionTitle(title: 'STEARIN/PMF/HARD STEARIN'),
-            CustomDropdown.fromStringItems(
-              hint: 'Pilih Oil Type',
-              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-              stringItems: oilList,
-              value: selectedOil,
-              onChanged: onOilFgChanged,
+            DropdownButtonFormField<MasterValueEntity>(
+              value:
+                  selectedOil != null &&
+                          oilList.any((oil) => oil.code == selectedOil)
+                      ? oilList.firstWhere((oil) => oil.code == selectedOil)
+                      : null,
+              items:
+                  oilList.map((oil) {
+                    return DropdownMenuItem<MasterValueEntity>(
+                      value: oil,
+                      child: Text(oil.name),
+                    );
+                  }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  onOilFgChanged(value.code); // simpan code-nya saja
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'Pilih Oil Type',
+                filled: true,
+                fillColor: const Color(0xFFF0ECE9),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.category),
+              ),
             ),
             const SizedBox(height: 12),
             CustomTextField(
@@ -130,6 +153,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                         );
                       }).toList(),
                   onChanged: onTankChanged,
+                  decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
             ),
@@ -169,6 +193,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
               label: 'Total',
               icon: Icons.functions,
               isNumeric: true,
+              readOnly: true,
             ),
           ],
         ),

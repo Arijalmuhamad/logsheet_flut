@@ -49,8 +49,11 @@ class QualityReportQCRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> updateReportTicket(QualityReportQcEntity report) async {
-    return await _mySQLService.updateTicket(report);
+  Future<bool> updateReportTicket(
+    QualityReportQcEntity report,
+    String role,
+  ) async {
+    return await _mySQLService.updateTicket(report, role);
   }
 
   Future<List<QualityReportQcEntity>> getReportsForManager(

@@ -15,6 +15,10 @@ class AppRoles {
     "MGR_QC",
   ];
 
+  static const List<String> leadQC = ["LEAD", "LEAD_QC"];
+  static const List<String> leadProd = ["LEAD", "LEAD_PROD"];
+  static const List<String> managerProd = ["MGR", "MGR_PROD"];
+
   /// Roles that can approve within the Quality Control (QC) section.
   static const List<String> qualityControlManagerApproval = [
     "MGR",
@@ -53,6 +57,13 @@ class AppRoles {
 
   /// Roles that can approve Production Logsheets.
   static const List<String> logsheetManagerApproval = [
+    "MGR",
+    "MGR_PROD",
+    "ADM",
+  ];
+
+  /// Roles that can approve within the Production quality reports section.
+  static const List<String> productionManagerApproval = [
     "MGR",
     "MGR_PROD",
     "ADM",

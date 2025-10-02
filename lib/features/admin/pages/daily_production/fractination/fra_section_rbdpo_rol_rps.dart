@@ -124,6 +124,7 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                         );
                       }).toList(),
                   onChanged: onTankChanged,
+                  decoration: InputDecoration(hintText: 'Pilih Tank'),
                 );
               },
             ),
@@ -163,6 +164,7 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
               label: 'Total',
               icon: Icons.functions,
               isNumeric: true,
+              readOnly: true,
             ),
           ],
         ),

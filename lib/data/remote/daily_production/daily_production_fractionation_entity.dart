@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 class DailyProductionFractionationEntity {
   // General Information
   final String id;
@@ -9,70 +7,70 @@ class DailyProductionFractionationEntity {
   final DateTime? postingDate;
   final String? workCenter;
   final String? shift;
-  final String? cpoTank;
 
+  // Oil Type - Raw Material
   final String? oilTypeRm;
+  final int? oilTypeRmNo;
+  final int? oilTypeRmCr;
+  final String? oilTypeRmFromTank;
   final String? oilTypeRmAwalJam;
   final int? oilTypeRmAwalFlowmeter;
   final String? oilTypeRmAkhirJam;
   final int? oilTypeRmAkhirFlowmeter;
   final int? oilTypeRmTotal;
-  final String? oilTypeFg;
-  final String? oilTypeFgAwalJam;
-  final int? oilTypeFgAwalFlowmeter;
-  final String? oilTypeFgAkhirJam;
-  final int? oilTypeFgAkhirFlowmeter;
-  final int? oilTypeFgTotal;
-  final String? oilTypeFgToTank;
 
-  final String? bpAwalJam;
-  final int? bpAwalFlowmeter;
-  final String? bpAkhirJam;
-  final int? bpAkhirFlowmeter;
-  final int? bpTotal;
-  final int? bpToTank;
+  // Oil Type - Finish Good
+  final String? oilTypeFgs;
+  final int? oilTypeFgsNo;
+  final int? oilTypeFgsCr;
+  final String? oilTypeFgsAwalJam;
+  final int? oilTypeFgsAwalFlowmeter;
+  final String? oilTypeFgsAkhirJam;
+  final int? oilTypeFgsAkhirFlowmeter;
+  final int? oilTypeFgsTotal;
+  final String? oilTypeFgsToTank;
 
-  final String? beRefTank;
-  final String? beRefQty;
-  final String? beTotalBag;
-  final String? beTotalJenis;
-  final int? beLotBatchNumber;
-  final double? beYieldPercent;
+  // Oil Type - By Product
+  final String? oilTypeFgh;
+  final int? oilTypeFghNo;
+  final String? oilTypeFghAwalJam;
+  final double? oilTypeFghAwalFlowmeter;
+  final String? oilTypeFghAkhirJam;
+  final double? oilTypeFghAkhirFlowmeter;
+  final double? oilTypeFghTotal;
+  final String? oilTypeFghToTank;
 
-  final String? paRefTank;
-  final String? paRefQty;
-  final String? paTotal;
-  final int? paLotBatchNumber;
-  final double? paYieldPercent;
-
-  final String? uuItem;
-  final String? uuBudgetRefTank;
-  final String? uuBudgetQty;
-  final int? uuTotalCPO;
-  final int? uuTotalSteam;
-  final String? uuSteamCPO;
-  final double? uuYieldPercent;
-
+  // Remarks & Flag
   final String? remarks;
   final String? flag;
 
-  final String? entryBy;
-  final DateTime? entryDate;
-  final String? preparedBy;
-  final DateTime? preparedDate;
-  final String? preparedStatus;
-  final String? preparedStatusRemarks;
+  // Utility Usage
+  final String? uuItem;
+  final String? uuBudgetRefQty;
+  final int? uuFlowmeterBefore;
+  final int? uuFlowmeterAfter;
+  final int? uuFlowmeterTotal;
+  final double? uuYieldPercent;
+  final int? uuListrik;
+  final int? uuAir;
 
-  final String? verifiedBy;
-  final DateTime? verifiedDate;
-  final String? verifiedStatus;
-  final String? verifiedStatusRemarks;
+  // Signatures & Status
+  String? entryBy;
+  DateTime? entryDate;
+  String? preparedBy;
+  DateTime? preparedDate;
+  String? preparedStatus;
+  String? preparedStatusRemarks;
+  String? verifiedBy;
+  DateTime? verifiedDate;
+  String? verifiedStatus;
+  String? verifiedStatusRemarks;
+  String? checkedBy;
+  DateTime? checkedDate;
+  String? checkedStatus;
+  String? checkedStatusRemarks;
 
-  final String? checkedBy;
-  final DateTime? checkedDate;
-  final String? checkedStatus;
-  final String? checkedStatusRemarks;
-
+  // Form Information
   final String? formNo;
   final DateTime? dateIssued;
   final int? revisionNo;
@@ -86,46 +84,42 @@ class DailyProductionFractionationEntity {
     required this.postingDate,
     required this.workCenter,
     required this.shift,
-    required this.cpoTank,
     required this.oilTypeRm,
+    required this.oilTypeRmNo,
+    required this.oilTypeRmCr,
+    required this.oilTypeRmFromTank,
     required this.oilTypeRmAwalJam,
     required this.oilTypeRmAwalFlowmeter,
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
-    required this.oilTypeFg,
-    required this.oilTypeFgAwalJam,
-    required this.oilTypeFgAwalFlowmeter,
-    required this.oilTypeFgAkhirJam,
-    required this.oilTypeFgAkhirFlowmeter,
-    required this.oilTypeFgTotal,
-    required this.oilTypeFgToTank,
-    required this.bpAwalJam,
-    required this.bpAwalFlowmeter,
-    required this.bpAkhirJam,
-    required this.bpAkhirFlowmeter,
-    required this.bpTotal,
-    required this.bpToTank,
-    required this.beRefTank,
-    required this.beRefQty,
-    required this.beTotalBag,
-    required this.beTotalJenis,
-    required this.beLotBatchNumber,
-    required this.beYieldPercent,
-    required this.paRefTank,
-    required this.paRefQty,
-    required this.paTotal,
-    required this.paLotBatchNumber,
-    required this.paYieldPercent,
-    required this.uuItem,
-    required this.uuBudgetRefTank,
-    required this.uuBudgetQty,
-    required this.uuTotalCPO,
-    required this.uuTotalSteam,
-    required this.uuSteamCPO,
-    required this.uuYieldPercent,
+    required this.oilTypeFgs,
+    required this.oilTypeFgsNo,
+    required this.oilTypeFgsCr,
+    required this.oilTypeFgsAwalJam,
+    required this.oilTypeFgsAwalFlowmeter,
+    required this.oilTypeFgsAkhirJam,
+    required this.oilTypeFgsAkhirFlowmeter,
+    required this.oilTypeFgsTotal,
+    required this.oilTypeFgsToTank,
+    required this.oilTypeFgh,
+    required this.oilTypeFghNo,
+    required this.oilTypeFghAwalJam,
+    required this.oilTypeFghAwalFlowmeter,
+    required this.oilTypeFghAkhirJam,
+    required this.oilTypeFghAkhirFlowmeter,
+    required this.oilTypeFghTotal,
+    required this.oilTypeFghToTank,
     required this.remarks,
     required this.flag,
+    required this.uuItem,
+    required this.uuBudgetRefQty,
+    required this.uuFlowmeterBefore,
+    required this.uuFlowmeterAfter,
+    required this.uuFlowmeterTotal,
+    required this.uuYieldPercent,
+    required this.uuListrik,
+    required this.uuAir,
     required this.entryBy,
     required this.entryDate,
     required this.preparedBy,
@@ -158,27 +152,14 @@ class DailyProductionFractionationEntity {
     DateTime? parseDateTime(dynamic value) {
       if (value is String) return DateTime.tryParse(value);
       if (value is DateTime) return value;
-      if (value == null) return null;
-      return null;
-    }
-
-    DateTime? parseTime(dynamic value) {
-      if (value is String) return DateFormat('HH:mm').tryParse(value);
-      if (value is DateTime) return value;
-      if (value == null) return null;
       return null;
     }
 
     double? parseDouble(dynamic value) {
-      if (value == null) {
-        return null;
-      } else if (value is double) {
-        return value;
-      } else if (value is int) {
-        return value.toDouble();
-      } else if (value is String) {
-        return double.tryParse(value);
-      }
+      if (value == null) return null;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value);
       return null;
     }
 
@@ -190,46 +171,44 @@ class DailyProductionFractionationEntity {
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
-      cpoTank: map['cpo_tank'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
+      oilTypeRmNo: parseInt(map['oil_type_rm_no']),
+      oilTypeRmCr: parseInt(map['oil_type_rm_cr']),
+      oilTypeRmFromTank: map['oil_type_rm_from_tank'] as String?,
       oilTypeRmAwalJam: map['oil_type_rm_awal_jam'] as String?,
       oilTypeRmAwalFlowmeter: parseInt(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: map['oil_type_rm_akhir_jam'] as String?,
       oilTypeRmAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
       oilTypeRmTotal: parseInt(map['oil_type_rm_total']),
-      oilTypeFg: map['oil_type_fg'] as String?,
-      oilTypeFgAwalJam: map['oil_type_fg_awal_jam'] as String?,
-      oilTypeFgAwalFlowmeter: parseInt(map['oil_type_fg_awal_flowmeter']),
-      oilTypeFgAkhirJam: map['oil_type_fg_akhir_jam'] as String?,
-      oilTypeFgAkhirFlowmeter: parseInt(map['oil_type_fg_akhir_flowmeter']),
-      oilTypeFgTotal: parseInt(map['oil_type_fg_total']),
-      oilTypeFgToTank: map['oil_type_fg_to_tank'] as String?,
-      bpAwalJam: map['bp_awal_jam'] as String?,
-      bpAwalFlowmeter: parseInt(map['bp_awal_flowmeter']),
-      bpAkhirJam: map['bp_akhir_jam'] as String?,
-      bpAkhirFlowmeter: parseInt(map['bp_akhir_flowmeter']),
-      bpTotal: parseInt(map['bp_total']),
-      bpToTank: parseInt(map['bp_to_tank']),
-      beRefTank: map['be_ref_tank'] as String?,
-      beRefQty: map['be_ref_qty'] as String?,
-      beTotalBag: map['be_total_bag'] as String?,
-      beTotalJenis: map['be_total_jenis'] as String?,
-      beLotBatchNumber: parseInt(map['be_lot_batch_number']),
-      beYieldPercent: parseDouble(map['be_yield_percent']),
-      paRefTank: map['pa_ref_tank'] as String?,
-      paRefQty: map['pa_ref_qty'] as String?,
-      paTotal: map['pa_total'] as String?,
-      paLotBatchNumber: parseInt(map['pa_lot_batch_number']),
-      paYieldPercent: parseDouble(map['pa_yield_percent']),
-      uuItem: map['uu_item'] as String?,
-      uuBudgetRefTank: map['uu_budget_ref_tank'] as String?,
-      uuBudgetQty: map['uu_budget_qty'] as String?,
-      uuTotalCPO: parseInt(map['uu_total_cpo']),
-      uuTotalSteam: parseInt(map['uu_total_steam']),
-      uuSteamCPO: map['uu_steam_cpo'] as String?,
-      uuYieldPercent: parseDouble(map['uu_yield_percent']),
+      oilTypeFgs: map['oil_type_fgs'] as String?,
+      oilTypeFgsNo: parseInt(map['oil_type_fgs_no']),
+      oilTypeFgsCr: parseInt(map['oil_type_fgs_cr']),
+      oilTypeFgsAwalJam: map['oil_type_fgs_awal_jam'] as String?,
+      oilTypeFgsAwalFlowmeter: parseInt(map['oil_type_fgs_awal_flowmeter']),
+      oilTypeFgsAkhirJam: map['oil_type_fgs_akhir_jam'] as String?,
+      oilTypeFgsAkhirFlowmeter: parseInt(map['oil_type_fgs_akhir_flowmeter']),
+      oilTypeFgsTotal: parseInt(map['oil_type_fgs_total']),
+      oilTypeFgsToTank: map['oil_type_fgs_to_tank'] as String?,
+      oilTypeFgh: map['oil_type_fgh'] as String?,
+      oilTypeFghNo: parseInt(map['oil_type_fgh_no']),
+      oilTypeFghAwalJam: map['oil_type_bp_awal_jam'] as String?,
+      oilTypeFghAwalFlowmeter: parseDouble(map['oil_type_fgh_awal_flowmeter']),
+      oilTypeFghAkhirJam: map['oil_type_fgh_akhir_jam'] as String?,
+      oilTypeFghAkhirFlowmeter: parseDouble(
+        map['oil_type_fgh_akhir_flowmeter'],
+      ),
+      oilTypeFghTotal: parseDouble(map['oil_type_fgh_total']),
+      oilTypeFghToTank: map['oil_type_fgh_to_tank'] as String?,
       remarks: map['remarks'] as String?,
       flag: map['flag'] as String?,
+      uuItem: map['uu_item'] as String?,
+      uuBudgetRefQty: map['uu_budget_ref_qty'] as String?,
+      uuFlowmeterBefore: parseInt(map['uu_flowmeter_before']),
+      uuFlowmeterAfter: parseInt(map['uu_flowmeter_after']),
+      uuFlowmeterTotal: parseInt(map['uu_flowmeter_total']),
+      uuYieldPercent: parseDouble(map['uu_yield_percent']),
+      uuListrik: parseInt(map['uu_listrik']),
+      uuAir: parseInt(map['uu_air']),
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
       preparedBy: map['prepared_by'] as String?,
@@ -260,46 +239,42 @@ class DailyProductionFractionationEntity {
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
       'shift': shift,
-      'cpo_tank': cpoTank,
       'oil_type_rm': oilTypeRm,
+      'oil_type_rm_no': oilTypeRmNo,
+      'oil_type_rm_cr': oilTypeRmCr,
+      'oil_type_rm_from_tank': oilTypeRmFromTank,
       'oil_type_rm_awal_jam': oilTypeRmAwalJam,
       'oil_type_rm_awal_flowmeter': oilTypeRmAwalFlowmeter,
       'oil_type_rm_akhir_jam': oilTypeRmAkhirJam,
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
       'oil_type_rm_total': oilTypeRmTotal,
-      'oil_type_fg': oilTypeFg,
-      'oil_type_fg_awal_jam': oilTypeFgAwalJam,
-      'oil_type_fg_awal_flowmeter': oilTypeFgAwalFlowmeter,
-      'oil_type_fg_akhir_jam': oilTypeFgAkhirJam,
-      'oil_type_fg_akhir_flowmeter': oilTypeFgAkhirFlowmeter,
-      'oil_type_fg_total': oilTypeFgTotal,
-      'oil_type_fg_to_tank': oilTypeFgToTank,
-      'bp_awal_jam': bpAwalJam,
-      'bp_awal_flowmeter': bpAwalFlowmeter,
-      'bp_akhir_jam': bpAkhirJam,
-      'bp_akhir_flowmeter': bpAkhirFlowmeter,
-      'bp_total': bpTotal,
-      'bp_to_tank': bpToTank,
-      'be_ref_tank': beRefTank,
-      'be_ref_qty': beRefQty,
-      'be_total_bag': beTotalBag,
-      'be_total_jenis': beTotalJenis,
-      'be_lot_batch_number': beLotBatchNumber,
-      'be_yield_percent': beYieldPercent,
-      'pa_ref_tank': paRefTank,
-      'pa_ref_qty': paRefQty,
-      'pa_total': paTotal,
-      'pa_lot_batch_number': paLotBatchNumber,
-      'pa_yield_percent': paYieldPercent,
-      'uu_item': uuItem,
-      'uu_budget_ref_tank': uuBudgetRefTank,
-      'uu_budget_qty': uuBudgetQty,
-      'uu_total_cpo': uuTotalCPO,
-      'uu_total_steam': uuTotalSteam,
-      'uu_steam_cpo': uuSteamCPO,
-      'uu_yield_percent': uuYieldPercent,
+      'oil_type_fgs': oilTypeFgs,
+      'oil_type_fgs_no': oilTypeFgsNo,
+      'oil_type_fgs_cr': oilTypeFgsCr,
+      'oil_type_fgs_awal_jam': oilTypeFgsAwalJam,
+      'oil_type_fgs_awal_flowmeter': oilTypeFgsAwalFlowmeter,
+      'oil_type_fgs_akhir_jam': oilTypeFgsAkhirJam,
+      'oil_type_fgs_akhir_flowmeter': oilTypeFgsAkhirFlowmeter,
+      'oil_type_fgs_total': oilTypeFgsTotal,
+      'oil_type_fgs_to_tank': oilTypeFgsToTank,
+      'oil_type_fgh': oilTypeFgh,
+      'oil_type_fgh_no': oilTypeFghNo,
+      'oil_type_fgh_awal_jam': oilTypeFghAwalJam,
+      'oil_type_fgh_awal_flowmeter': oilTypeFghAwalFlowmeter,
+      'oil_type_fgh_akhir_jam': oilTypeFghAkhirJam,
+      'oil_type_fgh_akhir_flowmeter': oilTypeFghAkhirFlowmeter,
+      'oil_type_fgh_total': oilTypeFghTotal,
+      'oil_type_fgh_to_tank': oilTypeFghToTank,
       'remarks': remarks,
       'flag': flag,
+      'uu_item': uuItem,
+      'uu_budget_ref_qty': uuBudgetRefQty,
+      'uu_flowmeter_before': uuFlowmeterBefore,
+      'uu_flowmeter_after': uuFlowmeterAfter,
+      'uu_flowmeter_total': uuFlowmeterTotal,
+      'uu_yield_percent': uuYieldPercent,
+      'uu_listrik': uuListrik,
+      'uu_air': uuAir,
       'entry_by': entryBy,
       'entry_date': entryDate?.toIso8601String(),
       'prepared_by': preparedBy,

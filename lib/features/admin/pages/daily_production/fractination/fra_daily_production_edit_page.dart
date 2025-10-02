@@ -1,17 +1,30 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:flutter_svg/svg.dart'; // Added Svg import
+import 'package:intl/intl.dart'; // Added DateFormat import
+
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_olein_solein_sstearin.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_rbdpo_rol_rps.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_stearin_pmf_hstrearin.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
+
 import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart'; // Added CustomSectionTitle import
+import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart'; // Added CustomTextField import
 import 'package:logsheet_app/features/admin/widgets/section_card.dart';
+import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:provider/provider.dart';
 
 class FraDailyProductionEditPage extends StatefulWidget {
   final DataFormNoEntity dataForm;
@@ -30,6 +43,8 @@ class FraDailyProductionEditPage extends StatefulWidget {
 class _FraDailyProductionEditPageState
     extends State<FraDailyProductionEditPage> {
   bool isLoading = true;
+  bool isUtillityUsageActive = false; // Synchronized state
+  String? steamItem = "Steam (Ton/Ton CPO)"; // Synchronized state
   String? selected1Tank;
   String? selected2Tank;
   String? selected3Tank;
@@ -44,19 +59,16 @@ class _FraDailyProductionEditPageState
   String? selectedOilRm;
   String? selectedOilFg;
   String? selectedOilBp;
-  String? selectedRefineryMachine;
+  String? selectedMachine; // Changed from selectedRefineryMachine
+  DateTime selectedTransactionDate = DateTime.now(); // Synchronized state
+  String? budgetValue; // Synchronized state
 
-  String? selectedLocation;
-
-  // Dummy data
-  final List<String> dummyLocations = ['Fract. 500', 'Fract. 400'];
-  final List<String> oilTypeFg = ['OLEIN', 'SUPER OLEIN', 'SOFT STEARIN'];
-  final List<String> oilTypeRm = ['RBDPO', 'ROL', 'RPS'];
-  final List<String> oilTypeBp = ['STEARIN', 'PMF', 'HARD STEARIN'];
-
+  // Dummy data (Used for budget calculation on input page)
+  Map<String, double> utilityBudget = {'FRAC-02': 0.06, 'FRAC-01': 0.05};
   List<TankEntity>? tankLists;
-  final List<String> dummyShiftOptions = ['I', 'II', 'III'];
+  List<MasterValueEntity>? oilLists;
 
+  // Controllers for flowmeters
   final TextEditingController flowmeter1AwalController =
       TextEditingController();
   final TextEditingController flowmeter1AkhirController =
@@ -78,46 +90,68 @@ class _FraDailyProductionEditPageState
   final TextEditingController flowmeter3TotalController =
       TextEditingController();
 
-  final TextEditingController flowMaterController = TextEditingController();
+  // Controllers for section inputs (No/CR)
   final TextEditingController no1Controller = TextEditingController();
   final TextEditingController no2Controller = TextEditingController();
   final TextEditingController no3Controller = TextEditingController();
   final TextEditingController cr1Controller = TextEditingController();
   final TextEditingController cr2Controller = TextEditingController();
 
-  // Bleaching Earth
-  String? selectedShiftBleaching;
-  bool ref500Bleaching = false;
-  bool ref150Bleaching = false;
-  final TextEditingController bleachingBagController = TextEditingController();
-  final TextEditingController bleachingTypeController = TextEditingController();
-  final TextEditingController bleachingBatchController =
-      TextEditingController();
-
-  // Phosphoric Acid
-  String? selectedShiftPhosphoric;
-  bool ref500Phosphoric = false;
-  bool ref150Phosphoric = false;
-  final TextEditingController phosphoricWeightController =
-      TextEditingController();
-  final TextEditingController phosphoricVolumeController =
-      TextEditingController();
-  final TextEditingController phosphoricYieldController =
-      TextEditingController();
-  final TextEditingController phosphoricBatchController =
-      TextEditingController();
-
+  // Controller for remarks
   final TextEditingController remarksController = TextEditingController();
+
+  // Controllers for Utility Usage (uu) - Synchronized
+  final TextEditingController uuFlowmeterBefore = TextEditingController();
+  final TextEditingController uuFlowmeterAfter = TextEditingController();
+  final TextEditingController uuFlowmeterTotal = TextEditingController();
+  final TextEditingController uuYieldController = TextEditingController();
+  final TextEditingController uuListrikController = TextEditingController();
+  final TextEditingController uuAirController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    final valueProvider = context.read<ValueProvider>();
+    if (valueProvider.tankSourceList.isEmpty ||
+        valueProvider.oilTypeLists.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        await valueProvider.fetchAllInitialData();
+      });
+    }
+
+    // Initialize listeners for flowmeter calculation
+    flowmeter1AwalController.addListener(_calculateTotalFlowmeter);
+    flowmeter1AkhirController.addListener(_calculateTotalFlowmeter);
+    flowmeter2AwalController.addListener(_calculateTotalFlowmeter);
+    flowmeter2AkhirController.addListener(_calculateTotalFlowmeter);
+    flowmeter3AwalController.addListener(_calculateTotalFlowmeter);
+    flowmeter3AkhirController.addListener(_calculateTotalFlowmeter);
+    uuFlowmeterBefore.addListener(
+      _calculateTotalFlowmeter,
+    ); // Added UU listener
+    uuFlowmeterAfter.addListener(_calculateTotalFlowmeter); // Added UU listener
+
+    // Set initial list values
+    tankLists = valueProvider.tankSourceList;
+    oilLists = valueProvider.oilTypeLists;
+
+    // Prepopulate data
     _prepopulateData();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    // Remove listeners
+    flowmeter1AwalController.removeListener(_calculateTotalFlowmeter);
+    flowmeter1AkhirController.removeListener(_calculateTotalFlowmeter);
+    flowmeter2AwalController.removeListener(_calculateTotalFlowmeter);
+    flowmeter2AkhirController.removeListener(_calculateTotalFlowmeter);
+    flowmeter3AwalController.removeListener(_calculateTotalFlowmeter);
+    flowmeter3AkhirController.removeListener(_calculateTotalFlowmeter);
+    uuFlowmeterBefore.removeListener(_calculateTotalFlowmeter);
+    uuFlowmeterAfter.removeListener(_calculateTotalFlowmeter);
+
+    // Dispose controllers
     flowmeter1AwalController.dispose();
     flowmeter1AkhirController.dispose();
     flowmeter1TotalController.dispose();
@@ -132,14 +166,92 @@ class _FraDailyProductionEditPageState
     no3Controller.dispose();
     cr1Controller.dispose();
     cr2Controller.dispose();
-    flowMaterController.dispose();
-    bleachingBagController.dispose();
-    bleachingTypeController.dispose();
-    bleachingBatchController.dispose();
-    phosphoricWeightController.dispose();
-    phosphoricVolumeController.dispose();
-    phosphoricYieldController.dispose();
-    phosphoricBatchController.dispose();
+    remarksController.dispose();
+
+    // Dispose UU controllers
+    uuFlowmeterBefore.dispose();
+    uuFlowmeterAfter.dispose();
+    uuFlowmeterTotal.dispose();
+    uuYieldController.dispose();
+    uuListrikController.dispose();
+    uuAirController.dispose();
+
+    super.dispose();
+  }
+
+  void _calculateTotalFlowmeter() {
+    // This logic is now synchronized with the input page
+    final String awal1Text = flowmeter1AwalController.text;
+    final String akhir1Text = flowmeter1AkhirController.text;
+
+    final String awal2Text = flowmeter2AwalController.text;
+    final String akhir2Text = flowmeter2AkhirController.text;
+
+    final String awal3Text = flowmeter3AwalController.text;
+    final String akhir3Text = flowmeter3AkhirController.text;
+
+    final String awal4Text = uuFlowmeterBefore.text;
+    final String akhir4Text = uuFlowmeterAfter.text;
+
+    if (awal1Text != '' && akhir1Text != '') {
+      // Coba parse nilai ke integer
+      final int awal = int.parse(awal1Text);
+      final int akhir = int.parse(akhir1Text);
+
+      log("AWAL $awal AKHIR $akhir");
+
+      // Hitung total: Akhir - Awal
+      final int total = akhir - awal;
+      flowmeter1TotalController.text = total.toString();
+    } else {
+      // Kosongkan total jika ada input yang tidak valid
+      flowmeter1TotalController.text = '';
+    }
+
+    if (awal2Text != '' && akhir2Text != '') {
+      // Coba parse nilai ke integer
+      final int awal = int.parse(awal2Text);
+      final int akhir = int.parse(akhir2Text);
+
+      log("AWAL $awal AKHIR $akhir");
+
+      // Hitung total: Akhir - Awal
+      final int total = akhir - awal;
+      flowmeter2TotalController.text = total.toString();
+    } else {
+      // Kosongkan total jika ada input yang tidak valid
+      flowmeter2TotalController.text = '';
+    }
+
+    if (awal3Text != '' && akhir3Text != '') {
+      // Coba parse nilai ke integer
+      final int awal = int.parse(awal3Text);
+      final int akhir = int.parse(akhir3Text);
+
+      log("AWAL $awal AKHIR $akhir");
+
+      // Hitung total: Akhir - Awal
+      final int total = akhir - awal;
+      flowmeter3TotalController.text = total.toString();
+    } else {
+      // Kosongkan total jika ada input yang tidak valid
+      flowmeter3TotalController.text = '';
+    }
+
+    if (awal4Text != '' && akhir4Text != '') {
+      // Coba parse nilai ke integer
+      final int awal = int.parse(awal4Text);
+      final int akhir = int.parse(akhir4Text);
+
+      log("AWAL $awal AKHIR $akhir");
+
+      // Hitung total: Akhir - Awal
+      final int total = akhir - awal;
+      uuFlowmeterTotal.text = total.toString();
+    } else {
+      // Kosongkan total jika ada input yang tidak valid
+      uuFlowmeterTotal.text = '';
+    }
   }
 
   void _showHourPickerAndUpdateState(
@@ -157,41 +269,161 @@ class _FraDailyProductionEditPageState
             selectedHour: selectedHour,
             onHourSelected: (hour) {
               onHourSelected(hour);
-              // Navigator.pop(context);
             },
           ),
     );
   }
 
+  Future<void> _selectTransactionDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedTransactionDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+    );
+    if (picked != null && picked != selectedTransactionDate) {
+      setState(() {
+        selectedTransactionDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Budget calculation logic synchronized
+    budgetValue =
+        selectedMachine != null && utilityBudget.containsKey(selectedMachine)
+            ? selectedMachine == 'FRAC-02'
+                ? '${utilityBudget['FRAC-02']}'
+                : '${utilityBudget['FRAC-01']}'
+            : 'N/A';
+
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
-      appBar: CustomAppBar(title: 'Daily Production - Edit Fractionation'),
+      appBar: CustomAppBar(
+        title:
+            'Daily Production - Edit Fractionation (${widget.dataForm.code})',
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // === Dropdown: Plant ===
-            CustomDropdown.fromStringItems(
-              hint: 'Pilih Plant',
-              prefixIcon: PrefixIconHelper.get('location'),
-              stringItems: dummyLocations,
-              value: selectedLocation,
-              onChanged: (value) => setState(() => selectedLocation = value),
+            // === Dropdown: Work Center (Machine) ===
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                // Simplified loading/empty state for brevity in this edit page.
+                // It should mirror the input page's logic closely.
+                // Assuming data is loaded in initState or will load.
+
+                // Use the loaded list or an empty list if null/loading
+                final List<MasterValueEntity> workCenterList =
+                    provider.workCenterFractLists;
+
+                return DropdownButtonFormField<String>(
+                  value: selectedMachine,
+                  items:
+                      workCenterList.map((machine) {
+                        return DropdownMenuItem<String>(
+                          value: machine.code,
+                          child: Text(
+                            "${machine.code} | ${machine.name}",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedMachine = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Work Center',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 8),
 
-            // === Dropdown: Part ===
-            CustomDropdown.fromStringItems(
-              hint: 'Pilih Oil Type',
-              prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-              stringItems: oilTypeRm,
-              value: selectedOilRm,
-              onChanged: (value) => setState(() => selectedOilRm = value),
+            // === Transaction Date ===
+            GestureDetector(
+              onTap: _selectTransactionDate,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  hintText: 'Pilih Tanggal Transaksi',
+                  labelText: 'Tanggal Transaksi',
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Icon(Icons.calendar_today),
+                  ),
+                ),
+                child: Text(
+                  DateFormat('dd MMMM yyyy').format(selectedTransactionDate),
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
             ),
+            const SizedBox(height: 8),
+
+            // === Oil Type Dropdown (RM) ===
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                final List<MasterValueEntity> oilTypeLists =
+                    provider.oilTypeLists;
+
+                return DropdownButtonFormField<String>(
+                  value: selectedOilRm,
+                  items:
+                      oilTypeLists.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.code,
+                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedOilRm = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Oil Type',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Icon(Icons.oil_barrel_rounded),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
             const SizedBox(height: 16),
+
             if (selectedOilRm == null) ...[
               const Center(
                 child: Text(
@@ -254,18 +486,18 @@ class _FraDailyProductionEditPageState
                 flowmeterAwalController: flowmeter2AwalController,
                 flowmeterAkhirController: flowmeter2AkhirController,
                 flowmeterTotalController: flowmeter2TotalController,
-                oilList: oilTypeRm,
-                selectedOil: selectedOilRm,
+                oilList: oilLists ?? [], // Use actual oilLists
+                selectedOil: selectedOilFg, // Use selectedOilFg
                 onOilFgChanged:
                     (oil) => setState(() {
-                      selectedOilRm = oil;
+                      selectedOilFg = oil;
                     }),
               ),
               // === Section:STEARIN/PMF/HARD STEARIN
               FraSectionStearinPmfHstrearin(
                 noController: no3Controller,
                 tanksList: tankLists ?? [],
-                onTankChanged: (value) => setState(() => selected2Tank = value),
+                onTankChanged: (value) => setState(() => selected3Tank = value),
                 selectedTank: selected3Tank,
                 selectedHourAwal: selectedHour3Awal,
                 selectedHourAkhir: selectedHour3Akhir,
@@ -286,13 +518,116 @@ class _FraDailyProductionEditPageState
                 flowmeterAwalController: flowmeter3AwalController,
                 flowmeterAkhirController: flowmeter3AkhirController,
                 flowmeterTotalController: flowmeter3TotalController,
-                oilList: oilTypeFg,
-                selectedOil: selectedOilFg,
+                oilList: oilLists ?? [], // Use actual oilLists
+                selectedOil: selectedOilBp, // Use selectedOilBp
                 onOilFgChanged:
                     (oil) => setState(() {
-                      selectedOilFg = oil;
+                      selectedOilBp = oil;
                     }),
               ),
+
+              // === Utillity Usage Section (Synchronized) ===
+              CheckboxListTile(
+                value: isUtillityUsageActive,
+                title: Text("Input Utillity Usage"),
+                onChanged: (value) {
+                  setState(() {
+                    isUtillityUsageActive = !isUtillityUsageActive;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+
+              if (isUtillityUsageActive) ...[
+                Card(
+                  color: Colors.white,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CustomSectionTitle(title: 'Utillty Usage'),
+                        Row(
+                          children: [
+                            const Text(
+                              "Item: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                steamItem ?? '-',
+                                style: const TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Text(
+                              "Budget: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              budgetValue ?? "-",
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        CustomTextField(
+                          controller: uuFlowmeterBefore,
+                          label: 'Flowmeter Before',
+                          icon: Icons.functions,
+                        ),
+                        CustomTextField(
+                          controller: uuFlowmeterAfter,
+                          label: 'Flowmeter After',
+                          icon: Icons.functions,
+                        ),
+                        CustomTextField(
+                          controller: uuFlowmeterTotal,
+                          label: 'Total',
+                          icon: Icons.functions,
+                          readOnly: true,
+                        ),
+                        CustomTextField(
+                          controller: uuYieldController,
+                          label: 'Yield %',
+                          icon: Icons.functions,
+                        ),
+                        CustomTextField(
+                          controller: uuListrikController,
+                          label: 'Listrik',
+                          icon: Icons.electric_bolt_rounded,
+                        ),
+                        CustomTextField(
+                          controller: uuAirController,
+                          label: 'Air',
+                          icon: Icons.water_drop_rounded,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              // === Remark Section ===
               SectionCard(
                 title: 'Remark',
                 children: [CustomRemarkField(controller: remarksController)],
@@ -300,7 +635,14 @@ class _FraDailyProductionEditPageState
               const SizedBox(height: 24),
 
               // === Submit Button ===
-              CustomSaveButton(onPressed: () {}, label: 'Submit Laporan'),
+              CustomSaveButton(
+                onPressed:
+                    () => showSaveConfirmationDialog(
+                      context,
+                      onConfirm: () async => await _updateReport(),
+                    ),
+                label: 'Update Laporan',
+              ),
             ],
           ],
         ),
@@ -317,54 +659,353 @@ class _FraDailyProductionEditPageState
     final entity = widget.entity;
 
     // Set dropdown and simple state values
-    selectedLocation = entity.workCenter?.trim();
+    selectedMachine = entity.workCenter?.trim();
     selectedOilRm = entity.oilTypeRm?.trim();
+    selectedOilFg = entity.oilTypeFgs?.trim(); // Added
+    selectedOilBp = entity.oilTypeFgh?.trim(); // Added
+    selectedTransactionDate = entity.transactionDate ?? DateTime.now(); // Added
 
-    // Section 1: RBDPO/ROL/RPS Data
-    selected1Tank = entity.cpoTank;
+    // --- Section 1: RBDPO/ROL/RPS Data ---
+    // Note: cpoTank is missing in the entity for Section 1, using oilTypeRmFromTank
+    selected1Tank = entity.oilTypeRmFromTank;
     selectedHour1Awal = _parseHour(entity.oilTypeRmAwalJam);
     selectedHour1Akhir = _parseHour(entity.oilTypeRmAkhirJam);
+    no1Controller.text = entity.oilTypeRmNo?.toString() ?? ''; // Added
+    cr1Controller.text = entity.oilTypeRmCr?.toString() ?? ''; // Added
     flowmeter1AwalController.text =
         entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
     flowmeter1AkhirController.text =
         entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
     flowmeter1TotalController.text = entity.oilTypeRmTotal?.toString() ?? '';
 
-    // Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN Data
-    selected2Tank = entity.oilTypeFgToTank;
-    selectedHour2Awal = _parseHour(entity.oilTypeFgAwalJam);
-    selectedHour2Akhir = _parseHour(entity.oilTypeFgAkhirJam);
+    // --- Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN Data ---
+    selected2Tank = entity.oilTypeFgsToTank;
+    selectedHour2Awal = _parseHour(entity.oilTypeFgsAwalJam);
+    selectedHour2Akhir = _parseHour(entity.oilTypeFgsAkhirJam);
+    no2Controller.text = entity.oilTypeFgsNo?.toString() ?? ''; // Added
+    cr2Controller.text = entity.oilTypeFgsCr?.toString() ?? ''; // Added
     flowmeter2AwalController.text =
-        entity.oilTypeFgAwalFlowmeter?.toString() ?? '';
+        entity.oilTypeFgsAwalFlowmeter?.toString() ?? '';
     flowmeter2AkhirController.text =
-        entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
-    flowmeter2TotalController.text = entity.oilTypeFgTotal?.toString() ?? '';
+        entity.oilTypeFgsAkhirFlowmeter?.toString() ?? '';
+    flowmeter2TotalController.text = entity.oilTypeFgsTotal?.toString() ?? '';
 
-    // Section 3: STEARIN/PMF/HARD STEARIN Data
-    selected3Tank = entity.bpToTank?.toString();
-    selectedHour3Awal = _parseHour(entity.bpAwalJam);
-    selectedHour3Akhir = _parseHour(entity.bpAkhirJam);
-    flowmeter3AwalController.text = entity.bpAwalFlowmeter?.toString() ?? '';
-    flowmeter3AkhirController.text = entity.bpAkhirFlowmeter?.toString() ?? '';
-    flowmeter3TotalController.text = entity.bpTotal?.toString() ?? '';
+    // --- Section 3: STEARIN/PMF/HARD STEARIN Data ---
+    selected3Tank = entity.oilTypeFghToTank; // Corrected to FghToTank
+    selectedHour3Awal = _parseHour(entity.oilTypeFghAwalJam);
+    selectedHour3Akhir = _parseHour(entity.oilTypeFghAkhirJam);
+    no3Controller.text = entity.oilTypeFghNo?.toString() ?? ''; // Added
 
-    // Bleaching Earth Data
-    bleachingBagController.text = entity.beTotalBag ?? '';
-    bleachingTypeController.text = entity.beTotalJenis ?? '';
-    bleachingBatchController.text = entity.beLotBatchNumber?.toString() ?? '';
-    // You can add logic for the ref checkboxes here if needed
-    // e.g., if (entity.beRefTank == 'REF-500') ref500Bleaching = true;
+    flowmeter3AwalController.text =
+        entity.oilTypeFghAwalFlowmeter?.toString() ?? '';
+    flowmeter3AkhirController.text =
+        entity.oilTypeFghAkhirFlowmeter?.toString() ?? '';
+    flowmeter3TotalController.text = entity.oilTypeFghTotal?.toString() ?? '';
 
-    // Phosphoric Acid Data
-    phosphoricWeightController.text = entity.paTotal ?? '';
-    phosphoricYieldController.text = entity.paYieldPercent?.toString() ?? '';
-    phosphoricBatchController.text = entity.paLotBatchNumber?.toString() ?? '';
-    // You can add logic for the ref checkboxes here as well
+    final hasUuData =
+        entity.uuFlowmeterBefore != null ||
+        entity.uuFlowmeterAfter != null ||
+        entity.uuFlowmeterTotal != null ||
+        entity.uuYieldPercent != null ||
+        entity.uuListrik != null ||
+        entity.uuAir != null;
 
-    // Remarks
+    if (hasUuData) {
+      isUtillityUsageActive = true;
+    }
+
+    steamItem = entity.uuItem ?? "Steam (Ton/Ton CPO)";
+
+    uuFlowmeterBefore.text = entity.uuFlowmeterBefore?.toString() ?? '';
+    uuFlowmeterAfter.text = entity.uuFlowmeterAfter?.toString() ?? '';
+    uuFlowmeterTotal.text = entity.uuFlowmeterTotal?.toString() ?? '';
+    uuYieldController.text = entity.uuYieldPercent?.toString() ?? '';
+    uuListrikController.text = entity.uuListrik?.toString() ?? '';
+    uuAirController.text = entity.uuAir?.toString() ?? '';
+
+    // --- Remarks ---
     remarksController.text = entity.remarks ?? '';
 
-    // TODO: Some controllers like no1Controller, cr1Controller, etc., do not have
-    // a clear mapping in the entity file and have been left empty.
+    // Trigger state update to reflect prepopulated data in UI
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
+  }
+
+  Future<void> showSaveConfirmationDialog(
+    BuildContext context, {
+    required Future<void> Function() onConfirm,
+  }) async {
+    bool isLoading =
+        Provider.of<DailyProductionFractionationProvider>(
+          context,
+          listen: false,
+        ).isLoading;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Konfirmasi Update"),
+              content: const Text(
+                "Apakah anda yakin ingin mengubah tiket ini?",
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () {
+                            Navigator.of(context).pop();
+                          },
+                  child: const Text("Tidak"),
+                ),
+                isLoading
+                    ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed: () async {
+                        await onConfirm();
+                        if (context.mounted) Navigator.of(context).pop();
+                      },
+                      child: const Text("Ya"),
+                    ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  DateTime _getTransactionDate() {
+    final DateTime now = selectedTransactionDate;
+    return DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+      now.second,
+    );
+  }
+
+  DateTime _getPostingDate() {
+    final DateTime now = _getTransactionDate();
+    final int hour = now.hour;
+
+    // Logic for determining posting date based on time, mirroring input page
+    if (hour <= 7) {
+      final DateTime previousDay = now.subtract(const Duration(days: 1));
+      return DateTime(
+        previousDay.year,
+        previousDay.month,
+        previousDay.day,
+        previousDay.hour,
+        previousDay.minute,
+        previousDay.second,
+      );
+    } else {
+      return now;
+    }
+  }
+
+  int _getShiftBasedOnTimeAndDate(DateTime time) {
+    int hour = time.hour;
+    int day = time.weekday;
+    log("Day: $day, Hour: $hour");
+
+    // Logic for determining shift, mirroring input page
+    if (day >= DateTime.friday) {
+      if (hour >= 8 && hour < 20) {
+        return 4;
+      } else {
+        return 5;
+      }
+    } else {
+      if (hour >= 8 && hour <= 15) {
+        return 1;
+      } else if (hour >= 16 && hour <= 23) {
+        return 2;
+      } else {
+        return 3;
+      }
+    }
+  }
+
+  int? _parseInt(String value) {
+    final text = value.trim();
+    return text.isEmpty ? null : int.tryParse(text);
+  }
+
+  double? _parseDouble(TextEditingController c) {
+    final text = c.text.trim();
+    // Use tryParse to handle potential non-double inputs gracefully
+    final double? parsed = double.tryParse(text);
+    return text.isEmpty || parsed == null
+        ? null
+        : double.parse(parsed.toStringAsFixed(4));
+  }
+
+  String? _convertStringTimeToDateTime(int? hour) {
+    try {
+      if (hour == null) {
+        return null;
+      }
+
+      if (hour < 0 || hour > 23) {
+        throw FormatException("Hour must be between 0 and 23, but was $hour.");
+      }
+      final formattedHour = "${hour.toString().padLeft(2, '0')}:00";
+
+      return formattedHour;
+    } on FormatException catch (e) {
+      log("Error processing time string '$hour': $e");
+      rethrow;
+    }
+  }
+
+  Future<void> _updateReport() async {
+    final provider = context.read<DailyProductionFractionationProvider>();
+    final currentUser = context.read<UserProvider>().currentUser;
+    final currentPlant = context.read<PlantProvider>().currentPlant;
+    final plantCode = currentPlant!.code;
+    final companyName =
+        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+
+    if (!context.mounted) return;
+
+    final dataForm = widget.dataForm;
+    final postingDate = _getPostingDate();
+
+    // The existing ticket ID is used for update, not generating a new one.
+    final existingTicketId = widget.entity.id;
+
+    try {
+      final entity = DailyProductionFractionationEntity(
+        // Use existing ID and company information
+        id: existingTicketId,
+        company: companyName, // Use current company from provider
+        plant: currentPlant.code,
+        transactionDate: widget.entity.transactionDate,
+        postingDate: widget.entity.postingDate,
+        workCenter: selectedMachine, // Use selectedMachine from state
+        shift: _getShiftBasedOnTimeAndDate(postingDate).toString(),
+
+        // Section 1: RBDPO/ROL/RPS
+        oilTypeRm: selectedOilRm,
+        oilTypeRmNo: _parseInt(no1Controller.text),
+        oilTypeRmCr: _parseInt(cr1Controller.text),
+        oilTypeRmFromTank: selected1Tank,
+        oilTypeRmAwalJam: _convertStringTimeToDateTime(selectedHour1Awal),
+        oilTypeRmAwalFlowmeter: _parseInt(flowmeter1AwalController.text),
+        oilTypeRmAkhirJam: _convertStringTimeToDateTime(selectedHour1Akhir),
+        oilTypeRmAkhirFlowmeter: _parseInt(flowmeter1AkhirController.text),
+        oilTypeRmTotal: _parseInt(flowmeter1TotalController.text),
+
+        // Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN
+        oilTypeFgs: selectedOilFg,
+        oilTypeFgsNo: _parseInt(no2Controller.text),
+        oilTypeFgsCr: _parseInt(cr2Controller.text),
+        oilTypeFgsAwalJam: _convertStringTimeToDateTime(selectedHour2Awal),
+        oilTypeFgsAwalFlowmeter: _parseInt(flowmeter2AwalController.text),
+        oilTypeFgsAkhirJam: _convertStringTimeToDateTime(selectedHour2Akhir),
+        oilTypeFgsAkhirFlowmeter: _parseInt(flowmeter2AkhirController.text),
+        oilTypeFgsTotal: _parseInt(flowmeter2TotalController.text),
+        oilTypeFgsToTank: selected2Tank,
+
+        // Section 3: STEARIN/PMF/HARD STEARIN
+        oilTypeFgh: selectedOilBp,
+        oilTypeFghNo: _parseInt(no3Controller.text),
+        oilTypeFghAwalJam: _convertStringTimeToDateTime(selectedHour3Awal),
+        oilTypeFghAwalFlowmeter: _parseDouble(flowmeter3AwalController),
+        oilTypeFghAkhirJam: _convertStringTimeToDateTime(selectedHour3Akhir),
+        oilTypeFghAkhirFlowmeter: _parseDouble(flowmeter3AkhirController),
+        oilTypeFghTotal: _parseDouble(flowmeter3TotalController),
+        oilTypeFghToTank: selected3Tank,
+
+        // Utility Usage (Conditional)
+        uuItem: isUtillityUsageActive ? steamItem : null,
+        uuBudgetRefQty: isUtillityUsageActive ? selectedMachine : null,
+        uuFlowmeterBefore:
+            isUtillityUsageActive ? _parseInt(uuFlowmeterBefore.text) : null,
+        uuFlowmeterAfter:
+            isUtillityUsageActive ? _parseInt(uuFlowmeterAfter.text) : null,
+        uuFlowmeterTotal:
+            isUtillityUsageActive ? _parseInt(uuFlowmeterTotal.text) : null,
+        uuListrik:
+            isUtillityUsageActive ? _parseInt(uuListrikController.text) : null,
+        uuAir: isUtillityUsageActive ? _parseInt(uuAirController.text) : null,
+        uuYieldPercent:
+            isUtillityUsageActive ? _parseDouble(uuYieldController) : null,
+
+        // Audit/Log data
+        remarks: remarksController.text,
+        flag: widget.entity.flag,
+        entryBy: widget.entity.entryBy,
+        entryDate: widget.entity.entryDate,
+        preparedBy: widget.entity.preparedBy,
+        preparedDate: widget.entity.preparedDate,
+        preparedStatus: widget.entity.preparedStatus,
+        preparedStatusRemarks: widget.entity.preparedStatusRemarks,
+
+        // Form No data
+        formNo: widget.dataForm.code,
+        dateIssued: widget.dataForm.dateIssued,
+        revisionNo: widget.dataForm.revisionNo,
+        revisionDate: widget.dataForm.revisionDate,
+
+        // Keep existing verification/check fields as they are unless process requires reset
+        verifiedBy: widget.entity.verifiedBy,
+        verifiedDate: widget.entity.verifiedDate,
+        verifiedStatus: widget.entity.verifiedStatus,
+        verifiedStatusRemarks: widget.entity.verifiedStatusRemarks,
+        checkedBy: widget.entity.checkedBy,
+        checkedDate: widget.entity.checkedDate,
+        checkedStatus: widget.entity.checkedStatus,
+        checkedStatusRemarks: widget.entity.checkedStatusRemarks,
+      );
+
+      // Call the update method from the provider
+      bool? success = await provider.updateReport(
+        entity,
+        currentUser?.username ?? "",
+        currentUser?.role ?? "",
+        plantCode,
+      );
+
+      log("is update success? $success");
+      if (success == true) {
+        if (!mounted) return;
+        // Refresh the list view after update
+        context.read<DailyProductionFractionationProvider>().fetchAllTickets(
+          null,
+          null,
+          currentUser?.username ?? "",
+          currentUser?.role ?? "",
+          plantCode,
+        );
+        _showSnackBar('Laporan berhasil diubah.');
+        if (!mounted) return;
+        Navigator.pop(context);
+      } else {
+        _showSnackBar('Gagal mengubah laporan.');
+      }
+    } catch (e) {
+      log("Gagal mengupdate laporan: $e");
+      _showSnackBar("Gagal mengupdate laporan: $e");
+    }
   }
 }

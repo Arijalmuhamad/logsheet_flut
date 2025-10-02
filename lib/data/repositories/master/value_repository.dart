@@ -37,4 +37,13 @@ class ValueRepository {
         .map((map) => MasterValueEntity.fromMap(map))
         .toList();
   }
+
+  Future<List<MasterValueEntity>> getAllFractWorkCenters() async {
+    final List<Map<String, dynamic>> workCenterLists =
+        await _mySQLService.getAllFractlWorkCenters();
+
+    return workCenterLists
+        .map((map) => MasterValueEntity.fromMap(map))
+        .toList();
+  }
 }

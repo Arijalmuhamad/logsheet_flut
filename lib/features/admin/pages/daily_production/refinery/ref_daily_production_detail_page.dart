@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
@@ -157,20 +158,20 @@ class _DailyProductionRefineryDetailPageState
         if (_currentReport.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) => RefDailyProductionEditPage(
-                        entity: _currentReport,
-                        dataForm: widget.dataForm,
-                      ),
-                ),
-              );
-              if (result != null && result is DailyProductionRefineryEntity) {
-                setState(() {
-                  _currentReport = result;
-                });
-              }
+              // final result = await Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder:
+              //         (context) => RefDailyProductionEditPage(
+              //           entity: _currentReport,
+              //           dataForm: widget.dataForm,
+              //         ),
+              //   ),
+              // );
+              // if (result != null && result is DailyProductionRefineryEntity) {
+              //   setState(() {
+              //     _currentReport = result;
+              //   });
+              // }
             },
             icon: const Icon(Icons.edit),
           ),
@@ -181,6 +182,13 @@ class _DailyProductionRefineryDetailPageState
           ),
       ],
     );
+  }
+
+  String _formatTimeOfDay(TimeOfDay? time) {
+    if (time == null) return '-';
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 
   Widget _buildBody(
@@ -208,7 +216,7 @@ class _DailyProductionRefineryDetailPageState
                   const SizedBox(width: 8),
                   _buildInfoCard(
                     'Machine',
-                    _displayValue(_currentReport.refineryMachine),
+                    _displayValue(_currentReport.workCenter),
                   ),
                   const SizedBox(width: 8),
                   _buildInfoCard('Shift', shift),
@@ -228,9 +236,10 @@ class _DailyProductionRefineryDetailPageState
                 'Oil Type',
                 _displayValue(_currentReport.oilTypeRm),
               ),
+              // --- PERUBAHAN 2: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeRmAwalJam),
+                _formatTimeOfDay(_currentReport.oilTypeRmAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -238,8 +247,9 @@ class _DailyProductionRefineryDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeRmAkhirJam),
+                _formatTimeOfDay(_currentReport.oilTypeRmAkhirJam),
               ),
+              // --- AKHIR PERUBAHAN 2 ---
               _buildDataRow(
                 'Akhir Flowmeter',
                 _displayValue(_currentReport.oilTypeRmAkhirFlowmeter),
@@ -255,9 +265,10 @@ class _DailyProductionRefineryDetailPageState
                 'Oil Type',
                 _displayValue(_currentReport.oilTypeFg),
               ),
+              // --- PERUBAHAN 3: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeFgAwalJam),
+                _formatTimeOfDay(_currentReport.oilTypeFgAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -265,8 +276,9 @@ class _DailyProductionRefineryDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeFgAkhirJam),
+                _formatTimeOfDay(_currentReport.oilTypeFgAkhirJam),
               ),
+              // --- AKHIR PERUBAHAN 3 ---
               _buildDataRow(
                 'Akhir Flowmeter',
                 _displayValue(_currentReport.oilTypeFgAkhirFlowmeter),
@@ -282,9 +294,10 @@ class _DailyProductionRefineryDetailPageState
             ]),
 
             _buildSection('By-Product (BP) / PFAD', [
+              // --- PERUBAHAN 4: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.bpAwalJam),
+                _formatTimeOfDay(_currentReport.bpAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -292,8 +305,9 @@ class _DailyProductionRefineryDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.bpAkhirJam),
+                _formatTimeOfDay(_currentReport.bpAkhirJam),
               ),
+              // --- AKHIR PERUBAHAN 4 ---
               _buildDataRow(
                 'Akhir Flowmeter',
                 _displayValue(_currentReport.bpAkhirFlowmeter),
@@ -371,6 +385,7 @@ class _DailyProductionRefineryDetailPageState
               ),
             ]),
 
+            // --- PERUBAHAN 5: Memperbaiki _buildSection yang berlebihan ---
             _buildSection('Metadata & Remarks', [
               _buildDataRow(
                 'Transaction Date',
@@ -381,8 +396,10 @@ class _DailyProductionRefineryDetailPageState
                 _formatDateTime(_currentReport.postingDate),
               ),
               _buildDataRow('Remarks', _displayValue(_currentReport.remarks)),
+              _buildDataRow('Flag', _displayValue(_currentReport.flag)),
             ]),
 
+            // --- AKHIR PERUBAHAN 5 ---
             _buildSection('Status & History', [
               _buildDataRow(
                 'Entried By',
@@ -449,10 +466,24 @@ class _DailyProductionRefineryDetailPageState
               ),
             ]),
 
+            _buildSection('Form Info', [
+              _buildDataRow('Form No', _displayValue(_currentReport.formNo)),
+              _buildDataRow(
+                'Date Issued',
+                _formatDateTime(_currentReport.dateIssued),
+              ),
+              _buildDataRow(
+                'Revision No',
+                _displayValue(_currentReport.revisionNo),
+              ),
+              _buildDataRow(
+                'Revision Date',
+                _formatDateTime(_currentReport.revisionDate),
+              ),
+            ]),
+
             // Action Buttons
-            if ((user?.role == 'ADM' ||
-                user?.role == 'LEAD' ||
-                user?.role == 'LEAD_QC'))
+            if (AppRoles.leadProd.contains(user?.role))
               if (widget.isDisplayed)
                 Row(
                   children: [
@@ -610,22 +641,43 @@ class _DailyProductionRefineryDetailPageState
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async {
-                    // TODO: 6. Call the approve/reject method from your provider
-                    // await context.read<DailyProductionRefineryProvider>()
-                    //      .sendApproveRejectReport(...);
+                    final result = await context
+                        .read<DailyProductionRefineryProvider>()
+                        .sendApproveRejectReport(
+                          user.username,
+                          isApproved ? "Approved" : "Rejected",
+                          user.role,
+                          int.parse(shift),
+                          isApproved ? null : _remarkController.text,
+                          widget.item.id,
+                          widget.item.plant!,
+                        );
 
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isApproved
-                              ? "Number ${_currentReport.id} berhasil diapprove"
-                              : "Number ${_currentReport.id} berhasil direject",
+                    if (result) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "ID Transaksi ${_currentReport.id} berhasil diapprove"
+                                : "ID Transaksi ${_currentReport.id} berhasil direject",
+                          ),
                         ),
-                      ),
-                    );
-                    Navigator.of(context).pop(); // Close bottom sheet
-                    Navigator.of(context).pop(); // Go back from detail page
+                      );
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    } else {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isApproved
+                                ? "ID Transaksi ${_currentReport.id} gagal diapprove"
+                                : "ID Transaksi ${_currentReport.id} gagal direject",
+                          ),
+                        ),
+                      );
+                    }
                   },
                   child: Text(
                     isApproved ? 'Submit Approval' : 'Submit Rejection',

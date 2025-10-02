@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
 import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
@@ -51,8 +52,11 @@ class QualityReportProductionRepository {
     return await _mySQLService.updateAutoNumber(plantCode, newAutoNumber);
   }
 
-  Future<bool> updateReportTicket(QualityReportProductionEntity report) async {
-    return await _mySQLService.updateTicket(report);
+  Future<bool> updateReportTicket(
+    QualityReportProductionEntity report,
+    UserEntity currentUser,
+  ) async {
+    return await _mySQLService.updateTicket(report, currentUser);
   }
 
   Future<List<QualityReportProductionEntity>> getReportsForManager(

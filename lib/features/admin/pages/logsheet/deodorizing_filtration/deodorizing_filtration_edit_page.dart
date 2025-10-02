@@ -27,8 +27,11 @@ class DeodorizingFiltrationEditPage extends StatefulWidget {
 class _DeodorizingFiltrationInputPageState
     extends State<DeodorizingFiltrationEditPage> {
   int? selectedHour;
-  int currentStep = 0;
   String? selectedWorkCenter;
+  String? selectedOilType;
+  String? selectedOilTypeFg;
+  String? selectedOilTypeBp;
+  int currentStep = 0;
   DataFormNoEntity? formData;
 
   // Controllers for Deodorizing Filtration inputs
@@ -62,8 +65,11 @@ class _DeodorizingFiltrationInputPageState
     final logsheet = widget.logsheet;
     selectedWorkCenter = logsheet.refineryMachine;
     selectedHour = logsheet.time?.hour;
+    selectedOilType = widget.logsheet.oilType;
+    selectedOilTypeFg = widget.logsheet.oilTypeFg;
+    selectedOilTypeBp = widget.logsheet.oilTypeBp;
 
-    fit701BpoController.text = logsheet.fit701Bpo?.toString() ?? '';
+    fit701BpoController.text = logsheet.fit701?.toString() ?? '';
     d701VacumController.text = logsheet.d701Vacum?.toString() ?? '';
     d701Td701Controller.text = logsheet.d701Td701?.toString() ?? '';
     e702Controller.text = logsheet.e702?.toString() ?? '';
@@ -81,9 +87,9 @@ class _DeodorizingFiltrationInputPageState
     f702AController.text = logsheet.f702A?.toString() ?? '';
     f702BController.text = logsheet.f702B?.toString() ?? '';
     f702CController.text = logsheet.f702C?.toString() ?? '';
-    fit704RpoController.text = logsheet.fit704Rpo?.toString() ?? '';
+    fit704RpoController.text = logsheet.fit704?.toString() ?? '';
     e704Controller.text = logsheet.e704?.toString() ?? '';
-    fit705PfadController.text = logsheet.fit705Pfad?.toString() ?? '';
+    fit705PfadController.text = logsheet.fit705?.toString() ?? '';
     e705Controller.text = logsheet.e705?.toString() ?? '';
     clarityController.text = logsheet.clarity ?? '';
     remarksController.text = logsheet.remarks ?? '';
@@ -216,11 +222,14 @@ class _DeodorizingFiltrationInputPageState
     // Assuming the provider has a similar loading state
     context.read<DeodorizingFiltrationProvider>().setLoadingReset(true);
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 300));
     setState(() {
       currentStep = 0;
       selectedWorkCenter = null;
       selectedHour = null;
+      selectedOilType = null;
+      selectedOilTypeFg = null;
+      selectedOilTypeBp = null;
       final controllers = [
         fit701BpoController,
         d701VacumController,
@@ -278,7 +287,7 @@ class _DeodorizingFiltrationInputPageState
               Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Work Center Dropdown
           Consumer<ValueProvider>(
@@ -338,7 +347,7 @@ class _DeodorizingFiltrationInputPageState
               );
             },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Hour Picker
           InkWell(
@@ -368,6 +377,92 @@ class _DeodorizingFiltrationInputPageState
                 ),
               ),
             ),
+          ),
+
+          const SizedBox(height: 6),
+
+          // OIL TYPE DROPDOWN
+          Consumer<ValueProvider>(
+            builder: (context, provider, child) {
+              if (provider.isOilTypeLoading) {
+                return DropdownButtonFormField<String>(
+                  value: null,
+                  items: [],
+                  onChanged: null,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Loading Work Center...',
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (provider.oilTypeLists.isEmpty) {
+                return TextFormField(
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Oil Types tidak ditemukan.',
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Icon(Icons.warning_amber_rounded),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () {
+                        provider.fetchOilTypes();
+                      },
+                    ),
+                  ),
+                );
+              }
+
+              return DropdownButtonFormField(
+                value: selectedOilType,
+                items:
+                    provider.oilTypeLists.map((oil) {
+                      return DropdownMenuItem<String>(
+                        value: oil.code,
+                        child: Text(oil.name),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedOilType = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF0ECE9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  hintText: 'Pilih Oil Type',
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Icon(Icons.oil_barrel_rounded),
+                  ),
+                ),
+              );
+            },
           ),
 
           if (selectedWorkCenter != null && selectedHour != null) ...[
@@ -466,7 +561,7 @@ class _DeodorizingFiltrationInputPageState
       case 4:
         return "Filter F702";
       case 5:
-        return "RPO & PFAD";
+        return "FIT 704 & FIT 705";
       case 6:
         return "E704 & E705";
       case 7:
@@ -619,8 +714,9 @@ class _DeodorizingFiltrationInputPageState
         postingDate: postingDate,
         refineryMachine: selectedWorkCenter,
         time: DateFormat('HH:mm:ss').parse(formattedTime),
+        oilType: selectedOilType,
         shift: shift,
-        fit701Bpo: parseDouble(fit701BpoController),
+        fit701: parseDouble(fit701BpoController),
         d701Vacum: parseDouble(d701VacumController),
         d701Td701: parseDouble(d701Td701Controller),
         e702: parseDouble(e702Controller),
@@ -638,9 +734,11 @@ class _DeodorizingFiltrationInputPageState
         f702A: parseDouble(f702AController),
         f702B: parseDouble(f702BController),
         f702C: parseDouble(f702CController),
-        fit704Rpo: parseDouble(fit704RpoController),
+        oilTypeFg: selectedOilTypeFg,
+        fit704: parseDouble(fit704RpoController),
         e704: parseDouble(e704Controller),
-        fit705Pfad: parseDouble(fit705PfadController),
+        oilTypeBp: selectedOilTypeBp,
+        fit705: parseDouble(fit705PfadController),
         e705: parseDouble(e705Controller),
         clarity: clarityController.text,
         remarks: remarksController.text,
@@ -803,14 +901,188 @@ class _DeodorizingFiltrationInputPageState
       case 5:
         return Column(
           children: [
+            // OIL TYPE DROPDOWN
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                if (provider.isOilTypeLoading) {
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (provider.oilTypeLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Oil Types tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          provider.fetchOilTypes();
+                        },
+                      ),
+                    ),
+                  );
+                }
+
+                return DropdownButtonFormField(
+                  value: selectedOilTypeFg,
+                  items:
+                      provider.oilTypeLists.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.code,
+                          child: Text(oil.name),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedOilTypeFg = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Oil Type FIT 704',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Icon(Icons.oil_barrel_rounded),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
             _buildTextField(
               controller: fit704RpoController,
-              label: 'FIT 704 (RPO) - tph',
+              label:
+                  selectedOilTypeFg == null
+                      ? 'FIT 704 - tph'
+                      : 'FIT 704 ($selectedOilTypeFg) - tph',
               isNumeric: true,
             ),
+            // OIL TYPE DROPDOWN
+            Consumer<ValueProvider>(
+              builder: (context, provider, child) {
+                if (provider.isOilTypeLoading) {
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (provider.oilTypeLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Oil Types tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          provider.fetchOilTypes();
+                        },
+                      ),
+                    ),
+                  );
+                }
+
+                return DropdownButtonFormField(
+                  value: selectedOilTypeBp,
+                  items:
+                      provider.oilTypeLists.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.code,
+                          child: Text(oil.name),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedOilTypeBp = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Pilih Oil Type FIT 705',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Icon(Icons.oil_barrel_rounded),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
             _buildTextField(
               controller: fit705PfadController,
-              label: 'FIT 705 (PFAD) - bar',
+              label:
+                  selectedOilTypeBp == null
+                      ? 'FIT 705 - tph'
+                      : 'FIT 705 ($selectedOilTypeBp) - tph',
               isNumeric: true,
             ),
           ],

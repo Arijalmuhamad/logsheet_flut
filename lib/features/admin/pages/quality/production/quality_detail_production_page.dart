@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_edit_production_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -177,7 +177,7 @@ class _QualityDetailProductionPageState
                         context.read<PlantProvider>().currentPlant?.code ?? "";
                     //ke provider
                     await context
-                        .read<QualityReportQCProvider>()
+                        .read<QualityReportProductionProvider>()
                         .sendApproveRejectReport(
                           user.username,
                           isApproved ? "Approved" : "Rejected",

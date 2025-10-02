@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
@@ -124,7 +125,7 @@ class QualityReportProductionMySQLService {
           JOIN
             m_roles_shift_prepared ON t_quality_report_refinery.shift = m_roles_shift_prepared.shift_code
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
+            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T')
         """;
           params["username"] = username;
           params["is_active"] = "T";
@@ -259,7 +260,10 @@ class QualityReportProductionMySQLService {
     }
   }
 
-  Future<bool> updateTicket(QualityReportProductionEntity entity) async {
+  Future<bool> updateTicket(
+    QualityReportProductionEntity entity,
+    UserEntity currentUser,
+  ) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -268,51 +272,28 @@ class QualityReportProductionMySQLService {
         return false;
       }
 
+      log("ID PRODUKSI: ${entity.id} \n ID FK PRODUKSI: ${entity.idFk}");
+
       connection = connResult.connection;
 
-      final entityData = entity.toMap();
-      final List<String> setClause = [];
-      final Map<String, dynamic> sqlExecuteParams = {};
+      final sql = """UPDATE t_quality_report_refinery SET 
+        `rm_temp` = :rm_temp, 
+        `remarks` = :remarks, 
+        `updated_by` = :updated_by, 
+        `updated_date` = :updated_date
+        WHERE 
+        id = :id_produksi""";
 
-      entityData.forEach((keyInEntityMap, value) {
-        if (keyInEntityMap != 'id' || keyInEntityMap != 'id_fk') {
-          String actualDbColumnName = keyInEntityMap;
-          String safeParameterName = keyInEntityMap;
-
-          // Handle specific column name mappings
-          if (keyInEntityMap == 'rm_mni') {
-            actualDbColumnName = 'rm_m&i';
-            safeParameterName = 'rm_mni_param';
-          } else if (keyInEntityMap == 'fg_mni') {
-            actualDbColumnName = 'fg_m&i';
-            safeParameterName = 'fg_mni_param';
-          } else if (keyInEntityMap == 'bp_mni') {
-            actualDbColumnName = 'bp_m&i';
-            safeParameterName = 'bp_mni_param';
-          } else if (keyInEntityMap == 'wsbeqc') {
-            actualDbColumnName = 'w_sbe_qc';
-            safeParameterName = 'w_sbe_qc_param';
-          } else if (keyInEntityMap == 'w_sbe_mni') {
-            actualDbColumnName = 'w_sbe_m&i';
-            safeParameterName = 'w_sbe_mni_param';
-          } else if (keyInEntityMap == 'w_sbe_m&i') {
-            actualDbColumnName = 'w_sbe_m&i';
-            safeParameterName = 'w_sbe_mni_param';
-          }
-
-          setClause.add('`$actualDbColumnName` = :$safeParameterName');
-          sqlExecuteParams[safeParameterName] = value;
-        }
-      });
-      sqlExecuteParams['id'] = entity.idFk;
-
-      final sql =
-          "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id_fk = :id";
+      final params = {
+        'rm_temp': entity.rmTemp,
+        'remarks': entity.remarks,
+        'updated_by': currentUser.username,
+        'updated_date': DateTime.now(),
+        'id_produksi': entity.id,
+      };
 
       log('Generated UPDATE SQL: $sql');
-      log('Params for SQL: $sqlExecuteParams');
-
-      final result = await connection!.execute(sql, sqlExecuteParams);
+      final result = await connection!.execute(sql, params);
       log('ticket updated: ${result.affectedRows} row(s) affected.');
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
@@ -364,6 +345,7 @@ class QualityReportProductionMySQLService {
     final String? remark,
     final String id,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
 
@@ -373,13 +355,14 @@ class QualityReportProductionMySQLService {
         );
         return false;
       }
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      connection = connResult.connection;
+      final date = DateTime.now();
 
       if (userRole == "MGR" || userRole == "MGR_PROD") {
         final sql =
             "UPDATE t_quality_report_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
 
-        final result = await connResult.connection!.execute(sql, {
+        final result = await connection!.execute(sql, {
           "username": username,
           "status": status,
           "date": date,
@@ -388,13 +371,12 @@ class QualityReportProductionMySQLService {
         });
         log("Query Sent: $sql");
         log("Affected Rows: ${result.affectedRows}");
-        connResult.connection?.close();
         return result.affectedRows > BigInt.from(0);
       } else {
         final sql =
             "UPDATE t_quality_report_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
 
-        final result = await connResult.connection!.execute(sql, {
+        final result = await connection!.execute(sql, {
           "username": username,
           "status": status,
           "date": date,
@@ -408,6 +390,12 @@ class QualityReportProductionMySQLService {
     } catch (e) {
       log("Error sending approve or reject ticket");
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log('$e');
+      }
     }
   }
 
@@ -507,7 +495,7 @@ class QualityReportProductionMySQLService {
         {
           "username": username,
           "prepared_status": "Deleted",
-          "date": "${DateTime.now()}",
+          "prepared_date": "${DateTime.now()}",
           "id": id,
         },
       );

@@ -60,18 +60,18 @@ class QualityReportQcEntity {
   final String? entryBy;
   final DateTime? entryDate;
 
-  final String? preparedBy;
-  final DateTime? preparedDate;
-  final String? preparedStatus;
-  final String? preparedStatusRemarks;
+  String? preparedBy;
+  DateTime? preparedDate;
+  String? preparedStatus;
+  String? preparedStatusRemarks;
 
-  final String? checkedBy;
-  final DateTime? checkedDate;
+  String? checkedBy;
+  DateTime? checkedDate;
   String? checkedStatus;
-  final String? checkedStatusRemarks;
+  String? checkedStatusRemarks;
 
-  final String? updatedBy;
-  final DateTime? updatedDate;
+  String? updatedBy;
+  DateTime? updatedDate;
 
   String? formNo;
   DateTime? dateIssued;

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
@@ -463,7 +464,9 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
 
             if ((user?.role == 'ADM' ||
                 user?.role == 'LEAD' ||
-                user?.role == 'LEAD_QC'))
+                user?.role == 'LEAD_QC' ||
+                user?.role == 'MGR' ||
+                user?.role == 'MGR_QC'))
               if (widget.isDisplayed)
                 Row(
                   children: [
@@ -524,6 +527,7 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    UserEntity? currentUser = context.read<UserProvider>().currentUser;
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
@@ -534,7 +538,8 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (_currentReport.preparedStatus == null)
+        if (_currentReport.preparedStatus == null ||
+            AppRoles.leadQC.contains(currentUser?.role)) ...[
           IconButton(
             onPressed: () async {
               final result = await Navigator.of(context).push(
@@ -555,11 +560,11 @@ class _QualityDetailQCPageState extends State<QualityDetailQCPage> {
             },
             icon: const Icon(Icons.edit),
           ),
-        if (_currentReport.preparedStatus == null)
           IconButton(
             onPressed: () async => await _showDeleteConfirmationDialog(context),
             icon: const Icon(Icons.delete_rounded, color: Colors.red),
           ),
+        ],
       ],
     );
   }

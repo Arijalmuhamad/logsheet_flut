@@ -114,10 +114,10 @@ class _DeodorizingFiltrationDetailPageState
             ]),
 
             // Section for Fit 701
-            _buildSection('Fit 701 (BPO) - tph', [
+            _buildSection('Fit 701 (${_currentReport.oilType}) - tph', [
               _buildDataRow(
-                'Fit 701 (BPO) - tph',
-                _currentReport.fit701Bpo?.toString() ?? '-',
+                'Fit 701 (${_currentReport.oilType}) - tph',
+                _currentReport.fit701?.toString() ?? '-',
               ),
             ]),
 
@@ -219,10 +219,10 @@ class _DeodorizingFiltrationDetailPageState
             ]),
 
             // NEW: Section for FIT 704
-            _buildSection('FIT 704 (RPO)', [
+            _buildSection('FIT 704 (${_currentReport.oilTypeFg})', [
               _buildDataRow(
-                'FIT 704 (RPO) - tph',
-                _currentReport.fit704Rpo?.toString() ?? '-',
+                'FIT 704 (${_currentReport.oilTypeFg}) - tph',
+                _currentReport.fit704?.toString() ?? '-',
               ),
             ]),
 
@@ -235,10 +235,10 @@ class _DeodorizingFiltrationDetailPageState
             ]),
 
             // NEW: Section for FIT 705
-            _buildSection('FIT 705 (PFAD)', [
+            _buildSection('FIT 705 (${_currentReport.oilTypeBp})', [
               _buildDataRow(
-                'FIT 705 (PFAD) - bar',
-                _currentReport.fit705Pfad?.toString() ?? '-',
+                'FIT 705 (${_currentReport.oilTypeBp}) - bar',
+                _currentReport.fit705?.toString() ?? '-',
               ),
             ]),
 

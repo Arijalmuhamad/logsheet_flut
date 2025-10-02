@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
@@ -80,7 +81,7 @@ class DailyProductionRefineryMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD' || 'LEAD_QC':
+        case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
             t_daily_production_refinery.*
@@ -96,7 +97,7 @@ class DailyProductionRefineryMySQLService {
           params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
-        case 'OPR':
+        case 'OPR' || 'OPR_PROD':
           baseQuery = """
         SELECT 
           *
@@ -309,11 +310,11 @@ class DailyProductionRefineryMySQLService {
         return false;
       }
       connection = connResult.connection;
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      String sql;
-      Map<String, dynamic> params;
+      final date = DateTime.now();
+      String? sql;
+      Map<String, dynamic>? params;
 
-      if (userRole == "MGR") {
+      if (AppRoles.managerProd.contains(userRole)) {
         sql =
             "UPDATE t_daily_production_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
         params = {
@@ -323,7 +324,7 @@ class DailyProductionRefineryMySQLService {
           "remark": remark,
           "id": id,
         };
-      } else {
+      } else if (AppRoles.leadProd.contains(userRole)) {
         sql =
             "UPDATE t_daily_production_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
         params = {
@@ -334,7 +335,7 @@ class DailyProductionRefineryMySQLService {
           "id": id,
         };
       }
-      final result = await connResult.connection!.execute(sql, params);
+      final result = await connResult.connection!.execute(sql ?? "", params);
       log("Query Sent: $sql");
       log("Affected Rows: ${result.affectedRows}");
       return result.affectedRows > BigInt.from(0);

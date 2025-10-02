@@ -151,8 +151,8 @@ class QualityReportQCMySQLService {
             *
           FROM
             t_quality_report_qc
-          WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
+           WHERE
+           plant = :plantCode AND (flag IS NULL OR flag = 'T')
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -272,7 +272,7 @@ class QualityReportQCMySQLService {
     }
   }
 
-  Future<bool> updateTicket(QualityReportQcEntity entity) async {
+  Future<bool> updateTicket(QualityReportQcEntity entity, String role) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -314,10 +314,10 @@ class QualityReportQCMySQLService {
           }
 
           setClause.add('`$actualDbColumnName` = :$safeParameterName');
+
           sqlExecuteParams[safeParameterName] = value;
         }
       });
-      sqlExecuteParams['id'] = entity.id;
 
       final sql =
           "UPDATE t_quality_report_qc SET ${setClause.join(', ')} WHERE id = :id";
@@ -377,22 +377,24 @@ class QualityReportQCMySQLService {
     final String? remark,
     final String id,
   ) async {
+    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
-
       if (connResult.connection == null) {
         log(
           'Failed to get MySQL connection for sending approve/reject ticket.',
         );
         return false;
       }
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      connection = connResult.connection;
+      final date = DateTime.now();
 
       if (userRole == "MGR" || userRole == "MGR_QC") {
         final sql =
-            "UPDATE t_quality_report_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_quality_report_qc SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
 
-        final result = await connResult.connection!.execute(sql, {
+        final result = await connection!.execute(sql, {
           "username": username,
           "status": status,
           "date": date,
@@ -401,13 +403,12 @@ class QualityReportQCMySQLService {
         });
         log("Query Sent: $sql");
         log("Affected Rows: ${result.affectedRows}");
-        connResult.connection?.close();
         return result.affectedRows > BigInt.from(0);
       } else {
         final sql =
-            "UPDATE t_quality_report_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_quality_report_qc SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
 
-        final result = await connResult.connection!.execute(sql, {
+        final result = await connection!.execute(sql, {
           "username": username,
           "status": status,
           "date": date,
@@ -421,6 +422,12 @@ class QualityReportQCMySQLService {
     } catch (e) {
       log("Error sending approve or reject ticket");
       return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+      } catch (e) {
+        log('$e');
+      }
     }
   }
 
@@ -516,11 +523,11 @@ class QualityReportQCMySQLService {
 
       final result = await connection.execute(
         // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
-        "UPDATE t_quality_report_qc SET flag = 'D',prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id", // Delete with Flag
+        "UPDATE t_quality_report_qc SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id", // Delete with Flag
         {
           "username": username,
           "prepared_status": "Deleted",
-          "date": "${DateTime.now()}",
+          "prepared_date": "${DateTime.now()}",
           "id": id,
         },
       );

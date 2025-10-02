@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/logsheet/pretreatment_bleaching_filtration_entity.dart';
@@ -69,8 +70,34 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
     );
   }
 
-  AppBar _buildAppBar() =>
-      AppBar(title: Text("PBF List (${formQualityRefinery?.code})"));
+  AppBar _buildAppBar() => AppBar(
+    title: Text("PBF List (${formQualityRefinery?.code})"),
+    actions: [
+      Consumer3<
+        PretreatmentBleachingFiltrationProvider,
+        UserProvider,
+        PlantProvider
+      >(
+        builder: (context, provider, userProvider, plantProvider, child) {
+          final currentUser = userProvider.currentUser;
+          final plantCode = plantProvider.currentPlant!.code;
+
+          return IconButton(
+            onPressed: () async {
+              await provider.fetchAllTicket(
+                null,
+                null,
+                currentUser!.username,
+                currentUser.role,
+                plantCode,
+              );
+            },
+            icon: Icon(Icons.replay),
+          );
+        },
+      ),
+    ],
+  );
 
   Widget _buildBody() {
     return Consumer<PretreatmentBleachingFiltrationProvider>(
@@ -278,6 +305,25 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
                           ],
                         ),
                         const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/oil-refinery-tanks.svg',
+                              height: 20,
+                              width: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text("${item.refineryMachine}"),
+                            const SizedBox(width: 50),
+
+                            Icon(Icons.oil_barrel_rounded),
+                            const SizedBox(width: 6),
+                            Text(
+                              item.oilType == null ? "N/A" : "${item.oilType}",
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
                         // Entered By
                         Row(
                           children: [
