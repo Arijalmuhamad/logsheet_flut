@@ -18,7 +18,7 @@ class SectionRfad extends StatefulWidget {
   final TextEditingController flowRateAkhirController;
   final TextEditingController flowRateTotalController;
   final List<TankEntity>? tankLists;
-  final List<MasterValueEntity> oilList;
+  // final List<MasterValueEntity> oilList;
   String? selectedOil;
   String? selectedTank;
   final Function(String?) onTankChanged;
@@ -36,7 +36,7 @@ class SectionRfad extends StatefulWidget {
     required this.selectedTimeAkhir,
     required this.onTimeTapAwal,
     required this.onTimeTapAkhir,
-    required this.oilList,
+    // required this.oilList,
     required this.selectedOil,
     required this.onOilBpChanged,
   });
@@ -91,163 +91,171 @@ class _SectionRfadState extends State<SectionRfad> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const CustomSectionTitle(title: 'RFAD'),
+        child: Consumer<ValueProvider>(
+          builder: (context, provider, child) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CustomSectionTitle(title: 'RFAD'),
 
-            // CustomDropdown.fromStringItems(
-            //   hint: 'Pilih Oil Type',
-            //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-            //   stringItems: widget.oilList,
-            //   value: widget.selectedOil,
-            //   onChanged: widget.onOilBpChanged,
-            // ),
-            DropdownButtonFormField<MasterValueEntity>(
-              value:
-                  widget.selectedOil != null &&
-                          widget.oilList.any(
+                // CustomDropdown.fromStringItems(
+                //   hint: 'Pilih Oil Type',
+                //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
+                //   stringItems: widget.oilList,
+                //   value: widget.selectedOil,
+                //   onChanged: widget.onOilBpChanged,
+                // ),
+                DropdownButtonFormField<MasterValueEntity>(
+                  value:
+                      widget.selectedOil != null &&
+                              provider.oilTypeLists.any(
+                                (oil) => oil.code == widget.selectedOil,
+                              )
+                          ? provider.oilTypeLists.firstWhere(
                             (oil) => oil.code == widget.selectedOil,
                           )
-                      ? widget.oilList.firstWhere(
-                        (oil) => oil.code == widget.selectedOil,
-                      )
-                      : null,
-              items:
-                  widget.oilList.map((oil) {
-                    return DropdownMenuItem<MasterValueEntity>(
-                      value: oil,
-                      child: Text(" ${oil.name}"),
-                    );
-                  }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  widget.onOilBpChanged(value.code); // simpan code-nya saja
-                }
-              },
-              decoration: InputDecoration(
-                hintText: 'Pilih Oil Type',
-                filled: true,
-                fillColor: const Color(0xFFF0ECE9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(Icons.category),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text("Awal", style: _sectionTextStyle),
-            const SizedBox(height: 10),
-            CustomHourMinuteField(
-              selectedTime: widget.selectedTimeAwal,
-              onTap: widget.onTimeTapAwal,
-            ),
-            const SizedBox(height: 12),
-            CustomTextField(
-              controller: widget.flowRateAwalController,
-              label: 'Flow Rate',
-              icon: Icons.speed,
-              isNumeric: true,
-            ),
-            const SizedBox(height: 12),
-            const Text("Akhir", style: _sectionTextStyle),
-            const SizedBox(height: 10),
-            CustomHourMinuteField(
-              selectedTime: widget.selectedTimeAkhir,
-              onTap: widget.onTimeTapAkhir,
-            ),
-            const SizedBox(height: 12),
-            CustomTextField(
-              controller: widget.flowRateAkhirController,
-              label: 'Flow Rate',
-              icon: Icons.speed,
-              isNumeric: true,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Text(
-                  "Total Flowrate: ",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  widget.flowRateTotalController.text.isEmpty
-                      ? '0.000'
-                      : widget.flowRateTotalController.text,
-                  style: TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text("To Tangki", style: _sectionTextStyle),
-            const SizedBox(height: 10),
-            Consumer<ValueProvider>(
-              builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  return DropdownButtonFormField<String>(
-                    value: null,
-                    items: [],
-                    onChanged: null, // Disable the dropdown
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Loading Tanks...',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                if (provider.tankSourceList.isEmpty) {
-                  return TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Tank List tidak ditemukan.',
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: Icon(Icons.warning_amber_rounded),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () async {
-                          await context
-                              .read<ValueProvider>()
-                              .fetchTankSourceLists();
-                        },
-                      ),
-                    ),
-                  );
-                }
-                return DropdownButtonFormField(
+                          : null,
                   items:
-                      provider.tankSourceList.map((tank) {
-                        return DropdownMenuItem(
-                          value: tank.code,
-                          child: Text("${tank.code} | ${tank.name}"),
+                      provider.oilTypeLists.map((oil) {
+                        return DropdownMenuItem<MasterValueEntity>(
+                          value: oil,
+                          child: Text(" ${oil.name}"),
                         );
                       }).toList(),
-                  onChanged: widget.onTankChanged,
-                  decoration: InputDecoration(hintText: 'Pilih Tank'),
-                );
-              },
-            ),
-          ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      widget.onOilBpChanged(value.code); // simpan code-nya saja
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Pilih Oil Type',
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.category),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text("Awal", style: _sectionTextStyle),
+                const SizedBox(height: 10),
+                CustomHourMinuteField(
+                  selectedTime: widget.selectedTimeAwal,
+                  onTap: widget.onTimeTapAwal,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: widget.flowRateAwalController,
+                  label: 'Flow Rate',
+                  icon: Icons.speed,
+                  isNumeric: true,
+                ),
+                const SizedBox(height: 12),
+                const Text("Akhir", style: _sectionTextStyle),
+                const SizedBox(height: 10),
+                CustomHourMinuteField(
+                  selectedTime: widget.selectedTimeAkhir,
+                  onTap: widget.onTimeTapAkhir,
+                ),
+                const SizedBox(height: 12),
+                CustomTextField(
+                  controller: widget.flowRateAkhirController,
+                  label: 'Flow Rate',
+                  icon: Icons.speed,
+                  isNumeric: true,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text(
+                      "Total Flowrate: ",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      widget.flowRateTotalController.text.isEmpty
+                          ? '0.000'
+                          : widget.flowRateTotalController.text,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text("To Tangki", style: _sectionTextStyle),
+                const SizedBox(height: 10),
+                Consumer<ValueProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoading) {
+                      return DropdownButtonFormField<String>(
+                        value: null,
+                        items: [],
+                        onChanged: null, // Disable the dropdown
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Loading Tanks...',
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    if (provider.tankSourceList.isEmpty) {
+                      return TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Tank List tidak ditemukan.',
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Icon(Icons.warning_amber_rounded),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () async {
+                              await context
+                                  .read<ValueProvider>()
+                                  .fetchTankSourceLists();
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                    return DropdownButtonFormField(
+                      value: widget.selectedTank,
+                      items:
+                          provider.tankSourceList.map((tank) {
+                            return DropdownMenuItem(
+                              value: tank.code,
+                              child: Text("${tank.code} | ${tank.name}"),
+                            );
+                          }).toList(),
+                      onChanged: widget.onTankChanged,
+                      decoration: InputDecoration(hintText: 'Pilih Tank'),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

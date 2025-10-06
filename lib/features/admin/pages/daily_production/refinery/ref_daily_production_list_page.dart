@@ -69,6 +69,11 @@ class _DailyProductionRefineryListPageState
     );
   }
 
+  String _displayTime(TimeOfDay? time) {
+    if (time == null) return "-";
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+  }
+
   Widget _buildBody() {
     return Consumer3<
       DailyProductionRefineryProvider,
@@ -241,13 +246,13 @@ class _DailyProductionRefineryListPageState
                               color: Colors.grey,
                             ),
                             SizedBox(width: 8),
-                            // Text(
-                            //   DateFormat('HH:mm').format(report.time!),
-                            //   style: const TextStyle(
-                            //     fontSize: 14,
-                            //     color: Colors.black87,
-                            //   ),
-                            // ),
+                            Text(
+                              _displayTime(report.oilTypeRmAwalJam),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
                             SizedBox(width: 16),
                             const Icon(
                               Icons.timelapse,

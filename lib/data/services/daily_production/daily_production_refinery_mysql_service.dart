@@ -97,31 +97,30 @@ class DailyProductionRefineryMySQLService {
           params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
-        case 'OPR' || 'OPR_PROD':
+        case 'OPR' || 'OPR_PROD' || 'MGR' || 'MGR_PROD':
           baseQuery = """
         SELECT 
           *
         FROM 
           t_daily_production_refinery
         WHERE
-          plant = :plantCode AND (t_daily_production_refinery.flag IS NULL OR t_daily_production_refinery.flag = 'T') 
-
+          plant = :plantCode AND (flag IS NULL OR flag = 'T') 
         """;
           params["plantCode"] = plantCode;
           break;
-        case 'MGR' || 'MGR_PROD':
-          baseQuery = """
-          SELECT
-            *
-          FROM
-            t_daily_production_refinery
-          WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
-          """;
+        // case 'MGR' || 'MGR_PROD':
+        // baseQuery = """
+        // SELECT
+        //   *
+        // FROM
+        //   t_daily_production_refinery
+        // WHERE
+        //   plant = :plantCode AND (flag IS NULL OR flag = 'T')
+        // """;
 
-          params["status"] = "Approved";
-          params["plantCode"] = plantCode;
-          break;
+        // params["plantCode"] = plantCode;
+        // break;
+
         case 'ADM':
           // Query for Admin: Can see all reports.
           baseQuery =

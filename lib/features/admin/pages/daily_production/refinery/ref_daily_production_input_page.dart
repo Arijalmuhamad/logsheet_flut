@@ -9,8 +9,6 @@ import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_section_auxiliary_material.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
-import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
@@ -682,7 +680,6 @@ class _DailyProductionPageState
                 flowRateAwalController: flowmeter2AwalController,
                 flowRateAkhirController: flowmeter2AkhirController,
                 flowRateTotalController: flowmeter2TotalController,
-                oilList: oilTypeLists ?? [],
                 selectedOil: selectedOilFg,
                 onOilFgChanged:
                     (oilFg) => setState(() {
@@ -695,7 +692,6 @@ class _DailyProductionPageState
               SectionRfad(
                 selectedTimeAwal: selectedTime3Awal,
                 selectedTimeAkhir: selectedTime3Akhir,
-                oilList: oilTypeLists ?? [],
                 selectedOil: selectedOilBp,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(

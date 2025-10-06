@@ -137,6 +137,11 @@ class _DailyProductionFractionationDetailPageState
             : '-';
     final String shift = _displayValue(_currentReport.shift);
 
+    String formatTime(TimeOfDay? time) =>
+        time != null
+            ? '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'
+            : '-';
+
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: _buildAppBar(context),
@@ -184,6 +189,11 @@ class _DailyProductionFractionationDetailPageState
           ),
       ],
     );
+  }
+
+  String _displayTime(TimeOfDay? time) {
+    if (time == null) return "-";
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
   }
 
   Widget _buildBody(
@@ -238,7 +248,7 @@ class _DailyProductionFractionationDetailPageState
               ),
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeRmAwalJam),
+                _displayTime(_currentReport.oilTypeRmAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -246,7 +256,7 @@ class _DailyProductionFractionationDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeRmAkhirJam),
+                _displayTime(_currentReport.oilTypeRmAkhirJam),
               ),
               _buildDataRow(
                 'Akhir Flowmeter',
@@ -267,7 +277,7 @@ class _DailyProductionFractionationDetailPageState
               _buildDataRow('Cr', _displayValue(_currentReport.oilTypeFgsCr)),
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeFgsAwalJam),
+                _displayTime(_currentReport.oilTypeFgsAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -275,7 +285,7 @@ class _DailyProductionFractionationDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeFgsAkhirJam),
+                _displayTime(_currentReport.oilTypeFgsAkhirJam),
               ),
               _buildDataRow(
                 'Akhir Flowmeter',
@@ -299,7 +309,7 @@ class _DailyProductionFractionationDetailPageState
               _buildDataRow('No', _displayValue(_currentReport.oilTypeFghNo)),
               _buildDataRow(
                 'Awal Jam',
-                _displayValue(_currentReport.oilTypeFghAwalJam),
+                _displayTime(_currentReport.oilTypeFghAwalJam),
               ),
               _buildDataRow(
                 'Awal Flowmeter',
@@ -307,7 +317,7 @@ class _DailyProductionFractionationDetailPageState
               ),
               _buildDataRow(
                 'Akhir Jam',
-                _displayValue(_currentReport.oilTypeFghAkhirJam),
+                _displayTime(_currentReport.oilTypeFghAkhirJam),
               ),
               _buildDataRow(
                 'Akhir Flowmeter',

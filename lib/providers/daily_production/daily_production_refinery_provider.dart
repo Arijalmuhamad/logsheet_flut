@@ -156,7 +156,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       notifyListeners();
 
       switch (role) {
-        case "LEAD":
+        case "LEAD" || "LEAD_PROD" || "MGR" || "MGR_PROD":
           // preparedStatusShift1 or 2 or 3 must be empty
           if (filter) {
             _reportsList =
@@ -167,19 +167,19 @@ class DailyProductionRefineryProvider with ChangeNotifier {
           }
           break;
 
-        case "MGR":
-          if (filter) {
-            _reportsList =
-                _reportsList
-                    .where(
-                      (report) =>
-                          report.preparedBy != null &&
-                          report.checkedStatus == null,
-                    )
-                    .toList();
-            notifyListeners();
-          }
-          break;
+        // case "MGR":
+        //   if (filter) {
+        //     _reportsList =
+        //         _reportsList
+        //             .where(
+        //               (report) =>
+        //                   report.preparedBy != null &&
+        //                   report.checkedStatus == null,
+        //             )
+        //             .toList();
+        //     notifyListeners();
+        //   }
+        //   break;
         default:
           break;
       }

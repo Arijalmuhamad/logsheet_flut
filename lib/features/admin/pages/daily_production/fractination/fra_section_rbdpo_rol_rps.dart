@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 class FraSectionRbdpoRolRps extends StatelessWidget {
-  final int? selectedHourAwal;
-  final int? selectedHourAkhir;
-  final VoidCallback onHourTapAwal;
-  final VoidCallback onHourTapAkhir;
+  // final int? selectedHourAwal;
+  // final int? selectedHourAkhir;
+
+  final TimeOfDay? selectedTimeAwal;
+  final TimeOfDay? selectedTimeAkhir;
+  final VoidCallback onTimeTapAwal;
+  final VoidCallback onTimeTapAkhir;
   final TextEditingController flowmeterAwalController;
   final TextEditingController flowmeterAkhirController;
   final TextEditingController flowmeterTotalController;
@@ -24,10 +28,12 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
     required this.dummyTanks,
     required this.selectedTank,
     required this.onTankChanged,
-    required this.selectedHourAwal,
-    required this.selectedHourAkhir,
-    required this.onHourTapAwal,
-    required this.onHourTapAkhir,
+    required this.selectedTimeAwal,
+    required this.selectedTimeAkhir,
+    // required this.selectedHourAwal,
+    // required this.selectedHourAkhir,
+    required this.onTimeTapAwal,
+    required this.onTimeTapAkhir,
     required this.flowmeterAwalController,
     required this.flowmeterAkhirController,
     required this.flowmeterTotalController,
@@ -116,6 +122,7 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
                   );
                 }
                 return DropdownButtonFormField(
+                  value: selectedTank,
                   items:
                       provider.tankSourceList.map((tank) {
                         return DropdownMenuItem(
@@ -131,9 +138,9 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
             const SizedBox(height: 12),
             const Text("Awal", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: selectedHourAwal,
-              onTap: onHourTapAwal,
+            CustomHourMinuteField(
+              selectedTime: selectedTimeAwal,
+              onTap: onTimeTapAwal,
             ),
             const SizedBox(height: 12),
             CustomTextField(
@@ -145,9 +152,9 @@ class FraSectionRbdpoRolRps extends StatelessWidget {
             const SizedBox(height: 12),
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
-            CustomHourField(
-              selectedHour: selectedHourAkhir,
-              onTap: onHourTapAkhir,
+            CustomHourMinuteField(
+              selectedTime: selectedTimeAkhir,
+              onTap: onTimeTapAkhir,
             ),
             const SizedBox(height: 12),
             CustomTextField(

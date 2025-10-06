@@ -142,6 +142,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                   );
                 }
                 return DropdownButtonFormField(
+                  value: widget.selectedTank,
                   items:
                       provider.tankSourceList.map((tank) {
                         return DropdownMenuItem(

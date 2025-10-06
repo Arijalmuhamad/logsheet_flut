@@ -14,6 +14,7 @@ import 'package:logsheet_app/features/admin/pages/daily_production/fractination/
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
@@ -54,14 +55,20 @@ class _DailyProductionFractionPageState
   String? selectedOilFg;
   String? selectedOilBp;
   String? selectedOilTypeFgToTank;
-  int? selectedHour1Awal;
-  int? selectedHour1Akhir;
-  int? selectedHour2Awal;
-  int? selectedHour2Akhir;
-  int? selectedHour3Awal;
-  int? selectedHour3Akhir;
+  // int? selectedHour1Awal;
+  // int? selectedHour1Akhir;
+  // int? selectedHour2Awal;
+  // int? selectedHour2Akhir;
+  // int? selectedHour3Awal;
+  // int? selectedHour3Akhir;
+  TimeOfDay? selectedTime1Awal;
+  TimeOfDay? selectedTime1Akhir;
+  TimeOfDay? selectedTime2Awal;
+  TimeOfDay? selectedTime2Akhir;
+  TimeOfDay? selectedTime3Awal;
+  TimeOfDay? selectedTime3Akhir;
 
-  String? selectedMachine;
+  // String? selectedMachine;
 
   DateTime selectedTransactionDate = DateTime.now();
 
@@ -227,8 +234,8 @@ class _DailyProductionFractionPageState
   }
 
   void _showHourPickerAndUpdateState(
-    Function(int) onHourSelected,
-    int? selectedHour,
+    Function(TimeOfDay) onTimeSelected,
+    TimeOfDay? selectedTime,
   ) {
     showModalBottomSheet(
       context: context,
@@ -237,13 +244,20 @@ class _DailyProductionFractionPageState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder:
-          (context) => CustomHourPicker(
-            selectedHour: selectedHour,
-            onHourSelected: (hour) {
-              onHourSelected(hour);
-              // Navigator.pop(context);
+          (context) => CustomHourMinutePicker(
+            selectedTime: selectedTime,
+            onTimeSelected: (time) {
+              onTimeSelected(time);
             },
           ),
+      // builder:
+      //     (context) => CustomHourPicker(
+      //       selectedHour: selectedHour,
+      //       onHourSelected: (hour) {
+      //         onHourSelected(hour);
+      //         // Navigator.pop(context);
+      //       },
+      //     ),
     );
   }
 
@@ -416,7 +430,7 @@ class _DailyProductionFractionPageState
                   );
                 }
                 return DropdownButtonFormField<String>(
-                  value: selectedMachine,
+                  value: selectedWorkCenter,
                   items:
                       provider.workCenterFractLists.map((machine) {
                         return DropdownMenuItem<String>(
@@ -429,7 +443,7 @@ class _DailyProductionFractionPageState
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      selectedMachine = value;
+                      selectedWorkCenter = value;
                     });
                   },
                   decoration: InputDecoration(
@@ -580,21 +594,21 @@ class _DailyProductionFractionPageState
                 dummyTanks: tankLists ?? [],
                 selectedTank: selected1Tank,
                 onTankChanged: (value) => setState(() => selected1Tank = value),
-                selectedHourAwal: selectedHour1Awal,
-                selectedHourAkhir: selectedHour1Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime1Awal,
+                selectedTimeAkhir: selectedTime1Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour1Awal = hour;
+                        selectedTime1Awal = hour;
                       }),
-                      selectedHour1Awal,
+                      selectedTime1Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour1Akhir = hour;
+                        selectedTime1Akhir = hour;
                       }),
-                      selectedHour1Akhir,
+                      selectedTime1Akhir,
                     ),
                 flowmeterAwalController: flowmeter1AwalController,
                 flowmeterAkhirController: flowmeter1AkhirController,
@@ -608,26 +622,25 @@ class _DailyProductionFractionPageState
                 tankLists: tankLists ?? [],
                 selectedTank: selected2Tank,
                 onTankChanged: (value) => setState(() => selected2Tank = value),
-                selectedHourAwal: selectedHour2Awal,
-                selectedHourAkhir: selectedHour2Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime2Awal,
+                selectedTimeAkhir: selectedTime2Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour2Awal = hour;
+                        selectedTime2Awal = hour;
                       }),
-                      selectedHour2Awal,
+                      selectedTime2Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour2Akhir = hour;
+                        selectedTime2Akhir = hour;
                       }),
-                      selectedHour2Akhir,
+                      selectedTime2Akhir,
                     ),
                 flowmeterAwalController: flowmeter2AwalController,
                 flowmeterAkhirController: flowmeter2AkhirController,
                 flowmeterTotalController: flowmeter2TotalController,
-                oilList: oilLists ?? [],
                 selectedOil: selectedOilFg,
                 onOilFgChanged:
                     (oil) => setState(() {
@@ -640,26 +653,25 @@ class _DailyProductionFractionPageState
                 tanksList: tankLists ?? [],
                 onTankChanged: (value) => setState(() => selected2Tank = value),
                 selectedTank: selected3Tank,
-                selectedHourAwal: selectedHour3Awal,
-                selectedHourAkhir: selectedHour3Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime3Awal,
+                selectedTimeAkhir: selectedTime3Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour3Awal = hour;
+                        selectedTime3Awal = hour;
                       }),
-                      selectedHour3Awal,
+                      selectedTime3Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour3Akhir = hour;
+                        selectedTime3Akhir = hour;
                       }),
-                      selectedHour3Akhir,
+                      selectedTime3Akhir,
                     ),
                 flowmeterAwalController: flowmeter3AwalController,
                 flowmeterAkhirController: flowmeter3AkhirController,
                 flowmeterTotalController: flowmeter3TotalController,
-                oilList: oilLists ?? [],
                 selectedOil: selectedOilBp,
                 onOilFgChanged:
                     (oil) => setState(() {
@@ -924,9 +936,9 @@ class _DailyProductionFractionPageState
     if (ticketId == "") {
       return;
     }
-    log("${convertStringTimeToDateTime(selectedHour1Awal)}");
-    log("${convertStringTimeToDateTime(selectedHour2Awal)}");
-    log("${convertStringTimeToDateTime(selectedHour3Awal)}");
+    // log("${convertStringTimeToDateTime(selectedTime1Awal)}");
+    // log("${convertStringTimeToDateTime(selectedHour2Awal)}");
+    // log("${convertStringTimeToDateTime(selectedHour3Awal)}");
 
     try {
       final entity = DailyProductionFractionationEntity(
@@ -942,25 +954,25 @@ class _DailyProductionFractionPageState
         oilTypeRmNo: parseInt(no1Controller.text),
         oilTypeRmCr: parseInt(cr1Controller.text),
         oilTypeRmFromTank: selected1Tank,
-        oilTypeRmAwalJam: convertStringTimeToDateTime(selectedHour1Awal),
+        oilTypeRmAwalJam: selectedTime1Awal,
         oilTypeRmAwalFlowmeter: parseInt(flowmeter1AwalController.text),
-        oilTypeRmAkhirJam: convertStringTimeToDateTime(selectedHour1Akhir),
+        oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
         oilTypeRmTotal: parseInt(flowmeter1TotalController.text),
         oilTypeFgs: selectedOilFg,
         oilTypeFgsNo: parseInt(no2Controller.text),
         oilTypeFgsCr: parseInt(cr2Controller.text),
-        oilTypeFgsAwalJam: convertStringTimeToDateTime(selectedHour2Awal),
+        oilTypeFgsAwalJam: selectedTime2Awal,
         oilTypeFgsAwalFlowmeter: parseInt(flowmeter2AwalController.text),
-        oilTypeFgsAkhirJam: convertStringTimeToDateTime(selectedHour2Akhir),
+        oilTypeFgsAkhirJam: selectedTime2Akhir,
         oilTypeFgsAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
         oilTypeFgsTotal: parseInt(flowmeter2TotalController.text),
         oilTypeFgsToTank: selected2Tank,
         oilTypeFgh: selectedOilBp,
         oilTypeFghNo: parseInt(no3Controller.text),
-        oilTypeFghAwalJam: convertStringTimeToDateTime(selectedHour3Awal),
+        oilTypeFghAwalJam: selectedTime3Awal,
         oilTypeFghAwalFlowmeter: parseDouble(flowmeter3AwalController),
-        oilTypeFghAkhirJam: convertStringTimeToDateTime(selectedHour3Akhir),
+        oilTypeFghAkhirJam: selectedTime3Akhir,
         oilTypeFghAkhirFlowmeter: parseDouble(flowmeter3AkhirController),
         oilTypeFghTotal: parseDouble(flowmeter3TotalController),
         oilTypeFghToTank: selected3Tank,

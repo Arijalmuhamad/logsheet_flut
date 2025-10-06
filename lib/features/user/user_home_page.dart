@@ -9,8 +9,10 @@ import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_detail_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -290,7 +292,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.12"), Text("Build 2025-09-30")],
+              children: [Text("Version 1.0.12"), Text("Build 2025-10-6")],
             ),
           ],
         ),
@@ -744,8 +746,9 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => DailyProductionFractionationListPage(
-                              formData: formDailyProductionRefinery!,
+                            (_) => DailyProductionRefineryReportListPage(
+                              userName: user.username,
+                              role: userRole,
                             ),
                       ),
                     );
@@ -810,9 +813,9 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => DeodorizingFiltrationReportListPage(
+                            (_) => DailyProductionFractionationReportListPage(
                               userName: user.username,
-                              role: user.role,
+                              role: userRole,
                             ),
                       ),
                     );

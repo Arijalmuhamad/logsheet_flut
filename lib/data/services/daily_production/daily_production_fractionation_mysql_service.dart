@@ -116,10 +116,8 @@ class DailyProductionFractionationMySQLService {
           FROM
             t_daily_production_fractionation
           WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
+           plant = :plantCode AND (flag IS NULL OR flag = 'T') 
           """;
-
-          params["status"] = "Approved";
           params["plantCode"] = plantCode;
           break;
         case 'ADM':

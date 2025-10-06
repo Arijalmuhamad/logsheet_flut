@@ -164,12 +164,22 @@ class _DailyProductionFractionationApprovalDetailPageState
                     'From Tank',
                     report.oilTypeRmFromTank?.toString() ?? '-',
                   ),
-                  _buildDetailRow('Start Time', report.oilTypeRmAwalJam ?? '-'),
+                  _buildDetailRow(
+                    'Start Time',
+                    report.oilTypeRmAwalJam != null
+                        ? "${report.oilTypeRmAwalJam!.hour}: ${report.oilTypeRmAwalJam!.minute}"
+                        : '-',
+                  ),
                   _buildDetailRow(
                     'Start Flowmeter',
                     report.oilTypeRmAwalFlowmeter?.toString() ?? '-',
                   ),
-                  _buildDetailRow('End Time', report.oilTypeRmAkhirJam ?? '-'),
+                  _buildDetailRow(
+                    'End Time',
+                    report.oilTypeRmAkhirJam != null
+                        ? "${report.oilTypeRmAkhirJam!.hour}: ${report.oilTypeRmAkhirJam!.minute}"
+                        : '-',
+                  ),
                   _buildDetailRow(
                     'End Flowmeter',
                     report.oilTypeRmAkhirFlowmeter?.toString() ?? '-',
@@ -185,13 +195,20 @@ class _DailyProductionFractionationApprovalDetailPageState
                   _buildDetailRow('Oil Type', report.oilTypeFgs ?? '-'),
                   _buildDetailRow(
                     'Start Time',
-                    report.oilTypeFgsAwalJam ?? '-',
+                    report.oilTypeFgsAwalJam != null
+                        ? "${report.oilTypeFgsAwalJam!.hour}: ${report.oilTypeFgsAwalJam!.minute}"
+                        : '-',
                   ),
                   _buildDetailRow(
                     'Start Flowmeter',
                     report.oilTypeFgsAwalFlowmeter?.toString() ?? '-',
                   ),
-                  _buildDetailRow('End Time', report.oilTypeFgsAkhirJam ?? '-'),
+                  _buildDetailRow(
+                    'End Time',
+                    report.oilTypeFgsAkhirJam != null
+                        ? "${report.oilTypeFgsAkhirJam!.hour}: ${report.oilTypeFgsAkhirJam!.minute}"
+                        : '-',
+                  ),
                   _buildDetailRow(
                     'End Flowmeter',
                     report.oilTypeFgsAkhirFlowmeter?.toString() ?? '-',
@@ -207,13 +224,20 @@ class _DailyProductionFractionationApprovalDetailPageState
                   _buildSectionHeader("By Product"),
                   _buildDetailRow(
                     'Start Time',
-                    report.oilTypeFghAwalJam ?? '-',
+                    report.oilTypeFghAwalJam != null
+                        ? "${report.oilTypeFghAwalJam!.hour}: ${report.oilTypeFghAwalJam!.minute}"
+                        : '-',
                   ),
                   _buildDetailRow(
                     'Start Flowmeter',
                     report.oilTypeFghAwalFlowmeter?.toString() ?? '-',
                   ),
-                  _buildDetailRow('End Time', report.oilTypeFghAkhirJam ?? '-'),
+                  _buildDetailRow(
+                    'End Time',
+                    report.oilTypeFghAkhirJam != null
+                        ? "${report.oilTypeFghAkhirJam!.hour}: ${report.oilTypeFghAkhirJam!.minute}"
+                        : '-',
+                  ),
                   _buildDetailRow(
                     'End Flowmeter',
                     report.oilTypeFghAkhirFlowmeter?.toString() ?? '-',

@@ -158,7 +158,7 @@ class DailyProductionFractionationProvider with ChangeNotifier {
       notifyListeners();
 
       switch (role) {
-        case "LEAD" || "LEAD_PROD":
+        case "LEAD" || "LEAD_PROD" || "MGR" || "MGR_PROD":
           // preparedStatusShift1 or 2 or 3 must be empty
           if (filter) {
             _reportsList =
@@ -169,19 +169,19 @@ class DailyProductionFractionationProvider with ChangeNotifier {
           }
           break;
 
-        case "MGR" || "MGR_PROD":
-          if (filter) {
-            _reportsList =
-                _reportsList
-                    .where(
-                      (report) =>
-                          report.preparedBy != null &&
-                          report.checkedStatus == null,
-                    )
-                    .toList();
-            notifyListeners();
-          }
-          break;
+        // case "MGR" || "MGR_PROD":
+        //   if (filter) {
+        //     _reportsList =
+        //         _reportsList
+        //             .where(
+        //               (report) =>
+        //                   report.preparedBy != null &&
+        //                   report.checkedStatus == null,
+        //             )
+        //             .toList();
+        //     notifyListeners();
+        //   }
+        //   break;
         default:
           break;
       }

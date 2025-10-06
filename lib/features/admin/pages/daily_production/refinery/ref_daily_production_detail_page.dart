@@ -128,6 +128,11 @@ class _DailyProductionRefineryDetailPageState
     );
   }
 
+  String _displayTime(TimeOfDay? time) {
+    if (time == null) return "-";
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().currentUser;
@@ -158,20 +163,20 @@ class _DailyProductionRefineryDetailPageState
         if (_currentReport.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              // final result = await Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder:
-              //         (context) => RefDailyProductionEditPage(
-              //           entity: _currentReport,
-              //           dataForm: widget.dataForm,
-              //         ),
-              //   ),
-              // );
-              // if (result != null && result is DailyProductionRefineryEntity) {
-              //   setState(() {
-              //     _currentReport = result;
-              //   });
-              // }
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (context) => RefDailyProductionEditPage(
+                        entity: _currentReport,
+                        dataForm: widget.dataForm,
+                      ),
+                ),
+              );
+              if (result != null && result is DailyProductionRefineryEntity) {
+                setState(() {
+                  _currentReport = result;
+                });
+              }
             },
             icon: const Icon(Icons.edit),
           ),
@@ -447,22 +452,6 @@ class _DailyProductionRefineryDetailPageState
               _buildDataRow(
                 'Checked Status',
                 _displayValue(_currentReport.checkedStatus),
-              ),
-            ]),
-
-            _buildSection('Form Info', [
-              _buildDataRow('Form No', _displayValue(_currentReport.formNo)),
-              _buildDataRow(
-                'Date Issued',
-                _formatDateTime(_currentReport.dateIssued),
-              ),
-              _buildDataRow(
-                'Revision No',
-                _displayValue(_currentReport.revisionNo),
-              ),
-              _buildDataRow(
-                'Revision Date',
-                _formatDateTime(_currentReport.revisionDate),
               ),
             ]),
 

@@ -12,6 +12,7 @@ import 'package:logsheet_app/features/admin/pages/daily_production/fractination/
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_rbdpo_rol_rps.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_stearin_pmf_hstrearin.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
 
 import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
@@ -49,12 +50,19 @@ class _FraDailyProductionEditPageState
   String? selected2Tank;
   String? selected3Tank;
   String? selectedOilTypeFgToTank;
-  int? selectedHour1Awal;
-  int? selectedHour1Akhir;
-  int? selectedHour2Awal;
-  int? selectedHour2Akhir;
-  int? selectedHour3Awal;
-  int? selectedHour3Akhir;
+  // int? selectedHour1Awal;
+  // int? selectedHour1Akhir;
+  // int? selectedHour2Awal;
+  // int? selectedHour2Akhir;
+  // int? selectedHour3Awal;
+  // int? selectedHour3Akhir;
+
+  TimeOfDay? selectedTime1Awal;
+  TimeOfDay? selectedTime1Akhir;
+  TimeOfDay? selectedTime2Awal;
+  TimeOfDay? selectedTime2Akhir;
+  TimeOfDay? selectedTime3Awal;
+  TimeOfDay? selectedTime3Akhir;
 
   String? selectedOilRm;
   String? selectedOilFg;
@@ -225,13 +233,13 @@ class _FraDailyProductionEditPageState
 
     if (awal3Text != '' && akhir3Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal3Text);
-      final int akhir = int.parse(akhir3Text);
+      final double awal = double.parse(awal3Text);
+      final double akhir = double.parse(akhir3Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter3TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -255,8 +263,8 @@ class _FraDailyProductionEditPageState
   }
 
   void _showHourPickerAndUpdateState(
-    Function(int) onHourSelected,
-    int? selectedHour,
+    Function(TimeOfDay) onTimeSelected,
+    TimeOfDay? selectedTime,
   ) {
     showModalBottomSheet(
       context: context,
@@ -265,10 +273,10 @@ class _FraDailyProductionEditPageState
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder:
-          (context) => CustomHourPicker(
-            selectedHour: selectedHour,
-            onHourSelected: (hour) {
-              onHourSelected(hour);
+          (context) => CustomHourMinutePicker(
+            selectedTime: selectedTime,
+            onTimeSelected: (hour) {
+              onTimeSelected(hour);
             },
           ),
     );
@@ -439,21 +447,21 @@ class _FraDailyProductionEditPageState
                 dummyTanks: tankLists ?? [],
                 selectedTank: selected1Tank,
                 onTankChanged: (value) => setState(() => selected1Tank = value),
-                selectedHourAwal: selectedHour1Awal,
-                selectedHourAkhir: selectedHour1Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime1Awal,
+                selectedTimeAkhir: selectedTime1Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour1Awal = hour;
+                        selectedTime1Awal = hour;
                       }),
-                      selectedHour1Awal,
+                      selectedTime1Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour1Akhir = hour;
+                        selectedTime1Akhir = hour;
                       }),
-                      selectedHour1Akhir,
+                      selectedTime1Akhir,
                     ),
                 flowmeterAwalController: flowmeter1AwalController,
                 flowmeterAkhirController: flowmeter1AkhirController,
@@ -467,26 +475,25 @@ class _FraDailyProductionEditPageState
                 tankLists: tankLists ?? [],
                 selectedTank: selected2Tank,
                 onTankChanged: (value) => setState(() => selected2Tank = value),
-                selectedHourAwal: selectedHour2Awal,
-                selectedHourAkhir: selectedHour2Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime2Awal,
+                selectedTimeAkhir: selectedTime2Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour2Awal = hour;
+                        selectedTime2Awal = hour;
                       }),
-                      selectedHour2Awal,
+                      selectedTime2Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour2Akhir = hour;
+                        selectedTime2Akhir = hour;
                       }),
-                      selectedHour2Akhir,
+                      selectedTime2Akhir,
                     ),
                 flowmeterAwalController: flowmeter2AwalController,
                 flowmeterAkhirController: flowmeter2AkhirController,
                 flowmeterTotalController: flowmeter2TotalController,
-                oilList: oilLists ?? [], // Use actual oilLists
                 selectedOil: selectedOilFg, // Use selectedOilFg
                 onOilFgChanged:
                     (oil) => setState(() {
@@ -499,26 +506,25 @@ class _FraDailyProductionEditPageState
                 tanksList: tankLists ?? [],
                 onTankChanged: (value) => setState(() => selected3Tank = value),
                 selectedTank: selected3Tank,
-                selectedHourAwal: selectedHour3Awal,
-                selectedHourAkhir: selectedHour3Akhir,
-                onHourTapAwal:
+                selectedTimeAwal: selectedTime3Awal,
+                selectedTimeAkhir: selectedTime3Akhir,
+                onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour3Awal = hour;
+                        selectedTime3Awal = hour;
                       }),
-                      selectedHour3Awal,
+                      selectedTime3Awal,
                     ),
-                onHourTapAkhir:
+                onTimeTapAkhir:
                     () => _showHourPickerAndUpdateState(
                       (hour) => setState(() {
-                        selectedHour3Akhir = hour;
+                        selectedTime3Akhir = hour;
                       }),
-                      selectedHour3Akhir,
+                      selectedTime3Akhir,
                     ),
                 flowmeterAwalController: flowmeter3AwalController,
                 flowmeterAkhirController: flowmeter3AkhirController,
                 flowmeterTotalController: flowmeter3TotalController,
-                oilList: oilLists ?? [], // Use actual oilLists
                 selectedOil: selectedOilBp, // Use selectedOilBp
                 onOilFgChanged:
                     (oil) => setState(() {
@@ -668,8 +674,8 @@ class _FraDailyProductionEditPageState
     // --- Section 1: RBDPO/ROL/RPS Data ---
     // Note: cpoTank is missing in the entity for Section 1, using oilTypeRmFromTank
     selected1Tank = entity.oilTypeRmFromTank;
-    selectedHour1Awal = _parseHour(entity.oilTypeRmAwalJam);
-    selectedHour1Akhir = _parseHour(entity.oilTypeRmAkhirJam);
+    selectedTime1Awal = entity.oilTypeRmAwalJam;
+    selectedTime1Akhir = entity.oilTypeRmAkhirJam;
     no1Controller.text = entity.oilTypeRmNo?.toString() ?? ''; // Added
     cr1Controller.text = entity.oilTypeRmCr?.toString() ?? ''; // Added
     flowmeter1AwalController.text =
@@ -680,8 +686,8 @@ class _FraDailyProductionEditPageState
 
     // --- Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN Data ---
     selected2Tank = entity.oilTypeFgsToTank;
-    selectedHour2Awal = _parseHour(entity.oilTypeFgsAwalJam);
-    selectedHour2Akhir = _parseHour(entity.oilTypeFgsAkhirJam);
+    selectedTime2Awal = entity.oilTypeFgsAwalJam;
+    selectedTime2Akhir = entity.oilTypeFgsAkhirJam;
     no2Controller.text = entity.oilTypeFgsNo?.toString() ?? ''; // Added
     cr2Controller.text = entity.oilTypeFgsCr?.toString() ?? ''; // Added
     flowmeter2AwalController.text =
@@ -692,8 +698,8 @@ class _FraDailyProductionEditPageState
 
     // --- Section 3: STEARIN/PMF/HARD STEARIN Data ---
     selected3Tank = entity.oilTypeFghToTank; // Corrected to FghToTank
-    selectedHour3Awal = _parseHour(entity.oilTypeFghAwalJam);
-    selectedHour3Akhir = _parseHour(entity.oilTypeFghAkhirJam);
+    selectedTime3Awal = entity.oilTypeFghAwalJam;
+    selectedTime3Akhir = entity.oilTypeFghAkhirJam;
     no3Controller.text = entity.oilTypeFghNo?.toString() ?? ''; // Added
 
     flowmeter3AwalController.text =
@@ -909,9 +915,9 @@ class _FraDailyProductionEditPageState
         oilTypeRmNo: _parseInt(no1Controller.text),
         oilTypeRmCr: _parseInt(cr1Controller.text),
         oilTypeRmFromTank: selected1Tank,
-        oilTypeRmAwalJam: _convertStringTimeToDateTime(selectedHour1Awal),
+        oilTypeRmAwalJam: selectedTime1Awal,
         oilTypeRmAwalFlowmeter: _parseInt(flowmeter1AwalController.text),
-        oilTypeRmAkhirJam: _convertStringTimeToDateTime(selectedHour1Akhir),
+        oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: _parseInt(flowmeter1AkhirController.text),
         oilTypeRmTotal: _parseInt(flowmeter1TotalController.text),
 
@@ -919,9 +925,9 @@ class _FraDailyProductionEditPageState
         oilTypeFgs: selectedOilFg,
         oilTypeFgsNo: _parseInt(no2Controller.text),
         oilTypeFgsCr: _parseInt(cr2Controller.text),
-        oilTypeFgsAwalJam: _convertStringTimeToDateTime(selectedHour2Awal),
+        oilTypeFgsAwalJam: selectedTime2Awal,
         oilTypeFgsAwalFlowmeter: _parseInt(flowmeter2AwalController.text),
-        oilTypeFgsAkhirJam: _convertStringTimeToDateTime(selectedHour2Akhir),
+        oilTypeFgsAkhirJam: selectedTime2Akhir,
         oilTypeFgsAkhirFlowmeter: _parseInt(flowmeter2AkhirController.text),
         oilTypeFgsTotal: _parseInt(flowmeter2TotalController.text),
         oilTypeFgsToTank: selected2Tank,
@@ -929,9 +935,9 @@ class _FraDailyProductionEditPageState
         // Section 3: STEARIN/PMF/HARD STEARIN
         oilTypeFgh: selectedOilBp,
         oilTypeFghNo: _parseInt(no3Controller.text),
-        oilTypeFghAwalJam: _convertStringTimeToDateTime(selectedHour3Awal),
+        oilTypeFghAwalJam: selectedTime3Awal,
         oilTypeFghAwalFlowmeter: _parseDouble(flowmeter3AwalController),
-        oilTypeFghAkhirJam: _convertStringTimeToDateTime(selectedHour3Akhir),
+        oilTypeFghAkhirJam: selectedTime3Akhir,
         oilTypeFghAkhirFlowmeter: _parseDouble(flowmeter3AkhirController),
         oilTypeFghTotal: _parseDouble(flowmeter3TotalController),
         oilTypeFghToTank: selected3Tank,
