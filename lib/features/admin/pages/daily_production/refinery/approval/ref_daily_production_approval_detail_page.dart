@@ -210,7 +210,74 @@ class _DailyProductionRefineryApprovalDetailPageState
                   ),
                   _buildDetailRow('To Tank', report.oilTypeFgToTank ?? '-'),
                   const Divider(),
+                  _buildSectionHeader("Utility Usage"),
+                  _buildDetailRow('Item', report.uuItem ?? '-'),
+                  _buildDetailRow(
+                    'Budget Ref Tank',
+                    report.uuBudgetRefTank ?? '-',
+                  ),
+                  _buildDetailRow('Budget Qty', report.uuBudgetQty ?? '-'),
+                  _buildDetailRow(
+                    'Total',
+                    report.uuTotalCpo?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Total Steam',
+                    report.uuTotalSteam?.toString() ?? '-',
+                  ),
+                  _buildDetailRow('Steam/CPO', report.uuSteamCpo ?? '-'),
+                  _buildDetailRow(
+                    'Yield (%)',
+                    report.uuYieldPercent != null
+                        ? report.uuYieldPercent!.toStringAsFixed(2)
+                        : '-',
+                  ),
+                  // lengkapi
+                  const Divider(),
+                  _buildSectionHeader("Pemakaian Bahan Penolong"),
+                  _buildDetailRow(
+                    'Bleaching Earth Ref Tank',
+                    report.beRefTank ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Bleaching Earth Qty',
+                    report.beRefQty ?? '-',
+                  ),
+                  _buildDetailRow('Total Bag', report.beTotalBag ?? '-'),
+                  _buildDetailRow('Jenis', report.beTotalJenis ?? '-'),
+                  _buildDetailRow(
+                    'Lot/Batch Number',
+                    report.beLotBatchNumber?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Yield (%)',
+                    report.beYieldPercent != null
+                        ? report.beYieldPercent!.toStringAsFixed(2)
+                        : '-',
+                  ),
+                  const Divider(),
+                  _buildDetailRow(
+                    'Phosphoric Acid Ref Tank',
+                    report.paRefTank ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Phosphoric Acid Qty',
+                    report.paRefQty ?? '-',
+                  ),
+                  _buildDetailRow('Total', report.paTotal ?? '-'),
+                  _buildDetailRow(
+                    'Lot/Batch Number',
+                    report.paLotBatchNumber?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Yield (%)',
+                    report.paYieldPercent != null
+                        ? report.paYieldPercent!.toStringAsFixed(2)
+                        : '-',
+                  ),
 
+                  // lengkapi
+                  const Divider(),
                   // --- Signatories & Status ---
                   _buildSectionHeader("Approval Status"),
                   _buildDetailRow(
@@ -226,6 +293,14 @@ class _DailyProductionRefineryApprovalDetailPageState
                     report.preparedStatus ?? '-',
                   ),
                   _buildDetailRow(
+                    'Verified By',
+                    '${report.verifiedBy ?? '-'} on ${formatDate(report.verifiedDate)}',
+                  ),
+                  _buildDetailRow(
+                    'Verified Status',
+                    report.verifiedStatus ?? '-',
+                  ),
+                  _buildDetailRow(
                     'Checked by',
                     '${report.checkedBy ?? '-'} on ${formatDate(report.checkedDate)}',
                   ),
@@ -233,6 +308,17 @@ class _DailyProductionRefineryApprovalDetailPageState
                     'Checked Status',
                     report.checkedStatus ?? '-',
                   ),
+                  _buildDetailRow(
+                    'Checked Remarks',
+                    report.checkedStatusRemarks ?? '-',
+                  ),
+
+                  const Divider(),
+                  _buildSectionHeader("Form Info"),
+                  _buildDetailRow('Form No', report.formNo ?? '-'),
+                  _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
+                  _buildDetailRow('Revision No', report.revisionNo.toString()),
+
                   const SizedBox(height: 24),
 
                   if (isActionable)

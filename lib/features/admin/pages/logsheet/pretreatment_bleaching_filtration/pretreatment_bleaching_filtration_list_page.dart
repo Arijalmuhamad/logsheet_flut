@@ -46,7 +46,8 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration",
+                  form.isMenu == "Logsheet_Pretreatment_Bleaching_Filtration" &&
+                  form.isActive == "T",
             )
             .first;
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logsheet_app/core/theme/app_theme.dart';
 import 'package:logsheet_app/data/repositories/daily_production/daily_production_fractionation_repository.dart';
 import 'package:logsheet_app/data/repositories/daily_production/daily_production_refinery_repository.dart';
+import 'package:logsheet_app/data/repositories/dry_fractionation/dry_fractionation_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/deodorizing_filtration_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/pretreatment_bleaching_filtration_repository.dart';
 import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and_glass_repository.dart';
@@ -15,6 +16,7 @@ import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 import 'package:logsheet_app/data/services/daily_production/daily_production_fractionation_mysql_service.dart';
 import 'package:logsheet_app/data/services/daily_production/daily_production_refinery_mysql_service.dart';
+import 'package:logsheet_app/data/services/dry_fractionation/dry_fractionation_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
 import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_glass_mysql_service.dart';
@@ -28,6 +30,7 @@ import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/login_page.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
+import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
@@ -75,9 +78,15 @@ void main() async {
         Provider<DailyProductionRefineryMySQLService>(
           create: (context) => DailyProductionRefineryMySQLService(),
         ),
+        // Provide Daily Production Fractionation MySQL Service
         Provider<DailyProductionFractionationMySQLService>(
           create: (context) => DailyProductionFractionationMySQLService(),
         ),
+        // Provide Dry Production MySQL Service
+        Provider<DryFractionationMySQLService>(
+          create: (context) => DryFractionationMySQLService(),
+        ),
+
         // Provider Maintenance Lamps And Glass MySQL Service
         Provider<MaintenanceLampsAndGlassMySQLService>(
           create: (context) => MaintenanceLampsAndGlassMySQLService(),
@@ -171,6 +180,12 @@ void main() async {
                 context.read<DeodorizingFiltrationMySQLService>(),
               ),
         ),
+        Provider<DryFractionationRepository>(
+          create:
+              (context) => DryFractionationRepository(
+                context.read<DryFractionationMySQLService>(),
+              ),
+        ),
 
         // Provide The User Provider
         ChangeNotifierProvider(
@@ -239,6 +254,12 @@ void main() async {
           create:
               (context) => DeodorizingFiltrationProvider(
                 context.read<DeodorizingFiltrationRepository>(),
+              ),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) => DryFractionationProvider(
+                context.read<DryFractionationRepository>(),
               ),
         ),
 

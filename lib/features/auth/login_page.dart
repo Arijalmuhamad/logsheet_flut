@@ -121,10 +121,11 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => AdminHomePage(
-                userEntity: userProvider.currentUser!,
-                userName: userProvider.currentUser!.username,
-              ),
+              builder:
+                  (context) => AdminHomePage(
+                    userEntity: userProvider.currentUser!,
+                    userName: userProvider.currentUser!.username,
+                  ),
             ),
           );
         } else {
@@ -133,8 +134,9 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    UserHomePage(userEntity: userProvider.currentUser!),
+                builder:
+                    (context) =>
+                        UserHomePage(userEntity: userProvider.currentUser!),
               ),
             );
           }
@@ -351,15 +353,16 @@ class _LoginPageState extends State<LoginPage> {
                         return DropdownButtonFormField<String>(
                           isExpanded: true,
                           value: selectedBusinessUnit,
-                          items: provider.listBusinessUnits.map((businessUnit) {
-                            return DropdownMenuItem<String>(
-                              value: businessUnit.buCode,
-                              child: Text(
-                                "${businessUnit.buCode} - ${businessUnit.buName}",
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
+                          items:
+                              provider.listBusinessUnits.map((businessUnit) {
+                                return DropdownMenuItem<String>(
+                                  value: businessUnit.buCode,
+                                  child: Text(
+                                    "${businessUnit.buCode} - ${businessUnit.buName}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
                           onChanged: (value) async {
                             setState(() {
                               selectedBusinessUnit = value;
@@ -453,15 +456,16 @@ class _LoginPageState extends State<LoginPage> {
                         return DropdownButtonFormField<String>(
                           isExpanded: true,
                           value: selectedPlant,
-                          items: provider.plantList.map((plant) {
-                            return DropdownMenuItem<String>(
-                              value: plant.code,
-                              child: Text(
-                                "${plant.code} - ${plant.name}",
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
+                          items:
+                              provider.plantList.map((plant) {
+                                return DropdownMenuItem<String>(
+                                  value: plant.code,
+                                  child: Text(
+                                    "${plant.code} - ${plant.name}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
                           onChanged: (value) {
                             setState(() {
                               selectedPlant = value!;
@@ -502,23 +506,24 @@ class _LoginPageState extends State<LoginPage> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: _isLoggingIn
-                            ? SizedBox(
-                                width: 23,
-                                height: 23,
-                                child: const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                        child:
+                            _isLoggingIn
+                                ? SizedBox(
+                                  width: 23,
+                                  height: 23,
+                                  child: const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              )
-                            : const Text(
-                                "Login",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
                       ),
                     ),
                     SizedBox(height: 18),
@@ -534,7 +539,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           Text(
-                            "Build 2025-10-6",
+                            "Build 2025-10-7",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],

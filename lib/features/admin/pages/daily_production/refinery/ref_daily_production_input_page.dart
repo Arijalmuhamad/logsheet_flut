@@ -979,31 +979,10 @@ class _DailyProductionPageState
       return text.isEmpty ? null : int.tryParse(text);
     }
 
-    void _showSnackBar(String message) {
+    void showSnackBar(String message) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
-    }
-
-    String? convertStringTimeToDateTime(int? hour) {
-      try {
-        log("$hour");
-        if (hour == null) {
-          return null;
-        }
-
-        if (hour < 0 || hour > 23) {
-          throw FormatException(
-            "Hour must be between 0 and 23, but was $hour.",
-          );
-        }
-        final formattedHour = "${hour.toString().padLeft(2, '0')}:00";
-
-        return formattedHour;
-      } on FormatException catch (e) {
-        log("Error processing time string '$hour': $e");
-        rethrow;
-      }
     }
 
     final postingDate = getPostingDate();
@@ -1094,6 +1073,7 @@ class _DailyProductionPageState
         checkedBy: null,
         checkedDate: null,
         checkedStatus: null,
+        checkedStatusRemarks: null,
         formNo: dataForm.code,
         dateIssued: dataForm.dateIssued,
         revisionNo: dataForm.revisionNo,
@@ -1115,15 +1095,15 @@ class _DailyProductionPageState
           currentUser?.role ?? "",
           plantCode,
         );
-        _showSnackBar('Input Ticket berhasil.');
+        showSnackBar('Input Ticket berhasil.');
         Navigator.pop(context);
       } else {
         log('insert to QC Table is not successful.');
-        _showSnackBar('Input Report gagal: ${provider.errorMessage}.');
+        showSnackBar('Input Report gagal: ${provider.errorMessage}.');
       }
     } catch (e) {
       log("Gagal menyimpan laporan: $e");
-      _showSnackBar("Gagal menyimpan laporan: $e");
+      showSnackBar("Gagal menyimpan laporan: $e");
     }
   }
 

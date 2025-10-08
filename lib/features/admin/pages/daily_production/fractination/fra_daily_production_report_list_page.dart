@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/display.dart';
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
-import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_detail_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_detail_page.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
-import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
-import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
@@ -275,6 +272,15 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                                           size: 18,
                                           color: Colors.grey,
                                         ),
+                                        Text(
+                                          timeOfDayToString(
+                                            report.oilTypeRmAwalJam,
+                                          ),
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
                                         SizedBox(width: 8),
                                         const Icon(
                                           Icons.timelapse,
@@ -418,7 +424,7 @@ class _LogsheetPretreatmentBleachingFiltrationReportListsPageState
                 context.read<PlantProvider>().currentPlant?.code ?? "";
 
             await context
-                .read<DeodorizingFiltrationProvider>()
+                .read<DailyProductionFractionationProvider>()
                 .fetchFilteredTickets(
                   _selectedDate,
                   plantCode,

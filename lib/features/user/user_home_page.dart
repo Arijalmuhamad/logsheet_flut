@@ -13,6 +13,7 @@ import 'package:logsheet_app/features/admin/pages/daily_production/fractination/
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -49,7 +50,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formDeodorizing,
       formQualityReportProduction,
       formDailyProductionFractionation,
-      formDailyProductionRefinery;
+      formDailyProductionRefinery,
+      formDryFractionation;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -222,6 +224,17 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
+    formDryFractionation =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Logsheet_Dry_Fractionation" &&
+                  form.isActive == "T",
+            )
+            .first;
+
     // Daily_Production_Refinery_Fractination
 
     final userRole = widget.userEntity.role;
@@ -292,7 +305,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.12"), Text("Build 2025-10-6")],
+              children: [Text("Version 1.0.12"), Text("Build 2025-10-7")],
             ),
           ],
         ),
@@ -817,6 +830,75 @@ class _UserHomePageState extends State<UserHomePage> {
                               userName: user.username,
                               role: userRole,
                             ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+
+          // Dry Fractionation
+          if (AppRoles.logsheetAccess.contains(userRole)) ...[
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: Text(
+                '${formDryFractionation?.treeMenu}\n (${formDryFractionation?.name})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List ${formDryFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DryFractionationListPage(), // TODO: change
+                      ),
+                    );
+                  },
+                ),
+                // Manager-only Approval item
+                if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formDryFractionation?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  PretreatmentBleachingFiltrationApprovalListPage(), // TODO: Change
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDryFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                LogsheetPretreatmentBleachingFiltrationReportListsPage(
+                                  userName: user.username,
+                                  role: user.role,
+                                ), // TODO: Change
                       ),
                     );
                   },

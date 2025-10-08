@@ -312,7 +312,7 @@ class DailyProductionFractionationMySQLService {
 
       if (AppRoles.managerProd.contains(userRole)) {
         sql =
-            "UPDATE t_daily_production_fractionation SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_daily_production_fractionation SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
         params = {
           "username": username,
           "status": status,

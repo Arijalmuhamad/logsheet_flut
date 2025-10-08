@@ -247,6 +247,35 @@ class _DailyProductionFractionationApprovalDetailPageState
                     report.oilTypeFghTotal?.toString() ?? '-',
                   ),
                   _buildDetailRow('To Tank', report.oilTypeFghToTank ?? '-'),
+
+                  const Divider(),
+
+                  _buildSectionHeader("Utility Usage"),
+                  _buildDetailRow('Item', report.uuItem ?? '-'),
+                  _buildDetailRow('Shift', report.shift ?? '-'),
+                  _buildDetailRow('Budget', report.uuBudgetRefQty ?? '-'),
+                  _buildDetailRow(
+                    'Flowmeter Before',
+                    report.uuFlowmeterBefore?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Flowmeter After',
+                    report.uuFlowmeterAfter?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Flowmeter Total',
+                    report.uuFlowmeterTotal?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Yield',
+                    report.uuYieldPercent?.toString() ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'Listrik',
+                    report.uuListrik?.toString() ?? '-',
+                  ),
+                  _buildDetailRow('Air', report.uuAir?.toString() ?? '-'),
+
                   const Divider(),
 
                   // --- Signatories & Status ---
@@ -264,6 +293,14 @@ class _DailyProductionFractionationApprovalDetailPageState
                     report.preparedStatus ?? '-',
                   ),
                   _buildDetailRow(
+                    'Verified By',
+                    '${report.verifiedBy ?? '-'} on ${formatDate(report.verifiedDate)}',
+                  ),
+                  _buildDetailRow(
+                    'Verified Status',
+                    report.verifiedStatus ?? '-',
+                  ),
+                  _buildDetailRow(
                     'Checked by',
                     '${report.checkedBy ?? '-'} on ${formatDate(report.checkedDate)}',
                   ),
@@ -275,6 +312,11 @@ class _DailyProductionFractionationApprovalDetailPageState
                     'Checked Remarks',
                     report.checkedStatusRemarks ?? '-',
                   ),
+                  const Divider(),
+                  _buildSectionHeader("Form Info"),
+                  _buildDetailRow('Form No', report.formNo ?? '-'),
+                  _buildDetailRow('Date Issued', formatDate(report.dateIssued)),
+                  _buildDetailRow('Revision No', report.revisionNo.toString()),
                   const SizedBox(height: 24),
 
                   if (isActionable)

@@ -3,88 +3,81 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
+import 'package:logsheet_app/core/utils/display.dart';
+import 'package:logsheet_app/core/utils/get_status_color.dart';
+import 'package:logsheet_app/core/utils/get_status_text.dart';
+import 'package:logsheet_app/data/remote/dry_fractionation/dry_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_detail_page.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_input_page.dart';
-import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_input_page.dart';
+import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class DeodorizingFiltrationListPage extends StatefulWidget {
-  const DeodorizingFiltrationListPage({super.key});
+class DryFractionationListPage extends StatefulWidget {
+  const DryFractionationListPage({super.key});
 
   @override
-  State<DeodorizingFiltrationListPage> createState() =>
-      _DeodorizingFiltrationListPageState();
+  State<DryFractionationListPage> createState() =>
+      _DryFractionationListPageState();
 }
 
-class _DeodorizingFiltrationListPageState
-    extends State<DeodorizingFiltrationListPage> {
-  DataFormNoEntity? formQualityRefinery;
-
+class _DryFractionationListPageState extends State<DryFractionationListPage> {
+  DataFormNoEntity? form;
   @override
   void initState() {
     super.initState();
     final username = context.read<UserProvider>().currentUser?.username;
     final role = context.read<UserProvider>().currentUser?.role;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
-    super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback(
-      (timeStamp) => context
-          .read<DeodorizingFiltrationProvider>()
-          .fetchAllTicket(null, null, username ?? "", role ?? "", plantCode),
+      (timeStamp) => context.read<DryFractionationProvider>().fetchAllTickets(
+        null,
+        null,
+        username ?? "",
+        role ?? "",
+        plantCode,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    formQualityRefinery =
+    form =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Logsheet_Deodorizing_Filtration" &&
+                  form.isMenu == "Logsheet_Dry_Fractionation" &&
                   form.isActive == "T",
             )
             .first;
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
-
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol tambah Deodorizing Filtration dilick");
+          log("Tombol tambah Dry Fractionation Ticket diklik");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DeodorizingFiltrationInputPage(),
+              builder: (context) => DryFractionationInputPage(form: form),
             ),
           );
         },
         label: const Text("Tambah Ticket"),
         icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
       ),
     );
   }
 
-  AppBar _buildAppBar() =>
-      AppBar(title: Text("Deodorizing List (${formQualityRefinery?.code})"));
-
   Widget _buildBody() {
-    return Consumer<DeodorizingFiltrationProvider>(
+    return Consumer<DryFractionationProvider>(
       builder: (context, provider, child) {
-        List<DeodorizingFiltrationEntity> filteredList =
-            provider.deodorizingList
-                .where(
-                  (e) => e.preparedStatus == null && e.checkedStatus == null,
-                )
-                .toList();
+        List<DryFractionationEntity> filteredList = provider.reportsList;
         if (provider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }
@@ -110,15 +103,13 @@ class _DeodorizingFiltrationListPageState
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      context
-                          .read<DeodorizingFiltrationProvider>()
-                          .fetchAllTicket(
-                            null,
-                            null,
-                            username ?? "",
-                            role ?? "",
-                            plantCode,
-                          );
+                      context.read<DryFractionationProvider>().fetchAllTickets(
+                        null,
+                        null,
+                        username ?? "",
+                        role ?? "",
+                        plantCode,
+                      );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -150,15 +141,13 @@ class _DeodorizingFiltrationListPageState
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      context
-                          .read<DeodorizingFiltrationProvider>()
-                          .fetchAllTicket(
-                            null,
-                            null,
-                            username,
-                            role,
-                            plantCode,
-                          );
+                      context.read<DryFractionationProvider>().fetchAllTickets(
+                        null,
+                        null,
+                        username,
+                        role,
+                        plantCode,
+                      );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -169,27 +158,28 @@ class _DeodorizingFiltrationListPageState
         }
 
         return Padding(
-          padding: EdgeInsetsDirectional.symmetric(horizontal: 8, vertical: 4),
+          padding: EdgeInsetsGeometry.symmetric(horizontal: 8, vertical: 4),
           child: ListView.builder(
             itemCount: filteredList.length,
             itemBuilder: (context, index) {
               final item = filteredList[index];
-              log(
-                "list from provider length ${provider.deodorizingList.length}",
-              );
+              log("list from provider length ${provider.reportsList.length}");
               return Card(
                 child: InkWell(
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => DeodorizingFiltrationDetailPage(
-                                item: item,
-                                isDisplayed: true,
-                              ),
-                        ),
-                      ),
+                  onTap: () {
+                    // TODO: lengkapi
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder:
+                    //         (context) =>
+                    //             LogsheetPretreatmentBleachingFiltrationDetailPage(
+                    //               item: item,
+                    //               isDisplayed: true,
+                    //             ),
+                    //   ),
+                    // );
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16.0,
@@ -217,11 +207,11 @@ class _DeodorizingFiltrationListPageState
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(item),
+                                color: getStatusColor(item),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                _getStatusText(item),
+                                getStatusText(item),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -258,7 +248,7 @@ class _DeodorizingFiltrationListPageState
                             ),
                             SizedBox(width: 8),
                             Text(
-                              DateFormat('HH:mm').format(item.time!),
+                              timeOfDayToString(item.fillingStartTime!),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
@@ -289,7 +279,7 @@ class _DeodorizingFiltrationListPageState
                               width: 20,
                             ),
                             const SizedBox(width: 8),
-                            Text("${item.refineryMachine}"),
+                            Text("${item.workCenter}"),
                             const SizedBox(width: 50),
 
                             Icon(Icons.oil_barrel_rounded),
@@ -300,7 +290,6 @@ class _DeodorizingFiltrationListPageState
                           ],
                         ),
                         const SizedBox(height: 6),
-
                         // Entered By
                         Row(
                           children: [
@@ -331,40 +320,37 @@ class _DeodorizingFiltrationListPageState
     );
   }
 
-  String _getStatusText(DeodorizingFiltrationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return "Approved";
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return "Rejected";
-    }
-    if (report.preparedStatus != null) {
-      return "Prepared ${report.shift}";
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return "Rejected";
-    }
-    return "Submitted";
-  }
-
-  Color _getStatusColor(DeodorizingFiltrationEntity report) {
-    if (report.checkedStatus == "Approved") {
-      return Colors.green;
-    }
-
-    if (report.checkedStatus == "Rejected") {
-      return Colors.red;
-    }
-
-    if (report.preparedStatus == "Approved") {
-      return Colors.orangeAccent;
-    }
-
-    if (report.preparedStatus == "Rejected") {
-      return Colors.red;
-    }
-    return Colors.grey;
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text("Dry Frac. List (${form?.code})"),
+      actions: [
+        context.watch<DryFractionationProvider>().isLoadingFetchTickets
+            ? CircularProgressIndicator()
+            : IconButton(
+              onPressed: () async {
+                final username =
+                    context.read<UserProvider>().currentUser?.username;
+                final role = context.read<UserProvider>().currentUser?.role;
+                final plantCode =
+                    context.read<PlantProvider>().currentPlant?.code ?? "";
+                await context.read<DryFractionationProvider>().fetchAllTickets(
+                  null,
+                  null,
+                  username ?? "",
+                  role ?? "",
+                  plantCode,
+                );
+              },
+              icon: Consumer<DryFractionationProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoading) {
+                    return const CircularProgressIndicator();
+                  }
+                  return const Icon(Icons.replay);
+                },
+              ),
+            ),
+      ],
+    );
   }
 }

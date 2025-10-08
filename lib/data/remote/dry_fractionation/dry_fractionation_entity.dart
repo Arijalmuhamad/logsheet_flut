@@ -8,9 +8,10 @@ class DryFractionationEntity {
   final DateTime? transactionDate;
   final DateTime? postingDate;
   final String? workCenter;
+  final String? shift;
   final String? oilType;
 
-  final String? crystalizer;
+  final String? crystalizier;
   final TimeOfDay? fillingStartTime;
   final TimeOfDay? fillingEndTime;
   final TimeOfDay? collingStartTime;
@@ -33,18 +34,19 @@ class DryFractionationEntity {
   final double? oleinYield;
 
   final String? remarks;
+  final String? flag;
   final String? entryBy;
   final DateTime? entryDate;
 
   final String? preparedBy;
   final DateTime? preparedDate;
-  // TODO: prepared status
-  // TODO: prepared status remarks
+  final String? preparedStatus;
+  final String? preparedStatusRemarks;
 
   final String? checkedBy;
   final DateTime? checkedDate;
-  // TODO: checked status
-  // TODO: checked status remarks
+  final String? checkedStatus;
+  final String? checkedStatusRemarks;
 
   final String? formNo;
   final DateTime? dateIssued;
@@ -58,8 +60,9 @@ class DryFractionationEntity {
     required this.transactionDate,
     required this.postingDate,
     required this.workCenter,
+    required this.shift,
     required this.oilType,
-    required this.crystalizer,
+    required this.crystalizier,
     required this.fillingStartTime,
     required this.fillingEndTime,
     required this.collingStartTime,
@@ -80,12 +83,17 @@ class DryFractionationEntity {
     required this.stearinSlepPointRed,
     required this.oleinYield,
     required this.remarks,
+    required this.flag,
     required this.entryBy,
     required this.entryDate,
     required this.preparedBy,
     required this.preparedDate,
+    required this.preparedStatus,
+    required this.preparedStatusRemarks,
     required this.checkedBy,
     required this.checkedDate,
+    required this.checkedStatus,
+    required this.checkedStatusRemarks,
     required this.formNo,
     required this.dateIssued,
     required this.revisionNo,
@@ -100,8 +108,9 @@ class DryFractionationEntity {
       transactionDate: parseDateTime(map['transaction_date']),
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
+      shift: map['shift'] as String?,
       oilType: map['oil_type'] as String?,
-      crystalizer: map['crystalizer'] as String?,
+      crystalizier: map['crystalizier'] as String?,
       fillingStartTime: parseTimeOfDay(map['filling_start_time']),
       fillingEndTime: parseTimeOfDay(map['filling_end_time']),
       collingStartTime: parseTimeOfDay(map['colling_start_time']),
@@ -114,20 +123,25 @@ class DryFractionationEntity {
       crystalTemp: map['crystal_temp'] as String?,
       filtrationStartTime: parseTimeOfDay(map['filtration_start_time']),
       filtrationTemp: map['filtration_temp'] as String?,
-      filtrationCycleNo: parseInt(map['filtration_cycle_no']),
       filtrationOilLevel: map['filtration_oil_level'] as String?,
+      filtrationCycleNo: parseInt(map['filtration_cycle_no']),
       oleinIVRed: parseDouble(map['olein_iv_red']),
       oleinCloudPoint: parseDouble(map['olein_cloud_point']),
       stearinIV: parseDouble(map['stearin_iv']),
       stearinSlepPointRed: parseDouble(map['stearin_slep_point_red']),
       oleinYield: parseDouble(map['olein_yield']),
       remarks: map['remarks'] as String?,
+      flag: map['flag'] as String?,
       entryBy: map['entry_by'] as String?,
       entryDate: parseDateTime(map['entry_date']),
       preparedBy: map['prepared_by'] as String?,
       preparedDate: parseDateTime(map['prepared_date']),
+      preparedStatus: map['prepared_status'] as String?,
+      preparedStatusRemarks: map['prepared_status_remarks'] as String?,
       checkedBy: map['checked_by'] as String?,
       checkedDate: parseDateTime(map['checked_date']),
+      checkedStatus: map['checked_status'] as String?,
+      checkedStatusRemarks: map['checked_status_remarks'] as String?,
       formNo: map['form_no'] as String?,
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
@@ -143,8 +157,9 @@ class DryFractionationEntity {
       'transaction_date': transactionDate?.toIso8601String(),
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
+      'shift': shift,
       'oil_type': oilType,
-      'crystalizer': crystalizer,
+      'crystalizier': crystalizier,
       'filling_start_time': formatTimeOfDay(fillingStartTime),
       'filling_end_time': formatTimeOfDay(fillingEndTime),
       'colling_start_time': formatTimeOfDay(collingStartTime),
@@ -156,7 +171,8 @@ class DryFractionationEntity {
       'crystal_start_time': crystalStartTime,
       'crystal_temp': crystalTemp,
       'filtration_start_time': filtrationStartTime,
-      'filtratrion_temp': filtrationTemp,
+      'filtration_temp': filtrationTemp,
+      'filtration_cycle_no': filtrationCycleNo,
       'filtration_oil_level': filtrationOilLevel,
       'olein_iv_red': oleinIVRed,
       'olein_cloud_point': oleinCloudPoint,
@@ -164,12 +180,17 @@ class DryFractionationEntity {
       'stearin_slep_point_red': stearinSlepPointRed,
       'olein_yield': oleinYield,
       'remarks': remarks,
+      'flag': flag,
       'entry_by': entryBy,
       'entry_date': entryDate,
       'prepared_by': preparedBy,
       'prepared_date': preparedDate,
+      'prepared_status': preparedStatus,
+      'prepared_status_remarks': preparedStatusRemarks,
       'checked_by': checkedBy,
       'checked_date': checkedDate,
+      'checked_status': checkedStatus,
+      'checked_status_remarks': checkedStatusRemarks,
       'form_no': formNo,
       'date_issued': dateIssued,
       'revision_no': revisionNo,
@@ -184,8 +205,9 @@ class DryFractionationEntity {
     DateTime? transactionDate,
     DateTime? postingDate,
     String? workCenter,
+    String? shift,
     String? oilType,
-    String? crystalizer,
+    String? crystalizier,
     TimeOfDay? fillingStartTime,
     TimeOfDay? fillingEndTime,
     TimeOfDay? collingStartTime,
@@ -206,12 +228,17 @@ class DryFractionationEntity {
     double? stearinSlepPointRed,
     double? oleinYield,
     String? remarks,
+    String? flag,
     String? entryBy,
     DateTime? entryDate,
     String? preparedBy,
     DateTime? preparedDate,
+    String? preparedStatus,
+    String? preparedStatusRemarks,
     String? checkedBy,
     DateTime? checkedDate,
+    String? checkedStatus,
+    String? checkedStatusRemarks,
     String? formNo,
     DateTime? dateIssued,
     int? revisionNo,
@@ -224,8 +251,9 @@ class DryFractionationEntity {
       transactionDate: transactionDate ?? this.transactionDate,
       postingDate: postingDate ?? this.postingDate,
       workCenter: workCenter ?? this.workCenter,
+      shift: shift ?? this.shift,
       oilType: oilType ?? this.oilType,
-      crystalizer: crystalizer ?? this.crystalizer,
+      crystalizier: crystalizier ?? this.crystalizier,
       fillingStartTime: fillingStartTime ?? this.fillingStartTime,
       fillingEndTime: fillingEndTime ?? this.fillingEndTime,
       collingStartTime: collingStartTime ?? this.collingStartTime,
@@ -246,12 +274,18 @@ class DryFractionationEntity {
       stearinSlepPointRed: stearinSlepPointRed ?? this.stearinSlepPointRed,
       oleinYield: oleinYield ?? this.oleinYield,
       remarks: remarks ?? this.remarks,
+      flag: flag ?? this.flag,
       entryBy: entryBy ?? this.entryBy,
       entryDate: entryDate ?? this.entryDate,
       preparedBy: preparedBy ?? this.preparedBy,
       preparedDate: preparedDate ?? this.preparedDate,
+      preparedStatus: preparedStatus ?? this.preparedStatus,
+      preparedStatusRemarks:
+          preparedStatusRemarks ?? this.preparedStatusRemarks,
       checkedBy: checkedBy ?? this.checkedBy,
       checkedDate: checkedDate ?? this.checkedDate,
+      checkedStatus: checkedStatus ?? this.checkedStatus,
+      checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
       formNo: formNo ?? this.formNo,
       dateIssued: dateIssued ?? this.dateIssued,
       revisionNo: revisionNo ?? this.revisionNo,

@@ -76,6 +76,7 @@ class DailyProductionRefineryEntity {
   String? checkedBy;
   DateTime? checkedDate;
   String? checkedStatus;
+  String? checkedStatusRemarks;
 
   // Form Information
   final String? formNo;
@@ -142,6 +143,7 @@ class DailyProductionRefineryEntity {
     required this.checkedBy,
     required this.checkedDate,
     required this.checkedStatus,
+    required this.checkedStatusRemarks,
     required this.formNo,
     required this.dateIssued,
     required this.revisionNo,
@@ -247,6 +249,7 @@ class DailyProductionRefineryEntity {
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
       revisionDate: parseDateTime(map['revision_date']),
+      checkedStatusRemarks: map['checked_status_remarks'] as String?,
     );
   }
 
@@ -386,6 +389,7 @@ class DailyProductionRefineryEntity {
     String? checkedBy,
     DateTime? checkedDate,
     String? checkedStatus,
+    String? checkedStatusRemarks,
     String? formNo,
     DateTime? dateIssued,
     int? revisionNo,
@@ -458,6 +462,7 @@ class DailyProductionRefineryEntity {
       dateIssued: dateIssued ?? this.dateIssued,
       revisionNo: revisionNo ?? this.revisionNo,
       revisionDate: revisionDate ?? this.revisionDate,
+      checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
     );
   }
 }

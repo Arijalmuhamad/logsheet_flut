@@ -55,12 +55,6 @@ class _DailyProductionFractionPageState
   String? selectedOilFg;
   String? selectedOilBp;
   String? selectedOilTypeFgToTank;
-  // int? selectedHour1Awal;
-  // int? selectedHour1Akhir;
-  // int? selectedHour2Awal;
-  // int? selectedHour2Akhir;
-  // int? selectedHour3Awal;
-  // int? selectedHour3Akhir;
   TimeOfDay? selectedTime1Awal;
   TimeOfDay? selectedTime1Akhir;
   TimeOfDay? selectedTime2Awal;
@@ -939,6 +933,7 @@ class _DailyProductionFractionPageState
     // log("${convertStringTimeToDateTime(selectedTime1Awal)}");
     // log("${convertStringTimeToDateTime(selectedHour2Awal)}");
     // log("${convertStringTimeToDateTime(selectedHour3Awal)}");
+    log('SELECTED TIME 1 AWAL: $selectedTime1Awal');
 
     try {
       final entity = DailyProductionFractionationEntity(
@@ -977,7 +972,7 @@ class _DailyProductionFractionPageState
         oilTypeFghTotal: parseDouble(flowmeter3TotalController),
         oilTypeFghToTank: selected3Tank,
         uuItem: steamItem,
-        uuBudgetRefQty: selectedWorkCenter,
+        uuBudgetRefQty: budgetValue,
         uuFlowmeterBefore: parseInt(uuFlowmeterBefore.text),
         uuFlowmeterAfter: parseInt(uuFlowmeterAfter.text),
         uuFlowmeterTotal: parseInt(uuFlowmeterTotal.text),

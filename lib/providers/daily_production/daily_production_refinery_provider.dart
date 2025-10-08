@@ -277,7 +277,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       _setLoading(false);
     } catch (e) {
       _setErrorMessage(
-        '(Deodorizing Filtration Provider) Failed to fetch reports for manager: $e',
+        '(Daily Production Refinery Provider) Failed to fetch reports for manager: $e',
       );
       _setLoading(false);
     }
@@ -297,13 +297,13 @@ class DailyProductionRefineryProvider with ChangeNotifier {
         plantCode,
         shift,
       );
-      _setLoadingFilterTicket(false);
       notifyListeners();
     } catch (e) {
       _setErrorMessage(
-        '(Deodorizing Filtration Provider) Failed fetch filtered PBE ticket: $e',
+        '(Daily Production Refinery Provider) Failed fetch filtered Daily Prod Refinery ticket: $e',
       );
-      _setLoading(false);
+    } finally {
+      _setLoadingFilterTicket(false);
     }
   }
 }

@@ -77,11 +77,12 @@ class DailyProductionFractionationProvider with ChangeNotifier {
   }
 
   Future<String?> fetchLatestId(String plantCode) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
     try {
       _latestId = await _repository.getLatestTicketId(plantCode);
       log("latest ID = $_latestId");
+      _setLoading(false);
       return _latestId;
     } catch (e) {
       _setLoading(false);

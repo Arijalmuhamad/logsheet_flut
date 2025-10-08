@@ -108,18 +108,6 @@ class DailyProductionRefineryMySQLService {
         """;
           params["plantCode"] = plantCode;
           break;
-        // case 'MGR' || 'MGR_PROD':
-        // baseQuery = """
-        // SELECT
-        //   *
-        // FROM
-        //   t_daily_production_refinery
-        // WHERE
-        //   plant = :plantCode AND (flag IS NULL OR flag = 'T')
-        // """;
-
-        // params["plantCode"] = plantCode;
-        // break;
 
         case 'ADM':
           // Query for Admin: Can see all reports.
@@ -315,7 +303,7 @@ class DailyProductionRefineryMySQLService {
 
       if (AppRoles.managerProd.contains(userRole)) {
         sql =
-            "UPDATE t_daily_production_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_daily_production_refinery SET verified_by = :username, verified_status = :status, verified_date = :date, checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
         params = {
           "username": username,
           "status": status,

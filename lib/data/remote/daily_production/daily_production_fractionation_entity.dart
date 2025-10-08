@@ -268,7 +268,7 @@ class DailyProductionFractionationEntity {
       'oil_type_rm_no': oilTypeRmNo,
       'oil_type_rm_cr': oilTypeRmCr,
       'oil_type_rm_from_tank': oilTypeRmFromTank,
-      'oil_type_rm_awal_jam': oilTypeRmAwalJam,
+      'oil_type_rm_awal_jam': formatTimeOfDay(oilTypeRmAwalJam),
       'oil_type_rm_awal_flowmeter': oilTypeRmAwalFlowmeter,
       'oil_type_rm_akhir_jam': formatTimeOfDay(oilTypeRmAkhirJam),
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
