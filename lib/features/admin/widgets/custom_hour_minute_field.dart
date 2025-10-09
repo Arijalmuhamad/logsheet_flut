@@ -38,7 +38,7 @@ class CustomHourMinuteField extends StatelessWidget {
             prefixIcon: const Icon(Icons.access_time),
           ),
           child: Text(
-            selectedTime != null ? formatTime(selectedTime!) : "",
+            selectedTime != null ? formatTime(selectedTime!) : "$selectedTime",
             style: TextStyle(
               fontSize: 16,
               color:

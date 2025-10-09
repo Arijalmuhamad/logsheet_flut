@@ -6,14 +6,15 @@ import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
 import 'package:logsheet_app/features/admin/pages/alerts/alerts_page.dart';
-import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_detail_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/approval/fra_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_daily_production_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/approval/ref_daily_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_reports_list.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtration/deodorizing_filtration_report_list_page.dart';
@@ -305,7 +306,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.12"), Text("Build 2025-10-7")],
+              children: [Text("Version 1.0.13"), Text("Build 2025-10-9")],
             ),
           ],
         ),
@@ -863,8 +864,7 @@ class _UserHomePageState extends State<UserHomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (_) => DryFractionationListPage(), // TODO: change
+                        builder: (_) => DryFractionationListPage(),
                       ),
                     );
                   },
@@ -880,7 +880,7 @@ class _UserHomePageState extends State<UserHomePage> {
                         MaterialPageRoute(
                           builder:
                               (_) =>
-                                  PretreatmentBleachingFiltrationApprovalListPage(), // TODO: Change
+                                  DryFractionationApprovalListPage(), // TODO: Change
                         ),
                       );
                     },
@@ -894,11 +894,10 @@ class _UserHomePageState extends State<UserHomePage> {
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) =>
-                                LogsheetPretreatmentBleachingFiltrationReportListsPage(
-                                  userName: user.username,
-                                  role: user.role,
-                                ), // TODO: Change
+                            (_) => DryFractionationReportListPage(
+                              userName: user.username,
+                              role: user.role,
+                            ),
                       ),
                     );
                   },

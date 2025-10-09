@@ -2,43 +2,36 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/time_of_day_to_string.dart';
+import 'package:logsheet_app/core/utils/to_string.dart';
+import 'package:logsheet_app/data/remote/dry_fractionation/dry_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/logsheet/pretreatment_bleaching_filtration_entity.dart';
-import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_edit_page.dart';
-import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_edit_page.dart';
+import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class LogsheetPretreatmentBleachingFiltrationDetailPage extends StatefulWidget {
-  final PretreatmentBleachingFiltrationEntity item;
-  final bool isDisplayed;
-  const LogsheetPretreatmentBleachingFiltrationDetailPage({
+class DryFractionationDetailPage extends StatefulWidget {
+  const DryFractionationDetailPage({
     super.key,
     required this.item,
     required this.isDisplayed,
   });
+  final DryFractionationEntity item;
+  final bool isDisplayed;
 
   @override
-  State<LogsheetPretreatmentBleachingFiltrationDetailPage> createState() =>
-      _LogsheetPretreatmentBleachingFiltrationDetailPageState();
+  State<DryFractionationDetailPage> createState() =>
+      _DryFractionationDetailPageState();
 }
 
-class _LogsheetPretreatmentBleachingFiltrationDetailPageState
-    extends State<LogsheetPretreatmentBleachingFiltrationDetailPage> {
-  late PretreatmentBleachingFiltrationEntity _currentReport;
-  final TextEditingController _remarkController = TextEditingController();
-  String _formatNullableDateTime(DateTime? dt) {
-    if (dt == null) return '-';
-    return DateFormat('dd MMMM yyyy, HH:mm').format(dt);
-  }
+class _DryFractionationDetailPageState
+    extends State<DryFractionationDetailPage> {
+  late DryFractionationEntity _currentReport;
 
-  /// Helper function to format a nullable DateTime object into a date-only string.
-  /// If the date is null, it returns a dash.
-  String _formatNullableDate(DateTime? dt) {
-    if (dt == null) return '-';
-    return DateFormat('dd MMMM yyyy').format(dt);
-  }
+  final TextEditingController _remarkController = TextEditingController();
 
   @override
   void initState() {
@@ -48,51 +41,27 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
 
   @override
   Widget build(BuildContext context) {
-    String company = widget.item.company ?? '-';
-    String plant = widget.item.plant ?? '-';
     final user = context.watch<UserProvider>().currentUser;
-    final fullDateTimeForShift = DateTime(
-      _currentReport.postingDate!.year,
-      _currentReport.postingDate!.month,
-      _currentReport.postingDate!.day,
-      _currentReport.time!.hour,
-      _currentReport.time!.minute,
-      _currentReport.time!.second,
-    );
-    log("$fullDateTimeForShift");
     String formattedDate =
         _currentReport.postingDate != null
-            ? DateFormat('dd MMMM yyyy').format(fullDateTimeForShift)
+            ? DateFormat('dd MMMM yyyy').format(_currentReport.postingDate!)
             : '-';
-    String formattedTime =
-        _currentReport.time != null
-            ? DateFormat('HH:mm').format(widget.item.time!)
-            : '-';
-    String shift =
-        _currentReport.time != null ? _getShift(fullDateTimeForShift) : '-';
+
     return Scaffold(
-      appBar: _buildAppbar(context),
+      appBar: _buildAppBar(),
       body: _buildBody(
-        formattedDate,
-        formattedTime,
-        shift,
-        company,
-        plant,
-        user,
-        context,
+        formattedDate: formattedDate,
+        user: user,
+        context: context,
       ),
     );
   }
 
-  SingleChildScrollView _buildBody(
-    String formattedDate,
-    String formattedTime,
-    String shift,
-    String company,
-    String plant,
-    UserEntity? user,
-    BuildContext context,
-  ) {
+  SingleChildScrollView _buildBody({
+    required String formattedDate,
+    required UserEntity? user,
+    required BuildContext context,
+  }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 16, bottom: 36, right: 16, left: 16),
       child: Column(
@@ -108,200 +77,148 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
               children: [
                 _buildInfoCard('Tanggal', formattedDate),
                 const SizedBox(width: 8),
-                _buildInfoCard('Jam', formattedTime),
+                _buildInfoCard('Shift', _currentReport.shift ?? '-  '),
+                _buildInfoCard('Oil', _currentReport.oilType ?? '-'),
+                _buildInfoCard(
+                  'Work Center',
+                  _currentReport.workCenter ?? '-  ',
+                ),
                 const SizedBox(width: 8),
-                _buildInfoCard('Shift', shift),
               ],
             ),
           ),
+
           _buildSection('ID', [_buildDataRow('Ticket ID', _currentReport.id)]),
-          _buildSection('Company & Plant', [
-            _buildDataRow('Company', company),
-            _buildDataRow('Plant', plant),
-            _buildDataRow('Plant', _currentReport.plant ?? '-'),
-            _buildDataRow('Work Center', _currentReport.refineryMachine ?? '-'),
-            _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),
-          ]),
 
-          // Section for Pre-Treatment data
-          _buildSection('Pre-Treatment', [
+          _buildSection('Dry Fractionation', [
+            _buildDataRow('Crystallizier', _currentReport.crystalizier ?? '-'),
             _buildDataRow(
-              'Fit 001 (${_currentReport.oilType}) - Tph',
-              _currentReport.ptFit001?.toString() ?? '-',
+              'Filling Start Time',
+              displayTime(_currentReport.fillingStartTime),
             ),
             _buildDataRow(
-              'E001A Inlet (${_currentReport.oilType}) - °C',
-              _currentReport.ptE001aInlet?.toString() ?? '-',
+              'Filling End Time',
+              displayTime(_currentReport.fillingEndTime),
             ),
             _buildDataRow(
-              'F001/2 Str - bar',
-              _currentReport.ptF0012?.toString() ?? '-',
+              'Cooling Start Time',
+              displayTime(_currentReport.collingStartTime),
             ),
             _buildDataRow(
-              'H3PO4 - % (Dosing)',
-              _currentReport.ptH3po4?.toString() ?? '-',
+              'Initial Oil Level',
+              formatDouble(_currentReport.initialOilLevel),
+            ),
+            _buildDataRow('Initial Tank', _currentReport.initialTank ?? '-'),
+            _buildDataRow('Feed IV', formatDouble(_currentReport.feedIV)),
+            _buildDataRow(
+              'Agitator Speed',
+              _currentReport.agitatorSpeed ?? '-',
             ),
             _buildDataRow(
-              'BE - % (Dosing)',
-              _currentReport.ptBe?.toString() ?? '-',
+              'Water Pump Pressure',
+              formatDouble(_currentReport.waterPumpPress),
             ),
-          ]),
 
-          // Section for Bleaching data
-          _buildSection('Bleaching', [
             _buildDataRow(
-              'Vacuum - mmHg',
-              _currentReport.blVacum?.toString() ?? '-',
+              'Crystal Start Time',
+              displayTime(_currentReport.crystalStartTime),
             ),
             _buildDataRow(
-              'T-Inlet - °C',
-              _currentReport.blTInlet?.toString() ?? '-',
+              'Crystal Temperature',
+              _currentReport.crystalTemp ?? '-',
             ),
             _buildDataRow(
-              'T B602 - °C',
-              _currentReport.blTB602?.toString() ?? '-',
+              'Filtration Start Time',
+              displayTime(_currentReport.filtrationStartTime),
             ),
             _buildDataRow(
-              'Spurge - Bar',
-              _currentReport.blSpurge?.toString() ?? '-',
-            ),
-          ]),
-
-          // Section for Pump P602 data
-          _buildSection('Pump P602', [
-            _buildDataRow('Pump A - Bar', _currentReport.pA?.toString() ?? '-'),
-            _buildDataRow('Pump B - Bar', _currentReport.pB?.toString() ?? '-'),
-            _buildDataRow('Pump C - Bar', _currentReport.pC?.toString() ?? '-'),
-          ]),
-
-          // Section for Niagara Filter data
-          _buildSection('Niagara Filter', [
-            _buildDataRow(
-              'Filter 601 - Bar',
-              _currentReport.fnF601?.toString() ?? '-',
+              'Filtration Temperature',
+              _currentReport.filtrationTemp ?? '-',
             ),
             _buildDataRow(
-              'Filter 602 - Bar',
-              _currentReport.fnF602?.toString() ?? '-',
+              'Filtration Cycle No.',
+              formatInt(_currentReport.filtrationCycleNo),
             ),
             _buildDataRow(
-              'Filter 603 - Bar',
-              _currentReport.fnF603?.toString() ?? '-',
-            ),
-          ]),
-
-          // Section for Bag Filter data
-          _buildSection('Bag Filter', [
-            _buildDataRow(
-              'Filter 604A - Bar',
-              _currentReport.fb604a?.toString() ?? '-',
+              'Filtration Oil Level',
+              _currentReport.filtrationOilLevel ?? '-',
             ),
             _buildDataRow(
-              'Filter 604B - Bar',
-              _currentReport.fb604b?.toString() ?? '-',
+              'Olein IV Red',
+              formatDouble(_currentReport.oleinIVRed),
             ),
             _buildDataRow(
-              'Filter 604C - Bar',
-              _currentReport.fb604c?.toString() ?? '-',
+              'Olein Cloud Point',
+              formatDouble(_currentReport.oleinCloudPoint),
+            ),
+            _buildDataRow('Stearin IV', formatDouble(_currentReport.stearinIV)),
+            _buildDataRow(
+              'Stearin Slep Point Red',
+              formatDouble(_currentReport.stearinSlepPointRed),
+            ),
+            _buildDataRow(
+              'Olein Yield (%)',
+              formatDouble(_currentReport.oleinYield),
             ),
           ]),
 
-          // Section for Cartridge Filter data
-          _buildSection('Cartridge Filter', [
-            _buildDataRow(
-              'Filter 605A - Bar',
-              _currentReport.fc605a?.toString() ?? '-',
-            ),
-            _buildDataRow(
-              'Filter 605B - Bar',
-              _currentReport.fc605b?.toString() ?? '-',
-            ),
-          ]),
-
-          // Section for quality and remarks
-          _buildSection('Clarity & Remarks', [
-            _buildDataRow('Clarity', _currentReport.clarity ?? '-'),
+          _buildSection('Remarks', [
             _buildDataRow('Remarks', _currentReport.remarks ?? '-'),
           ]),
 
-          // Section for data entry details
           _buildSection('Entry Details', [
             _buildDataRow('Entry By', _currentReport.entryBy ?? '-'),
-            _buildDataRow(
-              'Entry Date',
-              _formatNullableDateTime(_currentReport.entryDate),
-            ),
-            _buildDataRow(
-              'Transaction Date',
-              _formatNullableDateTime(_currentReport.transactionDate),
-            ),
+            _buildDataRow('Entry Date', formatDate(_currentReport.entryDate)),
           ]),
 
-          // Section for approval status
           _buildSection('Status & History', [
-            _buildDataRow('Entried By', _currentReport.entryBy ?? '-'),
-            _buildDataRow(
-              'Entry Date',
-              _formatNullableDateTime(_currentReport.entryDate),
-            ),
-
-            const Divider(),
             _buildDataRow('Prepared By', _currentReport.preparedBy ?? '-'),
             _buildDataRow(
               'Prepared Date',
-              _formatNullableDateTime(_currentReport.preparedDate),
+              formatDate(_currentReport.preparedDate),
             ),
             _buildDataRow(
               'Prepared Status',
               _currentReport.preparedStatus ?? '-',
             ),
             _buildDataRow(
-              'Prepared Remarks',
+              'Prepared Status Remarks',
               _currentReport.preparedStatusRemarks ?? '-',
             ),
-            const Divider(height: 24, color: Colors.black12),
             _buildDataRow('Checked By', _currentReport.checkedBy ?? '-'),
             _buildDataRow(
               'Checked Date',
-              _formatNullableDateTime(_currentReport.checkedDate),
+              formatDate(_currentReport.checkedDate),
             ),
             _buildDataRow(
               'Checked Status',
               _currentReport.checkedStatus ?? '-',
             ),
             _buildDataRow(
-              'Checked Remarks',
+              'Checked Status Remarks',
               _currentReport.checkedStatusRemarks ?? '-',
             ),
-            const Divider(),
             _buildDataRow('Updated By', _currentReport.updatedBy ?? '-'),
             _buildDataRow(
               'Updated Date',
-              _formatNullableDateTime(_currentReport.updatedDate),
+              formatDate(_currentReport.updatedDate),
             ),
           ]),
 
-          // Section for form information
           _buildSection('Form Information', [
-            _buildDataRow('Form No', _currentReport.formNo ?? '-'),
-            _buildDataRow(
-              'Date Issued',
-              _formatNullableDate(_currentReport.dateIssued),
-            ),
-            _buildDataRow(
-              'Revision No',
-              _currentReport.revisionNo?.toString() ?? '-',
-            ),
+            _buildDataRow('Form No.', _currentReport.formNo ?? '-'),
+            _buildDataRow('Date Issued', formatDate(_currentReport.dateIssued)),
+            _buildDataRow('Revision No.', formatInt(_currentReport.revisionNo)),
             _buildDataRow(
               'Revision Date',
-              _formatNullableDate(_currentReport.revisionDate),
+              formatDate(_currentReport.revisionDate),
             ),
           ]),
-          // Approval Buttons Section
-          if (user?.role == 'LEAD' ||
-              user?.role == 'LEAD_PROD' ||
-              user?.role == 'ADM')
-            if (widget.isDisplayed && _currentReport.preparedStatus == null)
+
+          if (AppRoles.leadProd.contains(user?.role) ||
+              AppRoles.admin.contains(user?.role))
+            if (widget.isDisplayed &&
+                _currentReport.preparedStatus == null) ...[
               Padding(
                 padding: const EdgeInsets.only(top: 24.0),
                 child: Row(
@@ -314,11 +231,10 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                               () => _showApprovalBottomSheet(
                                 context,
                                 false,
-                                shift,
                                 user!,
                               ),
                           icon: const Icon(Icons.close),
-                          label: Text("Reject Shift $shift"),
+                          label: Text("Reject Ticket"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red[700],
                             foregroundColor: Colors.white,
@@ -335,11 +251,10 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                               () => _showApprovalBottomSheet(
                                 context,
                                 true,
-                                shift,
                                 user!,
                               ),
                           icon: const Icon(Icons.check),
-                          label: Text("Approve Shift $shift"),
+                          label: Text("Approve Ticket"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green[700],
                             foregroundColor: Colors.white,
@@ -350,125 +265,13 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                   ],
                 ),
               ),
+            ],
         ],
       ),
     );
   }
 
-  void _showApprovalBottomSheet(
-    BuildContext context,
-    bool isApproved,
-    String shift,
-    UserEntity user,
-  ) {
-    // Clear remark controller before showing
-    _remarkController.clear();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Text(
-                isApproved ? "Approve Logsheet" : "Reject Logsheet",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              if (!isApproved)
-                TextFormField(
-                  controller: _remarkController,
-                  decoration: const InputDecoration(
-                    labelText: "Remarks (Wajib diisi untuk reject)",
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 4,
-                ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isApproved ? Colors.green : Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: () async {
-                  if (!isApproved && _remarkController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Remark wajib diisi untuk me-reject.'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    return;
-                  }
-
-                  final plantCode =
-                      context.read<PlantProvider>().currentPlant?.code ?? "";
-                  final provider =
-                      context.read<PretreatmentBleachingFiltrationProvider>();
-
-                  try {
-                    await provider.sendApproveRejectReport(
-                      user.username,
-                      isApproved ? "Approved" : "Rejected",
-                      user.role,
-                      int.parse(shift),
-                      _remarkController.text.isNotEmpty
-                          ? _remarkController.text
-                          : null,
-                      _currentReport.id,
-                      user.role, // Level
-                      plantCode,
-                    );
-
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          "Logsheet ${_currentReport.id} berhasil di-${isApproved ? 'approve' : 'reject'}",
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                    // Pop bottom sheet and then detail page
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop();
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Error: $e"),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                child: Text(
-                  isApproved ? 'Submit Approval' : 'Submit Rejection',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  AppBar _buildAppbar(BuildContext context) {
+  AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
@@ -485,16 +288,13 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
               final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return LogsheetPretreatmentBleachingFiltrationEditPage(
-                      logsheet: widget.item,
-                    );
+                    return DryFractionationEditPage(entity: _currentReport);
                   },
                 ),
               );
               log(result != null ? 'result has value' : 'result has no value.');
 
-              if (result != null &&
-                  result is PretreatmentBleachingFiltrationEntity) {
+              if (result != null && result is DryFractionationEntity) {
                 setState(() {
                   _currentReport = result;
                 });
@@ -550,7 +350,7 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 150,
             child: Text(
               label,
               style: const TextStyle(
@@ -624,9 +424,7 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
         return StatefulBuilder(
           builder: (context, setState) {
             bool isLoading =
-                context
-                    .watch<PretreatmentBleachingFiltrationProvider>()
-                    .isLoadingDelete;
+                context.watch<DryFractionationProvider>().isLoadingDelete;
 
             return AlertDialog(
               title: const Text('Hapus Ticket'),
@@ -650,9 +448,7 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                               final user = context.read<UserProvider>();
                               final plant = context.read<PlantProvider>();
                               await context
-                                  .read<
-                                    PretreatmentBleachingFiltrationProvider
-                                  >()
+                                  .read<DryFractionationProvider>()
                                   .deleteTicketById(
                                     _currentReport.id,
                                     user.currentUser?.username ?? "",
@@ -660,10 +456,8 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
 
                               if (!context.mounted) return;
                               await context
-                                  .read<
-                                    PretreatmentBleachingFiltrationProvider
-                                  >()
-                                  .fetchAllTicket(
+                                  .read<DryFractionationProvider>()
+                                  .fetchAllTickets(
                                     null,
                                     null,
                                     user.currentUser!.username,
@@ -695,7 +489,6 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
                               );
                             }
                           },
-                  // Conditionally show the loader or the text.
                   child:
                       isLoading
                           ? const SizedBox(
@@ -711,6 +504,113 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showApprovalBottomSheet(
+    BuildContext context,
+    bool isApproved,
+    UserEntity user,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                isApproved ? "Approve Logsheet" : "Reject Logsheet",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              if (!isApproved)
+                TextFormField(
+                  controller: _remarkController,
+                  decoration: const InputDecoration(
+                    labelText: "Remarks (Wajib diisi untuk reject)",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 4,
+                ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isApproved ? Colors.green : Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: () async {
+                  if (!isApproved && _remarkController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Remark wajib diisi untuk me-reject.'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final plantCode =
+                      context.read<PlantProvider>().currentPlant?.code ?? "";
+                  final provider = context.read<DryFractionationProvider>();
+
+                  try {
+                    await provider.sendApproveRejectReport(
+                      user.username,
+                      isApproved ? "Approved" : "Rejected",
+                      user.role,
+                      _remarkController.text.isNotEmpty
+                          ? _remarkController.text
+                          : null,
+                      _currentReport.id,
+                      plantCode,
+                    );
+
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "Ticket ${_currentReport.id} berhasil di-${isApproved ? 'approve' : 'reject'}",
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    // Pop bottom sheet and then detail page
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Error: $e"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                child: Text(
+                  isApproved ? 'Submit Approval' : 'Submit Rejection',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         );
       },
     );

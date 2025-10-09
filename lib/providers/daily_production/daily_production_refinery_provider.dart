@@ -225,7 +225,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
       log('Updating report...');
       final result = await _repository.updateReportTicket(report);
       log(result.toString());
-      fetchAllTickets(null, null, username, role, plantCode);
+      await fetchAllTickets(null, null, username, role, plantCode);
       await Future.delayed(const Duration(milliseconds: 300));
       _setLoading(false);
       return result;

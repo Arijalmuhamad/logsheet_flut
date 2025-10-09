@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/display.dart';
-import 'package:logsheet_app/data/remote/daily_production/daily_production_refinery_entity.dart';
+import 'package:logsheet_app/data/remote/dry_fractionation/dry_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/admin/pages/daily_production/refinery/ref_daily_production_detail_page.dart';
-import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_detail_page.dart';
+import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
 
-class DailyProductionRefineryReportListPage extends StatefulWidget {
-  const DailyProductionRefineryReportListPage({
+class DryFractionationReportListPage extends StatefulWidget {
+  const DryFractionationReportListPage({
     super.key,
     required this.userName,
     required this.role,
@@ -21,12 +20,12 @@ class DailyProductionRefineryReportListPage extends StatefulWidget {
   final String role;
 
   @override
-  State<DailyProductionRefineryReportListPage> createState() =>
-      _DailyProductionRefineryReportListsPageState();
+  State<DryFractionationReportListPage> createState() =>
+      _DryFractionationReportListsPageState();
 }
 
-class _DailyProductionRefineryReportListsPageState
-    extends State<DailyProductionRefineryReportListPage> {
+class _DryFractionationReportListsPageState
+    extends State<DryFractionationReportListPage> {
   final TextEditingController _dateController = TextEditingController();
   DateTime? _selectedDate = DateTime.now();
   String? _tempSelectedShift = "All";
@@ -42,7 +41,7 @@ class _DailyProductionRefineryReportListsPageState
 
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) async => await context
-          .read<DailyProductionRefineryProvider>()
+          .read<DryFractionationProvider>()
           .fetchFilteredTickets(_selectedDate, plantCode, _tempSelectedShift),
     );
   }
@@ -53,23 +52,17 @@ class _DailyProductionRefineryReportListsPageState
     super.dispose();
   }
 
-  void _resetFormAndRefresh() {
+  void _resetFormAndRefresh() async {
     setState(() {
       _dateController.clear();
       _selectedDate = DateTime.now();
       _tempSelectedShift = null;
-      // _fetchReports();
     });
-  }
-
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.black87,
-        duration: const Duration(seconds: 3),
-      ),
+    final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+    await context.read<DryFractionationProvider>().fetchFilteredTickets(
+      _selectedDate,
+      plantCode,
+      _tempSelectedShift,
     );
   }
 
@@ -104,7 +97,7 @@ class _DailyProductionRefineryReportListsPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Daily_Production_Refinery")
+            .where((form) => form.isMenu == "Logsheet_Dry_Fractionation")
             .first;
     return AppBar(
       backgroundColor: Colors.white,
@@ -112,7 +105,7 @@ class _DailyProductionRefineryReportListsPageState
       centerTitle: true,
       iconTheme: const IconThemeData(color: Color(0xFF655F5B)),
       title: Text(
-        'Daily Refinery List (${formData!.code})',
+        'Dry Fract. List (${formData!.code})',
         style: TextStyle(
           color: Color(0xFF655F5B),
           fontWeight: FontWeight.bold,
@@ -145,7 +138,7 @@ class _DailyProductionRefineryReportListsPageState
                   elevation: 4,
                   shadowColor: Colors.black26,
                   margin: const EdgeInsets.only(top: 16),
-                  child: Consumer<DailyProductionRefineryProvider>(
+                  child: Consumer<DryFractionationProvider>(
                     builder: (context, provider, child) {
                       if (provider.filteredTickets.isEmpty) {
                         return Center(
@@ -163,7 +156,7 @@ class _DailyProductionRefineryReportListsPageState
                                       "";
 
                                   await context
-                                      .read<DailyProductionRefineryProvider>()
+                                      .read<DryFractionationProvider>()
                                       .fetchFilteredTickets(
                                         _selectedDate,
                                         plantCode,
@@ -177,7 +170,7 @@ class _DailyProductionRefineryReportListsPageState
                         );
                       }
 
-                      if (provider.isLoadingFilterReport) {
+                      if (provider.isLoadingFilterTicket) {
                         return Center(child: CircularProgressIndicator());
                       }
 
@@ -192,12 +185,10 @@ class _DailyProductionRefineryReportListsPageState
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder:
-                                        (context) =>
-                                            DailyProductionRefineryDetailPage(
-                                              dataForm: formData!,
-                                              item: report,
-                                              isDisplayed: false,
-                                            ),
+                                        (context) => DryFractionationDetailPage(
+                                          item: report,
+                                          isDisplayed: false,
+                                        ),
                                   ),
                                 );
                               },
@@ -266,22 +257,6 @@ class _DailyProductionRefineryReportListsPageState
                                         ),
                                         SizedBox(width: 16),
                                         const Icon(
-                                          Icons.schedule,
-                                          size: 18,
-                                          color: Colors.grey,
-                                        ),
-                                        SizedBox(width: 6),
-                                        Text(
-                                          timeOfDayToString(
-                                            report.oilTypeRmAwalJam,
-                                          ),
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        SizedBox(width: 8),
-                                        const Icon(
                                           Icons.timelapse,
                                           size: 18,
                                           color: Colors.grey,
@@ -310,9 +285,9 @@ class _DailyProductionRefineryReportListsPageState
                                         Icon(Icons.oil_barrel_rounded),
                                         const SizedBox(width: 6),
                                         Text(
-                                          report.oilTypeRm == null
+                                          report.oilType == null
                                               ? "N/A"
-                                              : "${report.oilTypeRm}",
+                                              : "${report.oilType}",
                                         ),
                                       ],
                                     ),
@@ -421,13 +396,11 @@ class _DailyProductionRefineryReportListsPageState
             final plantCode =
                 context.read<PlantProvider>().currentPlant?.code ?? "";
 
-            await context
-                .read<DailyProductionRefineryProvider>()
-                .fetchFilteredTickets(
-                  _selectedDate,
-                  plantCode,
-                  _tempSelectedShift,
-                );
+            await context.read<DryFractionationProvider>().fetchFilteredTickets(
+              _selectedDate,
+              plantCode,
+              _tempSelectedShift,
+            );
           },
           icon: const Icon(Icons.search),
           label: const Text('Cari'),
@@ -444,7 +417,7 @@ class _DailyProductionRefineryReportListsPageState
     );
   }
 
-  String _getStatusText(DailyProductionRefineryEntity report) {
+  String _getStatusText(DryFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return "Approved";
     }
@@ -462,7 +435,7 @@ class _DailyProductionRefineryReportListsPageState
     return "Submitted";
   }
 
-  Color _getStatusColor(DailyProductionRefineryEntity report) {
+  Color _getStatusColor(DryFractionationEntity report) {
     if (report.checkedStatus == "Approved") {
       return Colors.green;
     }

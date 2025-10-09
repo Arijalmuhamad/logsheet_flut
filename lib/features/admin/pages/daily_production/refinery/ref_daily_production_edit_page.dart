@@ -827,13 +827,13 @@ class _RefDailyProductionEditPageState
         if (!context.mounted) return;
         _showSnackBar('Laporan berhasil diperbarui.');
         // Refresh the list on the previous screen
-        context.read<DailyProductionRefineryProvider>().fetchAllTickets(
-          null,
-          null,
-          currentUser?.username ?? "",
-          currentUser?.role ?? "",
-          updatedEntity.plant ?? "",
-        );
+        // context.read<DailyProductionRefineryProvider>().fetchAllTickets(
+        //   null,
+        //   null,
+        //   currentUser?.username ?? "",
+        //   currentUser?.role ?? "",
+        //   updatedEntity.plant ?? "",
+        // );
         Navigator.pop(context); // Go back to the list page
         Navigator.pop(context);
       } else {

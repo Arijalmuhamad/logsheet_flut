@@ -8,6 +8,7 @@ import 'package:logsheet_app/core/utils/get_status_color.dart';
 import 'package:logsheet_app/core/utils/get_status_text.dart';
 import 'package:logsheet_app/data/remote/dry_fractionation/dry_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_detail_page.dart';
 import 'package:logsheet_app/features/admin/pages/dry_fractionation/dry_fractionation_input_page.dart';
 import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
@@ -78,7 +79,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
     return Consumer<DryFractionationProvider>(
       builder: (context, provider, child) {
         List<DryFractionationEntity> filteredList = provider.reportsList;
-        if (provider.isLoading) {
+        if (provider.isLoadingFetchTickets) {
           return Center(child: CircularProgressIndicator());
         }
         if (provider.errorMessage != null) {
@@ -94,7 +95,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
                     textAlign: TextAlign.center,
                   ),
                   OutlinedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final username =
                           context.read<UserProvider>().currentUser?.username;
                       final role =
@@ -103,13 +104,15 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      context.read<DryFractionationProvider>().fetchAllTickets(
-                        null,
-                        null,
-                        username ?? "",
-                        role ?? "",
-                        plantCode,
-                      );
+                      await context
+                          .read<DryFractionationProvider>()
+                          .fetchAllTickets(
+                            null,
+                            null,
+                            username ?? "",
+                            role ?? "",
+                            plantCode,
+                          );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -131,7 +134,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   OutlinedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final username =
                           context.read<UserProvider>().currentUser?.username ??
                           "";
@@ -141,13 +144,15 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
                           context.read<PlantProvider>().currentPlant?.code ??
                           "";
 
-                      context.read<DryFractionationProvider>().fetchAllTickets(
-                        null,
-                        null,
-                        username,
-                        role,
-                        plantCode,
-                      );
+                      await context
+                          .read<DryFractionationProvider>()
+                          .fetchAllTickets(
+                            null,
+                            null,
+                            username,
+                            role,
+                            plantCode,
+                          );
                     },
                     child: const Text("Refresh"),
                   ),
@@ -167,18 +172,16 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
               return Card(
                 child: InkWell(
                   onTap: () {
-                    // TODO: lengkapi
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder:
-                    //         (context) =>
-                    //             LogsheetPretreatmentBleachingFiltrationDetailPage(
-                    //               item: item,
-                    //               isDisplayed: true,
-                    //             ),
-                    //   ),
-                    // );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => DryFractionationDetailPage(
+                              item: item,
+                              isDisplayed: true,
+                            ),
+                      ),
+                    );
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -343,7 +346,7 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
               },
               icon: Consumer<DryFractionationProvider>(
                 builder: (context, provider, child) {
-                  if (provider.isLoading) {
+                  if (provider.isLoadingFetchTickets) {
                     return const CircularProgressIndicator();
                   }
                   return const Icon(Icons.replay);

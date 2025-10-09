@@ -99,6 +99,10 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
       if (valueProvider.oilTypeLists.isEmpty) {
         await valueProvider.fetchOilTypes();
       }
+
+      if (valueProvider.toTankGroupLists.isEmpty) {
+        await valueProvider.fetchToTankGroupLists();
+      }
     });
   }
 
@@ -111,7 +115,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
     );
   }
 
-  Stack _buildBody() {
+  Widget _buildBody() {
     return Stack(
       children: [
         SingleChildScrollView(
@@ -723,6 +727,8 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
         checkedDate: null,
         checkedStatus: null,
         checkedStatusRemarks: null,
+        updatedBy: null,
+        updatedDate: null,
         formNo: form?.code,
         dateIssued: form?.dateIssued,
         revisionNo: form?.revisionNo,

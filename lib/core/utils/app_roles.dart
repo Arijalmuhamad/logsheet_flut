@@ -15,6 +15,8 @@ class AppRoles {
     "MGR_QC",
   ];
 
+  static const List<String> admin = ['ADM'];
+
   static const List<String> leadQC = ["LEAD", "LEAD_QC"];
   static const List<String> leadProd = ["LEAD", "LEAD_PROD"];
   static const List<String> managerProd = ["MGR", "MGR_PROD"];

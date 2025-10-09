@@ -38,15 +38,18 @@ class DryFractionationEntity {
   final String? entryBy;
   final DateTime? entryDate;
 
-  final String? preparedBy;
-  final DateTime? preparedDate;
-  final String? preparedStatus;
-  final String? preparedStatusRemarks;
+  String? preparedBy;
+  DateTime? preparedDate;
+  String? preparedStatus;
+  String? preparedStatusRemarks;
 
-  final String? checkedBy;
-  final DateTime? checkedDate;
-  final String? checkedStatus;
-  final String? checkedStatusRemarks;
+  String? checkedBy;
+  DateTime? checkedDate;
+  String? checkedStatus;
+  String? checkedStatusRemarks;
+
+  String? updatedBy;
+  DateTime? updatedDate;
 
   final String? formNo;
   final DateTime? dateIssued;
@@ -94,6 +97,8 @@ class DryFractionationEntity {
     required this.checkedDate,
     required this.checkedStatus,
     required this.checkedStatusRemarks,
+    required this.updatedBy,
+    required this.updatedDate,
     required this.formNo,
     required this.dateIssued,
     required this.revisionNo,
@@ -142,6 +147,8 @@ class DryFractionationEntity {
       checkedDate: parseDateTime(map['checked_date']),
       checkedStatus: map['checked_status'] as String?,
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      updatedBy: map['updated_by'] as String?,
+      updatedDate: parseDateTime(map['updated_date']),
       formNo: map['form_no'] as String?,
       dateIssued: parseDateTime(map['date_issued']),
       revisionNo: parseInt(map['revision_no']),
@@ -191,6 +198,8 @@ class DryFractionationEntity {
       'checked_date': checkedDate,
       'checked_status': checkedStatus,
       'checked_status_remarks': checkedStatusRemarks,
+      'updated_by': updatedBy,
+      'updated_date': updatedDate,
       'form_no': formNo,
       'date_issued': dateIssued,
       'revision_no': revisionNo,
@@ -239,6 +248,8 @@ class DryFractionationEntity {
     DateTime? checkedDate,
     String? checkedStatus,
     String? checkedStatusRemarks,
+    String? updatedBy,
+    DateTime? updatedDate,
     String? formNo,
     DateTime? dateIssued,
     int? revisionNo,
@@ -284,6 +295,8 @@ class DryFractionationEntity {
           preparedStatusRemarks ?? this.preparedStatusRemarks,
       checkedBy: checkedBy ?? this.checkedBy,
       checkedDate: checkedDate ?? this.checkedDate,
+      updatedBy: updatedBy ?? this.updatedBy,
+      updatedDate: updatedDate ?? this.updatedDate,
       checkedStatus: checkedStatus ?? this.checkedStatus,
       checkedStatusRemarks: checkedStatusRemarks ?? this.checkedStatusRemarks,
       formNo: formNo ?? this.formNo,
