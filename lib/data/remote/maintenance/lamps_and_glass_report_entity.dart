@@ -14,7 +14,7 @@ class LampsAndGlassReportEntity {
 
   final String detailId;
   final String checkItem;
-  final String statusItem;
+  String statusItem;
 
   LampsAndGlassReportEntity({
     required this.id,

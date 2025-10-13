@@ -66,11 +66,11 @@ class _MaintenanceLampsGlassApprovalPageState
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     log(
                       "Searching for Year: $_selectedYear, Month: $_selectedMonth",
                     );
-                    context
+                    await context
                         .read<MaintenanceLampsAndGlassProvider>()
                         .fetchAllLampsAndGlassFromMonth(
                           year: _selectedYear,

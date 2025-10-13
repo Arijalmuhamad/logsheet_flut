@@ -21,6 +21,9 @@ import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtratio
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_report_list_production_page.dart';
@@ -52,7 +55,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formQualityReportProduction,
       formDailyProductionFractionation,
       formDailyProductionRefinery,
-      formDryFractionation;
+      formDryFractionation,
+      formChecklistLampsAndGlassControl;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -236,8 +240,18 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
-    // Daily_Production_Refinery_Fractination
+    formChecklistLampsAndGlassControl =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Checklist_Lamps_And_Glass_Control" &&
+                  form.isActive == "T",
+            )
+            .first;
 
+    // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
     return Scaffold(
       drawerEnableOpenDragGesture: true,
@@ -878,9 +892,7 @@ class _UserHomePageState extends State<UserHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (_) =>
-                                  DryFractionationApprovalListPage(), // TODO: Change
+                          builder: (_) => DryFractionationApprovalListPage(),
                         ),
                       );
                     },
@@ -907,66 +919,67 @@ class _UserHomePageState extends State<UserHomePage> {
           ],
 
           // Show Maintenance section for all roles (as per your original code)
-          // _buildDrawerSubheader("Maintenance"),
-          // ExpansionTile(
-          //   leading: const Icon(
-          //     Icons.lightbulb_outline_rounded,
-          //     color: Color(0xFF655F5B),
-          //   ),
-          //   title: const Text(
-          //     'Lamps & Glass',
-          //     style: TextStyle(
-          //       color: Colors.black87,
-          //       fontWeight: FontWeight.w600,
-          //     ),
-          //   ),
-          //   childrenPadding: const EdgeInsets.only(left: 20.0),
-          //   iconColor: const Color(0xFFAB2F2B),
-          //   collapsedIconColor: Colors.grey,
-          //   children: [
-          //     // Show Approval only to Managers and Leads (you can adjust roles here)
-          //     if (["MGR", "LEAD", "ADM"].contains(userRole))
-          //       _buildDrawerItem(
-          //         icon: Icons.check_circle_outline,
-          //         title: 'Approval (F/RFA-013)',
-          //         onTap: () {
-          //           Navigator.push(
-          //             context,
-          //             MaterialPageRoute(
-          //               builder: (_) => MaintenanceLampsGlassApprovalPage(),
-          //             ),
-          //           );
-          //         },
-          //       ),
-          //     _buildDrawerItem(
-          //       icon: Icons.input_rounded,
-          //       title: 'Input (F/RFA-013)',
-          //       onTap: () {
-          //         Navigator.push(
-          //           context,
-          //           MaterialPageRoute(
-          //             builder:
-          //                 (_) => MaintenanceLampsGlassInputPage(
-          //                   userName: user.username,
-          //                 ),
-          //           ),
-          //         );
-          //       },
-          //     ),
-          //     _buildDrawerItem(
-          //       icon: Icons.receipt_long_outlined,
-          //       title: 'Report (F/RFA-013)',
-          //       onTap: () {
-          //         Navigator.push(
-          //           context,
-          //           MaterialPageRoute(
-          //             builder: (_) => MaintenanceLampsGlassReportPage(),
-          //           ),
-          //         );
-          //       },
-          //     ),
-          //   ],
-          // ),
+          _buildDrawerSubheader("Maintenance"),
+          ExpansionTile(
+            leading: const Icon(
+              Icons.lightbulb_outline_rounded,
+              color: Color(0xFF655F5B),
+            ),
+            title: Text(
+              'Lamps & Glass\n(${formChecklistLampsAndGlassControl?.code})',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: [
+              // Show Approval only to Managers and Leads (you can adjust roles here)
+              if (AppRoles.managerProd.contains(userRole))
+                _buildDrawerItem(
+                  icon: Icons.check_circle_outline,
+                  title:
+                      'Approval (${formChecklistLampsAndGlassControl?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceLampsGlassApprovalPage(),
+                      ),
+                    );
+                  },
+                ),
+              _buildDrawerItem(
+                icon: Icons.input_rounded,
+                title: 'Input (${formChecklistLampsAndGlassControl?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceLampsGlassInputPage(
+                            userName: user.username,
+                          ),
+                    ),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report (${formChecklistLampsAndGlassControl?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceLampsGlassReportPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFAB2F2B)),

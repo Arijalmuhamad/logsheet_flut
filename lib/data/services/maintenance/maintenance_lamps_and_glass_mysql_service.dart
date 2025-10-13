@@ -332,4 +332,116 @@ class MaintenanceLampsAndGlassMySQLService {
       log(connection!.connected ? "Connected" : "Disconnected");
     }
   }
+
+  // Update Lamps and Glass
+  Future<bool> updateLampsAndGlass(
+    LampsAndGlassControlEntity header,
+    List<LampsAndGlassControlDetailEntity> details,
+  ) async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get latest ticket id.');
+        return false;
+      }
+      connection = connResult.connection!;
+
+      final sqlHeader =
+          "UPDATE t_checklist_lamps_glass_control SET company = :company, plant =:plant, work_center = :work_center, check_date = :check_date, remarks = :remarks WHERE id = :id";
+      final paramsHeader = {
+        "id": header.id,
+        "company": header.company,
+        "plant": header.plant,
+        "work_center": header.workCenter,
+        "check_date": header.checkDate,
+        "remarks": header.remarks,
+      };
+
+      final sqlDetail =
+          "DELETE FROM t_checklist_lamps_glass_control_detail WHERE id_hdr = :id_hdr";
+
+      final paramsDetail = {"id_hdr": header.id};
+
+      //ensure every query execute run
+      await connection.transactional((_) async {
+        // 1. update Lamps and Glass Header
+        await connection!.execute(sqlHeader, paramsHeader);
+
+        // 2. Delete all existing detail records.
+        await connection.execute(sqlDetail, paramsDetail);
+
+        if (details.isNotEmpty) {
+          final values = details
+              .map(
+                (detail) =>
+                    "('${detail.id}', '${detail.idHdr}', '${detail.checkItem}', '${detail.statusItem}',)",
+              )
+              .join(', ');
+
+          final String sql =
+              "INSERT INTO t_checklist_lamps_glass_control_detail (`id`, `id_hdr`, `check_item`, `status_item`) VALUES $values";
+
+          await connection.execute(sql);
+        }
+      });
+
+      log('Successfully updated Lamps and Glass record with ID: ${header.id}');
+      return true;
+    } catch (e) {
+      log('Error updating Lamps and Glass record: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
+
+  // Delete Lamps and Glass
+  Future<bool> deleteLampsAndGlass(String id) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for delete.');
+        return false;
+      }
+      connection = connResult.connection!;
+
+      final String deleteDetail =
+          "DELETE FROM t_checklist_lamps_glass_control_detail WHERE id_hdr = :id";
+
+      final Map<String, String> deleteDetailParams = {"id": id};
+
+      final String deleteHeader =
+          "DELETE FROM t_checklist_lamps_glass_control WHERE id = :id";
+
+      final Map<String, String> deleteHeaderParams = {"id": id};
+
+      await connection.transactional((_) async {
+        //
+        await connection!.execute(deleteDetail, deleteDetailParams);
+
+        await connection.execute(deleteHeader, deleteHeaderParams);
+      });
+
+      log('Successfully deleted Lamps and Glass record with ID: $id');
+      return true;
+    } catch (e) {
+      log('Error deleting Lamps and Glass record: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
 }

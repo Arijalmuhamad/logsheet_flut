@@ -58,10 +58,11 @@ class MaintenanceLampsGlassApprovalDetail extends StatelessWidget {
                 value: report.entryBy,
               ),
               const SizedBox(height: 4),
-              const Divider(indent: 16, endIndent: 16),
+              const Divider(indent: 18, endIndent: 18, thickness: 0.7),
               ListView.builder(
                 shrinkWrap: true,
                 itemCount: checks.length,
+                physics: NeverScrollableScrollPhysics(),
                 scrollDirection: Axis.vertical,
                 itemBuilder: (context, index) {
                   final item = checks[index];

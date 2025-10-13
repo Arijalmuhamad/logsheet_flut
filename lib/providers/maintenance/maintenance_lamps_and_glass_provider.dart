@@ -38,6 +38,9 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
   bool _isSubmitLoading = false;
   bool get isSubmitLoading => _isSubmitLoading;
 
+  bool _isLoadingDelete = false;
+  bool get isLoadingDelete => _isLoading;
+
   bool _isDataAlreadyExist = false;
   bool get isDataAlreadyExist => _isDataAlreadyExist;
 
@@ -51,6 +54,11 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
   bool get isLamps => _isLamps;
 
   void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setLoadingDelete(bool value) {
     _isLoading = value;
     notifyListeners();
   }
@@ -75,7 +83,7 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void fetchAllLampsAndGlass() async {
+  Future<void> fetchAllLampsAndGlass() async {
     log('Trying to fetch all lamps and glass from the database');
     _setLoading(true);
     _setErrorMessage(null);
@@ -97,13 +105,26 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
     }
   }
 
-  void fetchAllLampsAndGlassFromDate(String time) async {
+  Future<void> fetchAllLampsAndGlassFromDate(String time) async {
     log('Trying to fetch all lamps and glass based on date from the database');
     _setLoading(true);
     _setErrorMessage(null);
     try {
       log('initial Lamps and Glass list: ${_reportList.length}');
       _reportList = await _repository.getAllLampsAndGlassFromDate(time);
+
+      _reportList.sort((x, y) {
+        final prefixX = RegExp(r'^[A-Za-z]+').stringMatch(x.checkItem)!;
+        final prefixY = RegExp(r'^[A-Za-z]+').stringMatch(y.checkItem)!;
+
+        final cmpPrefix = prefixX.compareTo(prefixY);
+        if (cmpPrefix != 0) return cmpPrefix;
+
+        // Then compare number part
+        final numX = int.parse(x.checkItem.substring(prefixX.length));
+        final numY = int.parse(y.checkItem.substring(prefixY.length));
+        return numX.compareTo(numY);
+      });
       notifyListeners();
       log('Fetch successful, total in the list: ${_reportList.length}');
 
@@ -115,7 +136,7 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
     }
   }
 
-  void fetchAllLampsAndGlassFromMonth({
+  Future<void> fetchAllLampsAndGlassFromMonth({
     required int year,
     required int month,
   }) async {
@@ -251,7 +272,7 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
         remark: remark,
       );
       log("Approval Successful");
-      fetchAllLampsAndGlassFromMonth(year: year, month: month);
+      await fetchAllLampsAndGlassFromMonth(year: year, month: month);
       notifyListeners();
       _setSubmitLoading(false);
       return result;
@@ -288,5 +309,20 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
 
   void resetDataExistCheck() {
     _isDataAlreadyExist = false;
+  }
+
+  Future<bool> deleteLampsAndGlass(String id) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
+    try {
+      final result = await _repository.deleteLampsAndGlass(id);
+      return result;
+    } catch (e) {
+      _setErrorMessage('Error: $e');
+      return false;
+    } finally {
+      _reportList = [];
+      _setLoading(false);
+    }
   }
 }

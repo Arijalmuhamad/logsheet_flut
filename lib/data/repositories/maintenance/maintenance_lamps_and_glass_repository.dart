@@ -88,4 +88,8 @@ class MaintenanceLampsAndGlassRepository {
   ) async {
     return await _mySQLService.insertLampsAndGlassToControlDetail(entityList);
   }
+
+  Future<bool> deleteLampsAndGlass(String id) async {
+    return await _mySQLService.deleteLampsAndGlass(id);
+  }
 }

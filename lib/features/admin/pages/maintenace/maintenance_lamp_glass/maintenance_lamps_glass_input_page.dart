@@ -64,8 +64,8 @@ class _ChecklistLampsGlassPageState
     dateEntryController.text = DateFormat('dd-M-yyyy').format(DateTime.now());
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) =>
-          context
+      (_) async =>
+          await context
               .read<MaintenanceLampsAndGlassProvider>()
               .fetchAllLampsAndGlass(),
     );
@@ -76,43 +76,6 @@ class _ChecklistLampsGlassPageState
 
     dateEntryController.addListener(_validateInput);
   }
-
-  // Future<void> _loadChecklistComponents() async {
-  //   final components = await mastervalueDao.getActiveComponents();
-  //   final Map<String, List<String>> grouped = {};
-  //   for (var item in components) {
-  //     final groupName = item.group.replaceAll('component_', '').toUpperCase();
-  //     grouped.putIfAbsent(groupName, () => []).add(item.name);
-  //   }
-  //   setState(() {
-  //     groupedItems = grouped;
-  //     isLoading = false;
-  //   });
-  // }
-
-  // Future<void> _refreshPage() async {
-  //   setState(() => isLoading = true);
-  //   await Future.delayed(const Duration(milliseconds: 600));
-  //   _resetForm();
-  //   setState(() => isLoading = false);
-  // }
-
-  // void _showHourPicker(BuildContext context) {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     backgroundColor: Colors.white,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-  //     ),
-  //     builder:
-  //         (context) => CustomHourPicker(
-  //           selectedHour: selectedHour,
-  //           onHourSelected: (hour) {
-  //             setState(() => selectedHour = hour);
-  //           },
-  //         ),
-  //   );
-  // }
 
   @override
   void dispose() {
@@ -148,8 +111,8 @@ class _ChecklistLampsGlassPageState
         title: const Text("Lamps & Glass (F/RFA-013)"),
         actions: [
           IconButton(
-            onPressed: () {
-              context
+            onPressed: () async {
+              await context
                   .read<MaintenanceLampsAndGlassProvider>()
                   .fetchAllLampsAndGlass();
             },

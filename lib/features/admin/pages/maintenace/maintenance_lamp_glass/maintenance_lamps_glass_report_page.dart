@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/show_alert_dialog.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -60,8 +62,75 @@ class _MaintenanceLampsGlassReportPageState
                       return Card(
                         child: Column(
                           children: [
-                            const SizedBox(height: 12),
-                            const Divider(indent: 12, endIndent: 12),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Spacer(),
+                                PopupMenuButton(
+                                  icon: Icon(Icons.more_vert_rounded),
+                                  onSelected: (value) {
+                                    if (value == "edit") {
+                                      // handle edit
+                                      showSnackBar(value, context);
+                                    }
+
+                                    if (value == "delete") {
+                                      // handle delete
+                                      DialogUtil.showAlert(
+                                        context: context,
+                                        title: "Delete ${report.entryDate}",
+                                        message: "Apakah Anda Yakin?",
+                                        onCancel: () => Navigator.pop(context),
+                                        onConfirm: () async {
+                                          final result = await context
+                                              .read<
+                                                MaintenanceLampsAndGlassProvider
+                                              >()
+                                              .deleteLampsAndGlass(report.id);
+
+                                          if (result) {
+                                            if (!context.mounted) return;
+                                            showSnackBar(
+                                              "Delete berhasil",
+                                              context,
+                                            );
+                                          }
+                                        },
+                                      );
+                                      // showSnackBar(value, context);
+                                    }
+                                  },
+                                  itemBuilder:
+                                      (context) => [
+                                        const PopupMenuItem(
+                                          value: "edit",
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit, size: 18),
+                                              SizedBox(width: 8),
+                                              Text("Edit"),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: "delete",
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.delete,
+                                                size: 18,
+                                                color: Colors.red,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text("Delete"),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                ),
+                              ],
+                            ),
+                            // const Divider(indent: 12, endIndent: 12),
                             _buildInfoRow(
                               context,
                               icon: Icons.article,
@@ -102,11 +171,16 @@ class _MaintenanceLampsGlassReportPageState
                               value: report.entryBy,
                             ),
                             const SizedBox(height: 4),
-                            const Divider(indent: 12, endIndent: 12),
+                            const Divider(
+                              indent: 18,
+                              endIndent: 18,
+                              thickness: 0.7,
+                            ),
 
                             ListView.builder(
                               itemCount: provider.reportList.length,
                               scrollDirection: Axis.vertical,
+                              physics: NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 log("ItemBuilder Index: $index");
@@ -199,17 +273,17 @@ class _MaintenanceLampsGlassReportPageState
         const SizedBox(width: 10),
         const SizedBox(width: 10),
         ElevatedButton.icon(
-          onPressed: () {
+          onPressed: () async {
             setState(() {
               log("$_selectedDate");
               log(_dateController.text);
               // DateTime now = DateTime.now();
               // String dateOnly =
               //     DateTime(now.year, now.month, now.day).toString();
-              context
-                  .read<MaintenanceLampsAndGlassProvider>()
-                  .fetchAllLampsAndGlassFromDate(_dateController.text);
             });
+            await context
+                .read<MaintenanceLampsAndGlassProvider>()
+                .fetchAllLampsAndGlassFromDate(_dateController.text);
           },
           icon: const Icon(Icons.search),
           label: const Text('Cari'),
