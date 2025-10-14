@@ -42,10 +42,14 @@ class MaintenanceLampsAndGlassRepository {
         await _mySQLService.getAllLampsAndGlassFromMonth(year, month);
 
     log("Passed the repository function.");
+    log("Before: ${lampsAndGlassBasedOnMonthLists.length}.");
 
-    return lampsAndGlassBasedOnMonthLists
-        .map((map) => LampsAndGlassApprovalEntity.fromMap(map))
-        .toList();
+    List<LampsAndGlassApprovalEntity> list =
+        lampsAndGlassBasedOnMonthLists
+            .map((map) => LampsAndGlassApprovalEntity.fromMap(map))
+            .toList();
+    log("list length converted: ${list.length}");
+    return list;
   }
 
   Future<bool> updateApproveRejectToHeader({
@@ -91,5 +95,25 @@ class MaintenanceLampsAndGlassRepository {
 
   Future<bool> deleteLampsAndGlass(String id) async {
     return await _mySQLService.deleteLampsAndGlass(id);
+  }
+
+  Future<bool> updateLampsAndGlass({
+    required String id,
+    required String company,
+    required String plant,
+    required String workCenter,
+    required DateTime checkDate,
+    required String remarks,
+    required List<LampsAndGlassControlDetailEntity> details,
+  }) async {
+    return await _mySQLService.updateLampsAndGlass(
+      id: id,
+      company: company,
+      plant: plant,
+      workCenter: workCenter,
+      checkDate: checkDate,
+      remarks: remarks,
+      details: details,
+    );
   }
 }

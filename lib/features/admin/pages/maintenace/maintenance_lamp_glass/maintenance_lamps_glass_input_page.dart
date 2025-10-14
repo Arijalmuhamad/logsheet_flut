@@ -379,7 +379,7 @@ class _ChecklistLampsGlassPageState
                     child:
                         context
                                 .watch<MaintenanceLampsAndGlassProvider>()
-                                .isSubmitLoading
+                                .isLoadingSubmit
                             ? SizedBox(
                               width: 14,
                               height: 14,
@@ -509,9 +509,9 @@ class _ChecklistLampsGlassPageState
       remarks: remarks,
       entryBy: user.currentUser?.username ?? "",
       entryDate: DateTime.now(),
-      checkedBy: null,
-      checkedDate: null,
-      checkedStatus: null,
+      checkedBy: user.currentUser?.username ?? "",
+      checkedDate: DateTime.now(),
+      checkedStatus: "Approved",
       checkedStatusRemarks: null,
     );
 

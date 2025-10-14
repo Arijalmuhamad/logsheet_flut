@@ -25,9 +25,9 @@ class DialogUtil {
                   Navigator.of(context).pop();
                   if (onCancel != null) onCancel();
                 },
-                child: Text(cancelText),
+                child: Text(cancelText, style: TextStyle(color: Colors.black)),
               ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 if (onConfirm != null) onConfirm();

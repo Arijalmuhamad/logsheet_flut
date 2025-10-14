@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/show_alert_dialog.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_edit_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +72,18 @@ class _MaintenanceLampsGlassReportPageState
                                   onSelected: (value) {
                                     if (value == "edit") {
                                       // handle edit
-                                      showSnackBar(value, context);
+                                      // showSnackBar(value, context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  MaintenanceLampsGlassEditPage(
+                                                    lampsAndGlassList:
+                                                        provider.reportList,
+                                                  ),
+                                        ),
+                                      );
                                     }
 
                                     if (value == "delete") {
@@ -79,7 +91,7 @@ class _MaintenanceLampsGlassReportPageState
                                       DialogUtil.showAlert(
                                         context: context,
                                         title: "Delete ${report.entryDate}",
-                                        message: "Apakah Anda Yakin?",
+                                        message: "Apakah anda yakin?",
                                         onCancel: () => Navigator.pop(context),
                                         onConfirm: () async {
                                           final result = await context

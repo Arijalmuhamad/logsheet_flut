@@ -5,6 +5,7 @@ class CustomDateField extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool isLimitDate;
+  final bool isDisabled;
 
   const CustomDateField({
     super.key,
@@ -12,25 +13,30 @@ class CustomDateField extends StatelessWidget {
     required this.label,
     required this.icon,
     this.isLimitDate = false,
+    this.isDisabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now(),
-          firstDate:
-              isLimitDate
-                  ? DateTime.now().subtract(Duration(days: 1))
-                  : DateTime(2020),
-          lastDate: isLimitDate ? DateTime.now() : DateTime(2100),
-        );
-        if (picked != null) {
-          controller.text = "${picked.day}-${picked.month}-${picked.year}";
-        }
-      },
+      onTap:
+          isDisabled
+              ? null
+              : () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate:
+                      isLimitDate
+                          ? DateTime.now().subtract(Duration(days: 1))
+                          : DateTime(2020),
+                  lastDate: isLimitDate ? DateTime.now() : DateTime(2100),
+                );
+                if (picked != null) {
+                  controller.text =
+                      "${picked.day}-${picked.month}-${picked.year}";
+                }
+              },
       child: AbsorbPointer(
         child: TextField(
           controller: controller,

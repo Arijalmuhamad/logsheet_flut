@@ -1,3 +1,5 @@
+import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_report_entity.dart';
+
 class LampsAndGlassControlDetailEntity {
   final String id;
   final String idHdr;
@@ -27,5 +29,16 @@ class LampsAndGlassControlDetailEntity {
       'check_item': checkItem,
       'status_item': statusItem,
     };
+  }
+
+  factory LampsAndGlassControlDetailEntity.fromReportEntity(
+    LampsAndGlassReportEntity entity,
+  ) {
+    return LampsAndGlassControlDetailEntity(
+      id: entity.detailId,
+      idHdr: entity.id,
+      checkItem: entity.checkItem,
+      statusItem: entity.statusItem,
+    );
   }
 }

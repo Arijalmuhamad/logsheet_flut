@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_approval_entity.dart';
 
-class MaintenanceLampsGlassApprovalDetail extends StatelessWidget {
+class MaintenanceLampsGlassApprovalDetail extends StatefulWidget {
   final DateTime date;
   final List<LampsAndGlassApprovalEntity> checks;
   const MaintenanceLampsGlassApprovalDetail({
@@ -12,13 +12,35 @@ class MaintenanceLampsGlassApprovalDetail extends StatelessWidget {
   });
 
   @override
+  State<MaintenanceLampsGlassApprovalDetail> createState() =>
+      _MaintenanceLampsGlassApprovalDetailState();
+}
+
+class _MaintenanceLampsGlassApprovalDetailState
+    extends State<MaintenanceLampsGlassApprovalDetail> {
+  @override
   Widget build(BuildContext context) {
-    checks.sort((a, b) => a.checkItem.compareTo(b.checkItem));
-    final report = checks[0];
+    widget.checks.sort((a, b) => a.checkItem.compareTo(b.checkItem));
+    final report = widget.checks[0];
+
+    widget.checks.sort((x, y) {
+      final prefixX = RegExp(r'^[A-Za-z]+').stringMatch(x.checkItem)!;
+      final prefixY = RegExp(r'^[A-Za-z]+').stringMatch(y.checkItem)!;
+
+      final cmpPrefix = prefixX.compareTo(prefixY);
+      if (cmpPrefix != 0) return cmpPrefix;
+
+      // Then compare number part
+      final numX = int.parse(x.checkItem.substring(prefixX.length));
+      final numY = int.parse(y.checkItem.substring(prefixY.length));
+      return numX.compareTo(numY);
+    });
     return Scaffold(
       appBar: AppBar(
         // Format the date for the title, e.g., "Details for Friday, 15 August 2025"
-        title: Text('Details for ${DateFormat('d MMMM yyyy').format(date)}'),
+        title: Text(
+          'Details for ${DateFormat('d MMMM yyyy').format(widget.date)}',
+        ),
       ),
       body: SingleChildScrollView(
         child: Card(
@@ -48,7 +70,6 @@ class MaintenanceLampsGlassApprovalDetail extends StatelessWidget {
                 context,
                 icon: Icons.calendar_today_outlined,
                 label: "Check Date",
-                // Formatting the date nicely!
                 value: DateFormat('d MMMM yyyy').format(report.checkDate!),
               ),
               _buildInfoRow(
@@ -61,11 +82,11 @@ class MaintenanceLampsGlassApprovalDetail extends StatelessWidget {
               const Divider(indent: 18, endIndent: 18, thickness: 0.7),
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: checks.length,
+                itemCount: widget.checks.length,
                 physics: NeverScrollableScrollPhysics(),
                 scrollDirection: Axis.vertical,
                 itemBuilder: (context, index) {
-                  final item = checks[index];
+                  final item = widget.checks[index];
                   return CheckboxListTile(
                     enabled: false,
                     value: item.statusItem == "T",

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_detail.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:month_year_picker/month_year_picker.dart';
@@ -38,9 +39,71 @@ class _MaintenanceLampsGlassApprovalPageState
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async =>
+          await context
+              .read<MaintenanceLampsAndGlassProvider>()
+              .fetchAllLampsAndGlass(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("L&G Approval (F/RFA-013)")),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 70,
+          color: Colors.white,
+          child: Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 60,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Consumer2<
+                      UserProvider,
+                      MaintenanceLampsAndGlassProvider
+                    >(
+                      builder: (context, userProvider, provider, child) {
+                        return ElevatedButton(
+                          onPressed: () async {
+                            final result = await provider
+                                .updateApproveRejectToHeader(
+                                  checkedBy:
+                                      userProvider.currentUser?.username ?? "",
+                                  status: "Approved",
+                                  month: _selectedMonth,
+                                  year: _selectedYear,
+                                  remark: "",
+                                );
+                            if (result) {
+                              if (!context.mounted) return;
+                              showSnackBar("Bulan telah diverified", context);
+                            }
+                          },
+                          child:
+                              provider.isLoadingSubmit
+                                  ? SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(),
+                                  )
+                                  : const Text("Verify (Monthly)"),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,7 +180,7 @@ class _MaintenanceLampsGlassApprovalPageState
                         children: [
                           Expanded(
                             child: Text(
-                              'Monthly Progress: ${status.completedDays} / ${status.totalDaysInMonth} Days Complete',
+                              'Progress: ${status.completedDays} / ${status.totalDaysInMonth} Days Complete',
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                           ),
@@ -159,6 +222,7 @@ class _MaintenanceLampsGlassApprovalPageState
                           final date = dayEntry.key;
                           final checks = dayEntry.value;
                           final isDayComplete = checks.length == 9;
+                          final itemCount = provider.lampsAndGlassList.length;
                           return InkWell(
                             onTap:
                                 () => Navigator.push(
@@ -195,7 +259,7 @@ class _MaintenanceLampsGlassApprovalPageState
                                   DateFormat('EEEE, d MMMM yyyy').format(date),
                                 ),
                                 subtitle: Text(
-                                  '${checks.length} / 9 items checked',
+                                  '${checks.length} / $itemCount items checked',
                                   style: TextStyle(
                                     fontWeight:
                                         isDayComplete
@@ -262,7 +326,7 @@ class _MaintenanceLampsGlassApprovalPageState
               onPressed:
                   !context
                           .watch<MaintenanceLampsAndGlassProvider>()
-                          .isSubmitLoading
+                          .isLoadingSubmit
                       ? () async {
                         final currentUsername =
                             context
@@ -300,7 +364,7 @@ class _MaintenanceLampsGlassApprovalPageState
               icon:
                   context
                           .watch<MaintenanceLampsAndGlassProvider>()
-                          .isSubmitLoading
+                          .isLoadingSubmit
                       ? SizedBox(
                         width: 12,
                         height: 12,

@@ -35,11 +35,14 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  bool _isSubmitLoading = false;
-  bool get isSubmitLoading => _isSubmitLoading;
+  bool _isLoadingSubmit = false;
+  bool get isLoadingSubmit => _isLoadingSubmit;
 
   bool _isLoadingDelete = false;
-  bool get isLoadingDelete => _isLoading;
+  bool get isLoadingDelete => _isLoadingDelete;
+
+  bool _isLoadingUpdate = false;
+  bool get isLoadingUpdate => _isLoadingUpdate;
 
   bool _isDataAlreadyExist = false;
   bool get isDataAlreadyExist => _isDataAlreadyExist;
@@ -59,12 +62,17 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
   }
 
   void _setLoadingDelete(bool value) {
-    _isLoading = value;
+    _isLoadingDelete = value;
+    notifyListeners();
+  }
+
+  void _setLoadingUpdate(bool value) {
+    _isLoadingUpdate = value;
     notifyListeners();
   }
 
   void _setSubmitLoading(bool value) {
-    _isSubmitLoading = value;
+    _isLoadingSubmit = value;
     notifyListeners();
   }
 
@@ -96,6 +104,28 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
       _glassList =
           _lampsAndGlassList.where((item) => item.category == "GLASS").toList();
 
+      _lampsList.sort((x, y) {
+        final prefixX = RegExp(r'[A-Za-z]+').stringMatch(x.code)!;
+        final prefixY = RegExp(r'[A-Za-z]+').stringMatch(y.code)!;
+
+        final cmpPrefix = prefixX.compareTo(prefixY);
+        if (cmpPrefix != 0) return cmpPrefix;
+
+        final numX = int.parse(x.code.substring(prefixX.length));
+        final numY = int.parse(y.code.substring(prefixY.length));
+        return numX.compareTo(numY);
+      });
+      _glassList.sort((a, b) {
+        final prefixA = RegExp(r'^[A-Za-z]+').stringMatch(a.code)!;
+        final prefixB = RegExp(r'^[A-Za-z]+').stringMatch(b.code)!;
+
+        final cmpPrefix = prefixA.compareTo(prefixB);
+        if (cmpPrefix != 0) return cmpPrefix;
+
+        final numA = int.parse(a.code.substring(prefixA.length));
+        final numB = int.parse(b.code.substring(prefixB.length));
+        return numA.compareTo(numB);
+      });
       _setLoading(false);
       _setErrorMessage(null);
       log('Fetch successful, total in the list: ${_lampsAndGlassList.length}');
@@ -148,14 +178,20 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
       _lampsAndGlassApprovalList = await _repository
           .getAllLampsAndGlassFromMonth(year: year, month: month);
 
+      log(
+        "_lampsAndGlassApprovalList list length is ${_lampsAndGlassApprovalList.length}",
+      );
+
       approvalStatus = MonthlyApprovalStatus.fromEntityList(
         year: year,
         month: month,
         allChecks: _lampsAndGlassApprovalList,
       );
 
+      notifyListeners();
+
       log(
-        'Fetch successful, total in the list: ${_lampsAndGlassApprovalList.length}',
+        'Fetch successful, total in the list: ${_lampsAndGlassApprovalList.length} with completed Days: ${approvalStatus?.completedDays}',
       );
 
       _setLoading(false);
@@ -322,7 +358,37 @@ class MaintenanceLampsAndGlassProvider extends ChangeNotifier {
       return false;
     } finally {
       _reportList = [];
-      _setLoading(false);
+      _setLoadingDelete(false);
+    }
+  }
+
+  Future<bool> updateLampsAndGlass({
+    required String id,
+    required String company,
+    required String plant,
+    required String workCenter,
+    required DateTime checkDate,
+    required String remarks,
+    required List<LampsAndGlassControlDetailEntity> details,
+  }) async {
+    _setLoadingUpdate(true);
+    _setErrorMessage(null);
+    try {
+      final result = await _repository.updateLampsAndGlass(
+        id: id,
+        company: company,
+        plant: plant,
+        workCenter: workCenter,
+        checkDate: checkDate,
+        remarks: remarks,
+        details: details,
+      );
+      return result;
+    } catch (e) {
+      _setErrorMessage('Error: $e');
+      return false;
+    } finally {
+      _setLoadingUpdate(false);
     }
   }
 }

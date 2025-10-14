@@ -6,11 +6,14 @@ class LampsAndGlassApprovalEntity {
   final DateTime? checkDate; // originally just date
   final String? remarks;
   final String entryBy;
-  final DateTime entryDate;
+  final DateTime? entryDate;
   final String? checkedBy;
   final DateTime? checkedDate;
   final String? checkedStatus;
   final String? checkedStatusRemarks;
+  final String? verifiedBy;
+  final DateTime? verifiedDate;
+  final String? verifiedStatus;
 
   final String detailId;
   final String checkItem;
@@ -32,6 +35,9 @@ class LampsAndGlassApprovalEntity {
     required this.detailId,
     required this.checkItem,
     required this.statusItem,
+    required this.verifiedBy,
+    required this.verifiedDate,
+    required this.verifiedStatus,
   });
 
   factory LampsAndGlassApprovalEntity.fromMap(Map<String, dynamic> map) {
@@ -47,14 +53,17 @@ class LampsAndGlassApprovalEntity {
       company: map['company'] as String,
       plant: map['plant'] as String,
       workCenter: map['work_center'] as String,
-      checkDate: parseDateTime(map['check_date']) as DateTime,
+      checkDate: parseDateTime(map['check_date']),
       remarks: map['remarks'] as String?,
       entryBy: map['entry_by'] as String,
-      entryDate: parseDateTime(map['entry_date']) as DateTime,
+      entryDate: parseDateTime(map['entry_date']),
       checkedBy: map['checked_by'] as String?,
       checkedDate: parseDateTime(map['checked_date']),
       checkedStatus: map['checked_status'] as String?,
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      verifiedBy: map['verified_by'] as String?,
+      verifiedDate: parseDateTime(map['verified_date']),
+      verifiedStatus: map['verified_status'] as String?,
       detailId: map['detail_id'] as String,
       checkItem: map['check_item'] as String,
       statusItem: map['status_item'] as String,
@@ -70,11 +79,14 @@ class LampsAndGlassApprovalEntity {
       'check_date': checkDate?.toIso8601String(),
       'remarks': remarks,
       'entry_by': entryBy,
-      'entry_date': entryDate.toIso8601String(),
+      'entry_date': entryDate?.toIso8601String(),
       'checked_by': checkedBy,
       'checked_date': checkedDate?.toIso8601String(),
       'checked_status': checkedStatus,
       'checked_status_remarks': checkedStatusRemarks,
+      'verified_by': verifiedBy,
+      'verified_date': verifiedDate?.toIso8601String(),
+      'verified_status': verifiedStatus,
       'detail_id': detailId,
       'check_item': checkItem,
       'status_item': statusItem,

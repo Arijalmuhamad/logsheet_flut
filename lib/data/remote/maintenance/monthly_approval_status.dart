@@ -30,11 +30,11 @@ class MonthlyApprovalStatus {
 
     // Group all check items by their date.
     for (final check in allChecks) {
-      if (check.checkDate != null) {
+      if (check.entryDate != null) {
         final day = DateTime(
-          check.checkDate!.year,
-          check.checkDate!.month,
-          check.checkDate!.day,
+          check.entryDate!.year,
+          check.entryDate!.month,
+          check.entryDate!.day,
         );
         if (groupedData.containsKey(day)) {
           groupedData[day]!.add(check);
@@ -48,7 +48,7 @@ class MonthlyApprovalStatus {
     // because the item quantity is from a master value
     int daysWith9Item = 0;
     for (final dayGroup in groupedData.values) {
-      if (dayGroup.length == 9) {
+      if (dayGroup.length == 63) {
         daysWith9Item++;
       }
     }

@@ -80,7 +80,20 @@ class MaintenanceLampsAndGlassMySQLService {
       final result = await connection!.execute(
         """
       SELECT 
-        h.*, 
+        h.id, 
+        h.company, 
+        h.plant, 
+        h.work_center, 
+        h.remarks, 
+        h.entry_by, 
+        h.entry_date, 
+        h.checked_by, 
+        h.checked_date, 
+        h.checked_status, 
+        h.checked_status_remarks, 
+        h.verified_by, 
+        h.verified_date, 
+        h.verified_status, 
         d.id AS detail_id, 
         d.check_item, 
         d.status_item 
@@ -170,11 +183,11 @@ class MaintenanceLampsAndGlassMySQLService {
       connection = connResult.connection!;
       String query = """
                      UPDATE t_checklist_lamps_glass_control
-                     SET checked_status = :status, checked_by = :checkedBy, checked_date = :checkedDate, checked_status_remarks = :remarks 
+                     SET verified_status = :status, verified_by = :verifiedBy, verified_date = :verifiedDate
                      WHERE YEAR(entry_date) = :year AND MONTH(entry_date) = :month""";
       final result = await connection.execute(query, {
-        "checkedBy": checkedBy,
-        "checkedDate": DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
+        "verifiedBy": checkedBy,
+        "verifiedDate": DateTime.now(),
         "status": status,
         "year": year,
         "month": month,
@@ -334,10 +347,15 @@ class MaintenanceLampsAndGlassMySQLService {
   }
 
   // Update Lamps and Glass
-  Future<bool> updateLampsAndGlass(
-    LampsAndGlassControlEntity header,
-    List<LampsAndGlassControlDetailEntity> details,
-  ) async {
+  Future<bool> updateLampsAndGlass({
+    required String id,
+    required String company,
+    required String plant,
+    required String workCenter,
+    required DateTime checkDate,
+    required String remarks,
+    required List<LampsAndGlassControlDetailEntity> details,
+  }) async {
     MySQLConnection? connection;
 
     try {
@@ -351,18 +369,18 @@ class MaintenanceLampsAndGlassMySQLService {
       final sqlHeader =
           "UPDATE t_checklist_lamps_glass_control SET company = :company, plant =:plant, work_center = :work_center, check_date = :check_date, remarks = :remarks WHERE id = :id";
       final paramsHeader = {
-        "id": header.id,
-        "company": header.company,
-        "plant": header.plant,
-        "work_center": header.workCenter,
-        "check_date": header.checkDate,
-        "remarks": header.remarks,
+        "id": id,
+        "company": company,
+        "plant": plant,
+        "work_center": workCenter,
+        "check_date": checkDate,
+        "remarks": remarks,
       };
 
       final sqlDetail =
           "DELETE FROM t_checklist_lamps_glass_control_detail WHERE id_hdr = :id_hdr";
 
-      final paramsDetail = {"id_hdr": header.id};
+      final paramsDetail = {"id_hdr": id};
 
       //ensure every query execute run
       await connection.transactional((_) async {
@@ -376,7 +394,7 @@ class MaintenanceLampsAndGlassMySQLService {
           final values = details
               .map(
                 (detail) =>
-                    "('${detail.id}', '${detail.idHdr}', '${detail.checkItem}', '${detail.statusItem}',)",
+                    "('${detail.id}', '${detail.idHdr}', '${detail.checkItem}', '${detail.statusItem}')",
               )
               .join(', ');
 
@@ -387,7 +405,7 @@ class MaintenanceLampsAndGlassMySQLService {
         }
       });
 
-      log('Successfully updated Lamps and Glass record with ID: ${header.id}');
+      log('Successfully updated Lamps and Glass record with ID: $id');
       return true;
     } catch (e) {
       log('Error updating Lamps and Glass record: $e');
