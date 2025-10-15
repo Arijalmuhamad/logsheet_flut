@@ -84,6 +84,7 @@ class MaintenanceLampsAndGlassMySQLService {
         h.company, 
         h.plant, 
         h.work_center, 
+        h.check_date,
         h.remarks, 
         h.entry_by, 
         h.entry_date, 
@@ -253,7 +254,7 @@ class MaintenanceLampsAndGlassMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "INSERT INTO t_checklist_lamps_glass_control (`id`, `company`, `plant`, `work_center`, `check_date`, `remarks`, `entry_by`, `entry_date`, `checked_by`, `checked_date`, `checked_status`, `checked_status_remarks`) VALUES (:id, :company, :plant, :work_center, :check_date, :remarks, :entry_by, :entry_date, :checked_by, :checked_date, :checked_status, :checked_status_remarks)",
+        "INSERT INTO t_checklist_lamps_glass_control (`id`, `company`, `plant`, `work_center`, `check_date`, `remarks`, `entry_by`, `entry_date`, `checked_by`, `checked_date`, `checked_status`, `checked_status_remarks`, `form_no`, `date_issued`,`revision_no`,`revision_date`) VALUES (:id, :company, :plant, :work_center, :check_date, :remarks, :entry_by, :entry_date, :checked_by, :checked_date, :checked_status, :checked_status_remarks, :form_no, :date_issued, :revision_no, :revision_date)",
         {
           "id": entity.id,
           "company": entity.company,
@@ -267,6 +268,10 @@ class MaintenanceLampsAndGlassMySQLService {
           "checked_date": entity.checkedDate,
           "checked_status": entity.checkedStatus,
           "checked_status_remarks": entity.checkedStatusRemarks,
+          "form_no": entity.formNo,
+          "date_issued": entity.dateIssued,
+          "revision_no": entity.revisionNo,
+          'revision_date': entity.revisionDate,
         },
       );
       log("submitted to control");

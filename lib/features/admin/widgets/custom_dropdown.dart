@@ -50,6 +50,7 @@ class CustomDropdown<T> extends StatelessWidget {
       items: items,
       onChanged: onChanged,
       decoration: InputDecoration(
+        labelText: hint,
         filled: true,
         fillColor: const Color(0xFFF0ECE9),
         border: OutlineInputBorder(

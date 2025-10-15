@@ -74,7 +74,7 @@ class _DailyProductionPageState
 
   // Utility Usage fixed values based on machine
   Map<String, double> utilityBudget = {'REF-02': 0.13, 'REF-01': 0.27};
-  Map<String, double> paValues = {'REF-02': 3.70, 'REF-01': 2.13};
+  Map<String, double> paValues = {'REF-02': 3.70, 'REF-01': 2.18};
 
   bool isBahanPenolongActive = false;
   bool isUtillityUsageActive = false;
@@ -244,7 +244,7 @@ class _DailyProductionPageState
     if (valueProvider.tankSourceList.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await context.read<ValueProvider>().fetchAllInitialData();
-        oilTypeLists = valueProvider.oilTypeLists;
+        oilTypeLists = valueProvider.oilTypeListsDailyProduction;
       });
     }
 
@@ -564,7 +564,7 @@ class _DailyProductionPageState
                   );
                 }
 
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.oilTypeListsDailyProduction.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -581,8 +581,10 @@ class _DailyProductionPageState
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          context.read<ValueProvider>().fetchOilTypes();
+                        onPressed: () async {
+                          await context
+                              .read<ValueProvider>()
+                              .fetchOilTypesDailyProd();
                         },
                       ),
                     ),
@@ -591,7 +593,7 @@ class _DailyProductionPageState
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.oilTypeListsDailyProduction.map((oil) {
                         return DropdownMenuItem<String>(
                           value: oil.code,
                           child: Text(oil.name, style: TextStyle(fontSize: 14)),
@@ -993,7 +995,7 @@ class _DailyProductionPageState
     final oilTypeFg =
         context
             .read<ValueProvider>()
-            .oilTypeLists
+            .oilTypeListsDailyProduction
             .where((oil) => oil.code == selectedOilRm)
             .first;
 

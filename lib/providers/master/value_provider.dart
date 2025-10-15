@@ -13,6 +13,10 @@ class ValueProvider with ChangeNotifier {
   List<MasterValueEntity> _oilTypeLists = [];
   List<MasterValueEntity> get oilTypeLists => _oilTypeLists;
 
+  List<MasterValueEntity> _oilTypeListsDailyProduction = [];
+  List<MasterValueEntity> get oilTypeListsDailyProduction =>
+      _oilTypeListsDailyProduction;
+
   List<TankEntity> _toTankGroupLists = [];
   List<TankEntity> get toTankGroupLists => _toTankGroupLists;
 
@@ -83,6 +87,40 @@ class ValueProvider with ChangeNotifier {
       _oilTypeLists = await _valueRepository.getAllOilTypes().timeout(
         const Duration(seconds: 60),
       );
+      notifyListeners();
+      log("(ValueProvider) oil type list length: $_oilTypeLists");
+    } catch (e) {
+      _setErrorMessage('(ValueProvider) Failed to fetch Oil Type: $e');
+    } finally {
+      _setOilTypesLoading(false);
+    }
+  }
+
+  Future<void> fetchOilTypesDailyProd() async {
+    _setOilTypesLoading(true);
+    _setErrorMessage(null);
+
+    List<String> excludeOil = [
+      "RPS",
+      "STEARIN",
+      "ROL",
+      "OLEIN",
+      "RRBDPS",
+      "RRPDPO",
+      "RROL",
+    ];
+
+    try {
+      _oilTypeListsDailyProduction = await _valueRepository
+          .getAllOilTypes()
+          .timeout(const Duration(seconds: 60));
+      _oilTypeListsDailyProduction =
+          _oilTypeListsDailyProduction
+              .where((item) => !excludeOil.contains(item.name))
+              .toList();
+
+      log("${_oilTypeListsDailyProduction.length}");
+      log("${_oilTypeLists.length}");
       notifyListeners();
       log("(ValueProvider) oil type list length: $_oilTypeLists");
     } catch (e) {
@@ -177,6 +215,7 @@ class ValueProvider with ChangeNotifier {
       await fetchToTankGroupLists();
       await fetchWorkCenterFractLists();
       await fetchOilTypes();
+      await fetchOilTypesDailyProd();
     } catch (e) {
       _setErrorMessage('Failed to fetch initial data: $e');
     } finally {

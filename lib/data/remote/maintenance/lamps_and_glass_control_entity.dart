@@ -1,3 +1,5 @@
+import 'package:logsheet_app/core/utils/parser_utils.dart';
+
 class LampsAndGlassControlEntity {
   final String id;
   final String company;
@@ -11,6 +13,10 @@ class LampsAndGlassControlEntity {
   final DateTime? checkedDate;
   final String? checkedStatus;
   final String? checkedStatusRemarks;
+  final String? formNo;
+  final DateTime? dateIssued;
+  final int? revisionNo;
+  final DateTime? revisionDate;
 
   LampsAndGlassControlEntity({
     required this.id,
@@ -25,6 +31,10 @@ class LampsAndGlassControlEntity {
     required this.checkedDate,
     required this.checkedStatus,
     required this.checkedStatusRemarks,
+    required this.formNo,
+    required this.dateIssued,
+    required this.revisionNo,
+    required this.revisionDate,
   });
 
   factory LampsAndGlassControlEntity.fromMap(Map<String, dynamic> map) {
@@ -41,6 +51,10 @@ class LampsAndGlassControlEntity {
       checkedDate: map['checked_date'] as DateTime?,
       checkedStatus: map['checked_status'] as String?,
       checkedStatusRemarks: map['checked_status_remarks'] as String?,
+      formNo: map['form_no'] as String?,
+      dateIssued: parseDateTime(map['date_issued']),
+      revisionNo: parseInt(map['revision_no']),
+      revisionDate: parseDateTime(map['revision_date']),
     );
   }
 
@@ -58,6 +72,10 @@ class LampsAndGlassControlEntity {
       'checked_date': checkedDate,
       'checked_status': checkedStatus,
       'checked_status_remarks': checkedStatusRemarks,
+      'form_no': formNo,
+      'date_issued': dateIssued,
+      'revision_no': revisionNo,
+      'revision_date': revisionDate,
     };
   }
 }

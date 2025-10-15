@@ -117,7 +117,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                   icon: Icons.numbers_rounded,
                   isNumeric: true,
                 ),
-                const Text("From Tank", style: _sectionTextStyle),
+                const Text("To Tank", style: _sectionTextStyle),
                 const SizedBox(height: 10),
                 Consumer<ValueProvider>(
                   builder: (context, provider, child) {

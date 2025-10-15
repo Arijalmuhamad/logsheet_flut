@@ -109,7 +109,6 @@ class _MaintenanceLampsGlassReportPageState
                                           }
                                         },
                                       );
-                                      // showSnackBar(value, context);
                                     }
                                   },
                                   itemBuilder:
@@ -284,29 +283,37 @@ class _MaintenanceLampsGlassReportPageState
         ),
         const SizedBox(width: 10),
         const SizedBox(width: 10),
-        ElevatedButton.icon(
-          onPressed: () async {
-            setState(() {
-              log("$_selectedDate");
-              log(_dateController.text);
-              // DateTime now = DateTime.now();
-              // String dateOnly =
-              //     DateTime(now.year, now.month, now.day).toString();
-            });
-            await context
-                .read<MaintenanceLampsAndGlassProvider>()
-                .fetchAllLampsAndGlassFromDate(_dateController.text);
-          },
-          icon: const Icon(Icons.search),
-          label: const Text('Cari'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFAB2F2B),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
+        Consumer<MaintenanceLampsAndGlassProvider>(
+          builder:
+              (context, provider, child) => ElevatedButton.icon(
+                onPressed:
+                    provider.isLoading
+                        ? null
+                        : () async {
+                          setState(() {
+                            log("$_selectedDate");
+                            log(_dateController.text);
+                          });
+                          await context
+                              .read<MaintenanceLampsAndGlassProvider>()
+                              .fetchAllLampsAndGlassFromDate(
+                                _dateController.text,
+                              );
+                        },
+                icon: const Icon(Icons.search),
+                label: const Text('Cari'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFAB2F2B),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
         ),
       ],
     );

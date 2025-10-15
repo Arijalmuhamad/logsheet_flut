@@ -42,11 +42,13 @@ class _MaintenanceLampsGlassEditPageState
 
     dateEntryController.text = DateFormat(
       'dd-M-yyyy',
-    ).format(widget.lampsAndGlassList[0].entryDate);
+    ).format(widget.lampsAndGlassList[0].checkDate!);
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
-    );
+    if (context.read<ValueProvider>().workCenterLists.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
+      );
+    }
 
     selectedWorkCenter = widget.lampsAndGlassList[0].workCenter;
     remarksController.text = widget.lampsAndGlassList[0].remarks;
@@ -362,66 +364,73 @@ class _MaintenanceLampsGlassEditPageState
   }
 
   AppBar _buildAppBar(LampsAndGlassReportEntity entity) {
-    final String date = DateFormat('yyyy-MM-dd').format(entity.entryDate);
+    final String date = DateFormat('yyyy-MM-dd').format(entity.checkDate!);
     final provider = context.watch<MaintenanceLampsAndGlassProvider>();
     return AppBar(
       title: Text("Edit $date "),
       actions: [
-        provider.isLoadingUpdate
-            ? SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(color: Colors.white),
-            )
-            : IconButton(
-              onPressed: () {
-                DialogUtil.showAlert(
-                  context: context,
-                  title: "Edit $date",
-                  message: "Apakah anda yakin?",
-                  onCancel: () => Navigator.pop(context),
-                  cancelText: "Tidak",
-                  confirmText: "Ya",
-                  onConfirm: () async {
-                    List<LampsAndGlassReportEntity> lampsAndGlass = [
-                      ...lampsList!,
-                      ...glassList!,
-                    ];
+        IconButton(
+          onPressed: () {
+            DialogUtil.showAlert(
+              context: context,
+              title: "Edit $date",
+              message: "Apakah anda yakin?",
+              onCancel: () => Navigator.pop(context),
+              cancelText: "Tidak",
+              confirmText: "Ya",
+              onConfirm: () async {
+                List<LampsAndGlassReportEntity> lampsAndGlass = [
+                  ...lampsList!,
+                  ...glassList!,
+                ];
 
-                    List<LampsAndGlassControlDetailEntity> lampsAndGlassDetail =
-                        lampsAndGlass
-                            .map(
-                              (e) =>
-                                  LampsAndGlassControlDetailEntity.fromReportEntity(
-                                    e,
-                                  ),
-                            )
-                            .toList();
+                List<LampsAndGlassControlDetailEntity> lampsAndGlassDetail =
+                    lampsAndGlass
+                        .map(
+                          (e) =>
+                              LampsAndGlassControlDetailEntity.fromReportEntity(
+                                e,
+                              ),
+                        )
+                        .toList();
 
-                    final result = await context
-                        .read<MaintenanceLampsAndGlassProvider>()
-                        .updateLampsAndGlass(
-                          id: lampsAndGlass[0].id,
-                          company: lampsAndGlass[0].company,
-                          plant: lampsAndGlass[0].plant,
-                          workCenter:
-                              selectedWorkCenter ?? lampsAndGlass[0].workCenter,
-                          checkDate:
-                              lampsAndGlass[0].checkDate ?? DateTime.now(),
-                          remarks: remarksController.text,
-                          details: lampsAndGlassDetail,
-                        );
+                final result = await context
+                    .read<MaintenanceLampsAndGlassProvider>()
+                    .updateLampsAndGlass(
+                      id: lampsAndGlass[0].id,
+                      company: lampsAndGlass[0].company,
+                      plant: lampsAndGlass[0].plant,
+                      workCenter:
+                          selectedWorkCenter ?? lampsAndGlass[0].workCenter,
+                      checkDate: lampsAndGlass[0].checkDate ?? DateTime.now(),
+                      remarks: remarksController.text,
+                      details: lampsAndGlassDetail,
+                    );
 
-                    if (result) {
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                      showSnackBar("Edit $date berhasil.", context);
-                    }
-                  },
-                );
+                if (result) {
+                  if (!mounted) return;
+                  Navigator.pop(context);
+                  showSnackBar("Edit $date berhasil.", context);
+                } else {
+                  if (!mounted) return;
+                  DialogUtil.showAlert(
+                    context: context,
+                    title: "Error",
+                    message: "${provider.errorMessage}",
+                  );
+                }
               },
-              icon: Icon(Icons.save_rounded, color: Colors.white, size: 25),
-            ),
+            );
+          },
+          icon:
+              provider.isLoadingUpdate
+                  ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(color: Colors.white),
+                  )
+                  : Icon(Icons.save_rounded, color: Colors.white, size: 25),
+        ),
       ],
     );
   }

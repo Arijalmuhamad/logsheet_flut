@@ -7,9 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_control_detail_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_control_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_entity.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
@@ -28,6 +30,8 @@ class _ChecklistLampsGlassPageState
     extends State<MaintenanceLampsGlassInputPage> {
   // late final AppDatabase db;
   // late MastervalueDao mastervalueDao;
+
+  DataFormNoEntity? form;
 
   bool isLoading = false;
 
@@ -73,6 +77,17 @@ class _ChecklistLampsGlassPageState
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => context.read<ValueProvider>().fetchWorkCenterLists(),
     );
+
+    form =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Checklist_Lamps_And_Glass_Control" &&
+                  form.isActive == "T",
+            )
+            .first;
 
     dateEntryController.addListener(_validateInput);
   }
@@ -163,7 +178,7 @@ class _ChecklistLampsGlassPageState
                 children: [
                   Consumer<ValueProvider>(
                     builder: (context, provider, child) {
-                      if (provider.workCenterLists.isEmpty) {
+                      if (provider.isWorkCenterLoading) {
                         return DropdownButtonFormField<String>(
                           value: null,
                           items: [],
@@ -185,6 +200,33 @@ class _ChecklistLampsGlassPageState
                                   strokeWidth: 2,
                                 ),
                               ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (provider.workCenterLists.isEmpty) {
+                        return TextFormField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Work Center tidak ditemukan.',
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Icon(Icons.warning_amber_rounded),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.refresh),
+                              onPressed: () async {
+                                await context
+                                    .read<ValueProvider>()
+                                    .fetchWorkCenterLists();
+                              },
                             ),
                           ),
                         );
@@ -513,6 +555,10 @@ class _ChecklistLampsGlassPageState
       checkedDate: DateTime.now(),
       checkedStatus: "Approved",
       checkedStatusRemarks: null,
+      formNo: form?.code,
+      dateIssued: form?.dateIssued,
+      revisionNo: form?.revisionNo,
+      revisionDate: form?.revisionDate,
     );
 
     log("id: ${controlEntity.id}");

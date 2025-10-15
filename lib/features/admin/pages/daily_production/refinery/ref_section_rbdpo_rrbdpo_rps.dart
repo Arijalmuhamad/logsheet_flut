@@ -107,15 +107,15 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                 DropdownButtonFormField<MasterValueEntity>(
                   value:
                       widget.selectedOil != null &&
-                              provider.oilTypeLists.any(
+                              provider.oilTypeListsDailyProduction.any(
                                 (oil) => oil.code == widget.selectedOil,
                               )
-                          ? provider.oilTypeLists.firstWhere(
+                          ? provider.oilTypeListsDailyProduction.firstWhere(
                             (oil) => oil.code == widget.selectedOil,
                           )
                           : null,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.oilTypeListsDailyProduction.map((oil) {
                         return DropdownMenuItem<MasterValueEntity>(
                           value: oil,
                           child: Text(" ${oil.name}"),

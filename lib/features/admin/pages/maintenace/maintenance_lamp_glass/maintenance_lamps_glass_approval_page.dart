@@ -27,7 +27,7 @@ class _MaintenanceLampsGlassApprovalPageState
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      lastDate: DateTime(2099),
     );
 
     if (selectedMonthYear != null) {
@@ -185,7 +185,7 @@ class _MaintenanceLampsGlassApprovalPageState
                             ),
                           ),
                           if (status.canApprove &&
-                              sortedDailyChecks[0].value[0].checkedStatus ==
+                              sortedDailyChecks[0].value[0].verifiedStatus ==
                                   "Approved")
                             Icon(
                               Icons.check_circle_outline_rounded,
@@ -194,7 +194,7 @@ class _MaintenanceLampsGlassApprovalPageState
                             ),
 
                           if (status.canApprove &&
-                              sortedDailyChecks[0].value[0].checkedStatus ==
+                              sortedDailyChecks[0].value[0].verifiedStatus ==
                                   null)
                             Icon(
                               Icons.pending_rounded,
@@ -202,7 +202,7 @@ class _MaintenanceLampsGlassApprovalPageState
                               size: 46,
                             ),
                           if (status.canApprove &&
-                              sortedDailyChecks[0].value[0].checkedStatus ==
+                              sortedDailyChecks[0].value[0].verifiedStatus ==
                                   "Rejected")
                             Icon(
                               Icons.cancel_rounded,
@@ -221,7 +221,9 @@ class _MaintenanceLampsGlassApprovalPageState
                           final dayEntry = sortedDailyChecks[index];
                           final date = dayEntry.key;
                           final checks = dayEntry.value;
-                          final isDayComplete = checks.length == 9;
+                          final isDayComplete =
+                              (checks.length == 63 &&
+                                  checks[0].verifiedStatus != null);
                           final itemCount = provider.lampsAndGlassList.length;
                           return InkWell(
                             onTap:
@@ -259,7 +261,7 @@ class _MaintenanceLampsGlassApprovalPageState
                                   DateFormat('EEEE, d MMMM yyyy').format(date),
                                 ),
                                 subtitle: Text(
-                                  '${checks.length} / $itemCount items checked',
+                                  '${checks.length} / $itemCount items checked${isDayComplete == true ? '(Verified)' : ''}',
                                   style: TextStyle(
                                     fontWeight:
                                         isDayComplete
@@ -267,7 +269,6 @@ class _MaintenanceLampsGlassApprovalPageState
                                             : FontWeight.bold,
                                   ),
                                 ),
-                                // You could make this expandable to show the 9 items
                               ),
                             ),
                           );

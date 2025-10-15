@@ -30,11 +30,11 @@ class MonthlyApprovalStatus {
 
     // Group all check items by their date.
     for (final check in allChecks) {
-      if (check.entryDate != null) {
+      if (check.checkDate != null) {
         final day = DateTime(
-          check.entryDate!.year,
-          check.entryDate!.month,
-          check.entryDate!.day,
+          check.checkDate!.year,
+          check.checkDate!.month,
+          check.checkDate!.day,
         );
         if (groupedData.containsKey(day)) {
           groupedData[day]!.add(check);
