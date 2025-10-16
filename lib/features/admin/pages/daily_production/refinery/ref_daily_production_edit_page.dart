@@ -199,13 +199,13 @@ class _RefDailyProductionEditPageState
 
     if (awal1Text != '' && akhir1Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal1Text);
-      final int akhir = int.parse(akhir1Text);
+      final double awal = double.parse(awal1Text);
+      final double akhir = double.parse(akhir1Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter1TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -214,13 +214,13 @@ class _RefDailyProductionEditPageState
 
     if (awal2Text != '' && akhir2Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal2Text);
-      final int akhir = int.parse(akhir2Text);
+      final double awal = double.parse(awal2Text);
+      final double akhir = double.parse(akhir2Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter2TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -229,13 +229,13 @@ class _RefDailyProductionEditPageState
 
     if (awal3Text != '' && akhir3Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal3Text);
-      final int akhir = int.parse(akhir3Text);
+      final double awal = double.parse(awal3Text);
+      final double akhir = double.parse(akhir3Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter3TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -405,6 +405,7 @@ class _RefDailyProductionEditPageState
               SectionCpoRpaRps(
                 selectedTimeAwal: selectedTime1Awal,
                 selectedTimeAkhir: selectedTime1Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime1Awal,
@@ -428,6 +429,7 @@ class _RefDailyProductionEditPageState
               SectionRbdpoRrbdpoRps(
                 selectedTimeAwal: selectedTime2Awal,
                 selectedTimeAkhir: selectedTime2Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime2Awal,
@@ -455,6 +457,7 @@ class _RefDailyProductionEditPageState
                 selectedTimeAwal: selectedTime3Awal,
                 selectedTimeAkhir: selectedTime3Akhir,
                 selectedOil: selectedOilBp,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime3Awal,
@@ -647,28 +650,68 @@ class _RefDailyProductionEditPageState
     selected1Tank = entity.cpoTank;
     selectedTime1Awal = entity.oilTypeRmAwalJam;
     selectedTime1Akhir = entity.oilTypeRmAkhirJam;
-    flowmeter1AwalController.text =
-        entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
-    flowmeter1AkhirController.text =
-        entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
+    // flowmeter1AwalController.text =
+    //     entity.oilTypeRmAwalFlowmeter?.toString() ?? '';
+    // flowmeter1AkhirController.text =
+    //     entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
 
     // Section 2: RBDPO / RRBDPO / RRPS
     selectedOilFg = entity.oilTypeFg?.trim();
     selected2Tank = entity.oilTypeFgToTank;
     selectedTime2Awal = entity.oilTypeFgAwalJam;
     selectedTime2Akhir = entity.oilTypeFgAkhirJam;
-    flowmeter2AwalController.text =
-        entity.oilTypeFgAwalFlowmeter?.toString() ?? '';
-    flowmeter2AkhirController.text =
-        entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
+    // flowmeter2AwalController.text =
+    //     entity.oilTypeFgAwalFlowmeter?.toString() ?? '';
+    // flowmeter2AkhirController.text =
+    //     entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
 
     // Section 3: PFAD
     selectedOilBp = "PFAD"; // Default value for By-Product
     selected3Tank = entity.bpToTank;
     selectedTime3Awal = entity.bpAwalJam;
     selectedTime3Akhir = entity.bpAkhirJam;
-    flowmeter3AwalController.text = entity.bpAwalFlowmeter?.toString() ?? '';
-    flowmeter3AkhirController.text = entity.bpAkhirFlowmeter?.toString() ?? '';
+    // flowmeter3AwalController.text = entity.bpAwalFlowmeter?.toString() ?? '';
+    // flowmeter3AkhirController.text = entity.bpAkhirFlowmeter?.toString() ?? '';
+
+    if (entity.workCenter == "REF-01") {
+      flowmeter1AwalController.text =
+          ((entity.oilTypeRmAwalFlowmeter ?? 0.0) * 1000).toString();
+      flowmeter1AkhirController.text =
+          ((entity.oilTypeRmAkhirFlowmeter ?? 0.0) * 1000).toString();
+
+      flowmeter2AwalController.text =
+          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
+      flowmeter2AkhirController.text =
+          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
+
+      flowmeter2AwalController.text =
+          ((entity.oilTypeFgAwalFlowmeter ?? 0.0) * 1000).toString();
+      flowmeter2AkhirController.text =
+          ((entity.oilTypeFgAkhirFlowmeter ?? 0.0) * 1000).toString();
+
+      flowmeter3AwalController.text =
+          ((entity.bpAwalFlowmeter ?? 0.0) * 1000).toString();
+      flowmeter3AkhirController.text =
+          ((entity.bpAkhirFlowmeter ?? 0.0) * 1000).toString();
+    } else {
+      flowmeter1AwalController.text =
+          (entity.oilTypeRmAwalFlowmeter).toString();
+      flowmeter1AkhirController.text =
+          (entity.oilTypeRmAkhirFlowmeter).toString();
+
+      flowmeter2AwalController.text =
+          (entity.oilTypeFgAwalFlowmeter).toString();
+      flowmeter2AkhirController.text =
+          (entity.oilTypeFgAkhirFlowmeter).toString();
+
+      flowmeter2AwalController.text =
+          (entity.oilTypeFgAwalFlowmeter).toString();
+      flowmeter2AkhirController.text =
+          (entity.oilTypeFgAkhirFlowmeter).toString();
+
+      flowmeter3AwalController.text = (entity.bpAwalFlowmeter).toString();
+      flowmeter3AkhirController.text = (entity.bpAkhirFlowmeter).toString();
+    }
 
     // Section 4: Auxiliary Material
     if (entity.beTotalBag != null || entity.paTotal != null) {
@@ -742,7 +785,7 @@ class _RefDailyProductionEditPageState
     final currentUser = context.read<UserProvider>().currentUser;
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
-    void _showSnackBar(String message, {bool isError = false}) {
+    void showSnackBar(String message, {bool isError = false}) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
@@ -760,6 +803,33 @@ class _RefDailyProductionEditPageState
       return text.isEmpty ? null : double.tryParse(text);
     }
 
+    double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
+
+    if (selectedRefineryMachine == "REF-01") {
+      flow1Awal = parseDouble(flowmeter1AwalController)! / 1000;
+      flow1Akhir = parseDouble(flowmeter1AkhirController)! / 1000;
+
+      flow2Awal = parseDouble(flowmeter2AwalController)! / 1000;
+      flow2Akhir = parseDouble(flowmeter2AkhirController)! / 1000;
+
+      flow3Awal = parseDouble(flowmeter3AwalController)! / 1000;
+      flow3Akhir = parseDouble(flowmeter3AkhirController)! / 1000;
+    } else {
+      flow1Awal = parseDouble(flowmeter1AwalController);
+      flow1Akhir = parseDouble(flowmeter1AkhirController);
+
+      flow2Awal = parseDouble(flowmeter2AwalController);
+      flow2Akhir = parseDouble(flowmeter2AkhirController);
+
+      flow3Awal = parseDouble(flowmeter3AwalController);
+      flow3Akhir = parseDouble(flowmeter3AkhirController);
+    }
+
+    log(
+      "${flowmeter1AwalController.text} ${flowmeter1AkhirController.text} ${flowmeter2AwalController.text} ${flowmeter2AkhirController.text} ${flowmeter3AwalController.text} ${flowmeter3AkhirController.text}",
+    );
+    log("$flow1Awal $flow1Akhir $flow2Awal $flow2Akhir $flow3Awal $flow3Akhir");
+
     try {
       final updatedEntity = widget.entity.copyWith(
         workCenter: selectedRefineryMachine,
@@ -767,22 +837,22 @@ class _RefDailyProductionEditPageState
         cpoTank: selected1Tank,
         oilTypeRm: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
-        oilTypeRmAwalFlowmeter: parseInt(flowmeter1AwalController.text),
+        oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
-        oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
-        oilTypeRmTotal: parseInt(flowmeter1TotalController.text),
+        oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmTotal: parseDouble(flowmeter1TotalController),
         oilTypeFg: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
-        oilTypeFgAwalFlowmeter: parseInt(flowmeter2AwalController.text),
+        oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
-        oilTypeFgAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
-        oilTypeFgTotal: parseInt(flowmeter2TotalController.text),
+        oilTypeFgAkhirFlowmeter: flow2Akhir,
+        oilTypeFgTotal: parseDouble(flowmeter2TotalController),
         oilTypeFgToTank: selected2Tank,
         bpAwalJam: selectedTime3Awal,
-        bpAwalFlowmeter: parseInt(flowmeter3AwalController.text),
+        bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,
-        bpAkhirFlowmeter: parseInt(flowmeter3AkhirController.text),
-        bpTotal: parseInt(flowmeter3TotalController.text),
+        bpAkhirFlowmeter: flow3Akhir,
+        bpTotal: parseDouble(flowmeter3TotalController),
         bpToTank: selected3Tank,
         beRefTank: isBahanPenolongActive ? selectedRefineryMachine : null,
         beTotalBag: isBahanPenolongActive ? bleachingBagController.text : null,
@@ -825,7 +895,7 @@ class _RefDailyProductionEditPageState
 
       if (success) {
         if (!context.mounted) return;
-        _showSnackBar('Laporan berhasil diperbarui.');
+        showSnackBar('Laporan berhasil diperbarui.');
         // Refresh the list on the previous screen
         // context.read<DailyProductionRefineryProvider>().fetchAllTickets(
         //   null,
@@ -837,14 +907,14 @@ class _RefDailyProductionEditPageState
         Navigator.pop(context); // Go back to the list page
         Navigator.pop(context);
       } else {
-        _showSnackBar(
+        showSnackBar(
           'Gagal memperbarui laporan: ${provider.errorMessage}',
           isError: true,
         );
       }
     } catch (e) {
       log("Error updating report: $e");
-      _showSnackBar("Terjadi kesalahan: $e", isError: true);
+      showSnackBar("Terjadi kesalahan: $e", isError: true);
     }
   }
 }

@@ -21,6 +21,7 @@ class SectionRbdpoRrbdpoRps extends StatefulWidget {
   // final List<MasterValueEntity> oilList;
   String? selectedOil;
   String? selectedTank;
+  final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
   final Function(String?) onOilFgChanged;
 
@@ -39,6 +40,7 @@ class SectionRbdpoRrbdpoRps extends StatefulWidget {
     // required this.oilList,
     required this.selectedOil,
     required this.onOilFgChanged,
+    required this.selectedWorkCenter,
   });
 
   @override
@@ -46,6 +48,7 @@ class SectionRbdpoRrbdpoRps extends StatefulWidget {
 }
 
 class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
+  String flowrateUnit = "T/H";
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
@@ -53,6 +56,14 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
     //parse to double
     double flowRateAwal = double.tryParse(awalText) ?? 0.0;
     double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+
+    if (widget.selectedWorkCenter == "REF-01") {
+      flowRateAwal = flowRateAwal / 1000;
+      flowRateAkhir = flowRateAkhir / 1000;
+
+      // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
+      // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
+    }
 
     double totalFlowRate = flowRateAkhir - flowRateAwal;
 
@@ -84,6 +95,15 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.selectedWorkCenter == "REF-01") {
+      setState(() {
+        flowrateUnit = "Kg/H";
+      });
+    } else {
+      setState(() {
+        flowrateUnit = "T/H";
+      });
+    }
     return Card(
       color: Colors.white,
       elevation: 8,
@@ -96,14 +116,6 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CustomSectionTitle(title: 'RBDPO/RRBDPO/RPS'),
-
-                // CustomDropdown.fromStringItems(
-                //   hint: 'Pilih Oil Type',
-                //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-                //   stringItems: widget.oilList,
-                //   value: widget.selectedOil,
-                //   onChanged: widget.onOilFgChanged,
-                // ),
                 DropdownButtonFormField<MasterValueEntity>(
                   value:
                       widget.selectedOil != null &&
@@ -147,7 +159,7 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: widget.flowRateAwalController,
-                  label: 'Flow Rate',
+                  label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
@@ -161,7 +173,7 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: widget.flowRateAkhirController,
-                  label: 'Flow Rate',
+                  label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
@@ -177,8 +189,8 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
                     ),
                     Text(
                       widget.flowRateTotalController.text.isEmpty
-                          ? '0.000'
-                          : widget.flowRateTotalController.text,
+                          ? '0.000 T/H'
+                          : "${widget.flowRateTotalController.text} T/H",
                       style: TextStyle(fontSize: 14),
                     ),
                   ],
