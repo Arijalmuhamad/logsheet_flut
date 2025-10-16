@@ -1,0 +1,329 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
+import 'package:logsheet_app/data/repositories/logsheet/deodorizing_filtration_repository.dart';
+
+class DeodorizingFiltrationProvider extends ChangeNotifier {
+  final DeodorizingFiltrationRepository _repository;
+
+  DeodorizingFiltrationProvider(this._repository);
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  bool _isLoadingTicket = false;
+  bool get isLoadingTicket => _isLoadingTicket;
+
+  bool _isLoadingReset = false;
+  bool get isLoadingReset => _isLoadingReset;
+
+  bool _isLoadingFilterTicket = false;
+  bool get isLoadingFilterReport => _isLoadingFilterTicket;
+
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  String? _latestId;
+  String? get latestId => _latestId;
+
+  bool _isLoadingDelete = false;
+  bool get isLoadingDelete => _isLoadingDelete;
+
+  List<DeodorizingFiltrationEntity> _deodorizingList = [];
+  List<DeodorizingFiltrationEntity> get deodorizingList => _deodorizingList;
+  List<DeodorizingFiltrationEntity> _filteredTickets = [];
+  List<DeodorizingFiltrationEntity> get filteredTickets => _filteredTickets;
+
+  List<DeodorizingFiltrationEntity> _reportsForManager = [];
+  List<DeodorizingFiltrationEntity> get reportsForManager => _reportsForManager;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setLoadingFilterTicket(bool value) {
+    _isLoadingFilterTicket = value;
+    notifyListeners();
+  }
+
+  void _setLoadingDelete(bool value) {
+    _isLoadingDelete = value;
+    notifyListeners();
+  }
+
+  void setLoadingReset(bool value) {
+    _isLoadingReset = value;
+    notifyListeners();
+  }
+
+  void _setLoadingTicket(bool value) {
+    _isLoadingTicket = value;
+    notifyListeners();
+  }
+
+  void _setErrorMessage(String? value) {
+    _errorMessage = value;
+    notifyListeners();
+  }
+
+  Future<String?> fetchLatestId(String plantCode) async {
+    _setLoadingTicket(true);
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      _latestId = await _repository.getLatestTicketId(plantCode);
+      log("(Deodorizing Filtration Provider) latest ID = $_latestId");
+      return _latestId;
+    } catch (e) {
+      _setLoadingTicket(false);
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to get latest id: $e',
+      );
+      return null;
+    }
+  }
+
+  Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
+    _setLoadingTicket(true);
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      _setLoadingTicket(false);
+      log('Update auto number...');
+      final result = await _repository.updateAutoNumber(
+        plantCode,
+        newAutoNumber,
+      );
+      log(result.toString());
+      return result;
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to update autonumber: $e',
+      );
+      _setLoadingTicket(false);
+      return false;
+    }
+  }
+
+  Future<bool> insert(DeodorizingFiltrationEntity entity) async {
+    _setLoadingTicket(true);
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      final result = await _repository.insert(entity);
+
+      if (result) {
+        _setErrorMessage(null);
+        return result;
+      } else {
+        _setLoading(false);
+        _setErrorMessage(
+          '(Deodorizing Filtration Provider) Failed to insert report.',
+        );
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to insert report: $e',
+      );
+      return false;
+    } finally {
+      log("FINISHED INSERTING FROM THE PROVIDER");
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> updateTicket(DeodorizingFiltrationEntity entity) async {
+    _setLoadingTicket(true);
+    _setLoading(true);
+
+    _setErrorMessage(null);
+
+    try {
+      final result = await _repository.update(entity);
+      _setLoadingTicket(false);
+      _setErrorMessage(null);
+
+      return result;
+    } catch (e) {
+      log("$e");
+      _setLoadingTicket(false);
+      _setErrorMessage("$e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteTicketById(String id, String username) async {
+    _setLoadingDelete(true);
+    _setErrorMessage(null);
+
+    try {
+      final response = await _repository.deleteTicket(id, username);
+      log(
+        "(Deodorizing Filtration Provider) deleteTicketById response: $response",
+      );
+      _setLoadingDelete(false);
+
+      _deodorizingList.removeWhere((e) => e.id == id);
+
+      return response;
+    } catch (e) {
+      _setLoadingDelete(false);
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to delete report: $e',
+      );
+      log(
+        "(Deodorizing Filtration Provider) Deodorizing Filtration Provider: $e",
+      );
+
+      return false;
+    }
+  }
+
+  Future<void> fetchAllTicket(
+    DateTime? dateFilter,
+    String? time,
+    String username,
+    String role,
+    String plantCode, {
+    bool filter = true,
+  }) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      _deodorizingList = await _repository.getAllTicket(
+        dateFilter,
+        time,
+        username,
+        role,
+        plantCode,
+      );
+      notifyListeners();
+      log(
+        "deodorizing filtration ticket list length is ${_deodorizingList.length}",
+      );
+
+      // switch (role) {
+      //   case "LEAD":
+      //     // preparedStatusShift1 or 2 or 3 must be empty
+      //     if (filter) {
+      //       _pretreatmentList =
+      //           _pretreatmentList
+      //               .where((report) => report.preparedBy == null)
+      //               .toList();
+      //       notifyListeners();
+      //     }
+      //     break;
+
+      //   case "MGR":
+      //     if (filter) {
+      //       _pretreatmentList =
+      //           _pretreatmentList
+      //               .where(
+      //                 (report) =>
+      //                     report.preparedBy != null &&
+      //                     report.checkedStatus == null,
+      //               )
+      //               .toList();
+      //       notifyListeners();
+      //     }
+      //     break;
+      //   default:
+      //     break;
+      // }
+      // notifyListeners();
+
+      _setLoading(false);
+      _setErrorMessage(null);
+    } catch (e) {
+      _setLoading(false);
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to insert report: $e',
+      );
+    }
+  }
+
+  Future<void> fetchReportsForManager(String plantCode) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+    try {
+      _reportsForManager = await _repository.getReportsForManager(plantCode);
+      log(_reportsForManager.length.toString());
+      _setLoading(false);
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to fetch reports for manager: $e',
+      );
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> sendApproveRejectReport(
+    String username,
+    String status,
+    String userRole,
+    int shift,
+    String? remark,
+    String id,
+    String role,
+    String plantCode,
+  ) async {
+    _setLoading(true);
+    _setErrorMessage(null);
+
+    try {
+      log(
+        "(Deodorizing Filtration Provider) Sending Approval or Rejection for report",
+      );
+      final result = await _repository.sendApproveRejectReport(
+        username,
+        status,
+        userRole,
+        shift,
+        remark,
+        id,
+      );
+      log("status from provider: $result");
+
+      if (result) {
+        fetchAllTicket(null, null, username, role, plantCode);
+        return result;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed to send approval or rejection report: $e',
+      );
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<void> fetchFilteredTickets(
+    DateTime? dateFilter,
+    String plantCode,
+    String? shift,
+  ) async {
+    _setLoadingFilterTicket(true);
+    _setErrorMessage(null);
+
+    try {
+      _filteredTickets = await _repository.getFilteredTickets(
+        dateFilter,
+        plantCode,
+        shift,
+      );
+      _setLoadingFilterTicket(false);
+      notifyListeners();
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed fetch filtered PBE ticket: $e',
+      );
+      _setLoading(false);
+    }
+  }
+}

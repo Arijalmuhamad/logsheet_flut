@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class CustomDropdown<T> extends StatelessWidget {
@@ -48,6 +50,7 @@ class CustomDropdown<T> extends StatelessWidget {
       items: items,
       onChanged: onChanged,
       decoration: InputDecoration(
+        labelText: hint,
         filled: true,
         fillColor: const Color(0xFFF0ECE9),
         border: OutlineInputBorder(

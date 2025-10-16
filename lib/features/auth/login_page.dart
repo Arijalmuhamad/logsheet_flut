@@ -1,11 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/database/app_database.dart';
-import 'package:logsheet_app/data/dao/user_dao.dart';
+import 'package:logsheet_app/data/remote/master/business_unit_entity.dart';
+import 'package:logsheet_app/data/remote/master/plant_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/services/storage_service/storage_service.dart';
+import 'package:logsheet_app/features/admin/admin_home_page.dart';
+import 'package:logsheet_app/features/user/user_home_page.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../../features/admin/admin_page.dart';
-import '../../features/user/user_page.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/master/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,293 +22,555 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  late final AppDatabase db;
-  late final UserDao userDao;
-
-  String? errorMessage;
-  bool isPasswordVisible = false;
+  String? _errorMessage;
+  bool _isPasswordVisible = false;
 
   String? selectedPlant;
-  String? selectedCompany;
+  String? selectedBusinessUnit;
 
-  final List<String> plantOptions = ['Fractination', 'Refinery'];
-  final List<String> companyOptions = ['EUP', 'PS'];
+  bool _isLoggingIn = false;
+
+  bool _isInitialDataLoading = true;
 
   @override
   void initState() {
     super.initState();
-    db = AppDatabase();
-    userDao = UserDao(db);
+    setState(() {
+      _isInitialDataLoading = true;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final businessUnitProvider = context.read<BusinessUnitProvider>();
+
+        await businessUnitProvider.fetchAllBusinessUnits();
+      } catch (e) {
+        setState(() {
+          _errorMessage = "Failed to load initial data.";
+        });
+      } finally {
+        setState(() {
+          _isInitialDataLoading = false;
+        });
+      }
+    });
   }
 
   Future<void> _handleLogin() async {
-    final username = usernameController.text.trim();
-    final password = passwordController.text.trim();
+    if (_isLoggingIn) return;
 
-    if (selectedPlant == null || selectedCompany == null) {
+    setState(() {
+      _isLoggingIn = true;
+      _errorMessage = null;
+    });
+
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Simplified validation
+    if (username.isEmpty ||
+        password.isEmpty ||
+        selectedBusinessUnit == null ||
+        selectedPlant == null) {
       setState(() {
-        errorMessage = 'Silakan pilih Plant dan Company terlebih dahulu.';
+        _errorMessage = 'Please fill in all fields.';
+        _isLoggingIn = false;
       });
       return;
     }
 
-    final user = await userDao.login(username, password);
+    final userProvider = context.read<UserProvider>();
+    final businessUnitProvider = context.read<BusinessUnitProvider>();
+    final plantProvider = context.read<PlantProvider>();
+    final dataForm = context.read<DataFormNoProvider>();
 
-    if (user != null) {
-      setState(() => errorMessage = null);
-      if (!mounted) return;
+    try {
+      final user = await userProvider.loginUser(username, password);
+      log("$user");
 
-      Provider.of<UserProvider>(
-        context,
-        listen: false,
-      ).setUserName(user.username);
+      if (user != null) {
+        // Find the selected entities
+        final selectedBusinessUnitEntity = businessUnitProvider
+            .listBusinessUnits
+            .firstWhere((bu) => bu.buCode == selectedBusinessUnit);
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login berhasil ✅')));
-
-      if (user.role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => AdminHomePage(userName: user.username),
-          ),
+        final selectedPlantEntity = plantProvider.plantList.firstWhere(
+          (plant) => plant.code == selectedPlant,
         );
-      } else if (user.role == 'user') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => UserHomePage(userName: user.username),
-          ),
-        );
+        if (!mounted) return;
+
+        // Set the providers
+        businessUnitProvider.setCurrentBusinessUnit(selectedBusinessUnitEntity);
+        plantProvider.setCurrentPlant(selectedPlantEntity);
+
+        await dataForm.fetchAll();
+
+        if (!mounted) return;
+        // Save credentials for next time
+        // await _saveToStorageService(
+        //   user: user,
+        //   plant: selectedPlantEntity,
+        //   bu: selectedBusinessUnitEntity,
+        //   password: password,
+        // );
+        if (user.role == "ADM") {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => AdminHomePage(
+                    userEntity: userProvider.currentUser!,
+                    userName: userProvider.currentUser!.username,
+                  ),
+            ),
+          );
+        } else {
+          if (!_isInitialDataLoading) {
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        UserHomePage(userEntity: userProvider.currentUser!),
+              ),
+            );
+          }
+        }
       } else {
-        _showError("Role tidak dikenali");
+        setState(() {
+          _errorMessage =
+              userProvider.errorMessage ?? 'Login failed. Please try again.';
+        });
       }
-    } else {
+    } catch (e) {
+      log('Error during login: $e');
       setState(() {
-        errorMessage = 'Username atau password salah, atau akun tidak aktif.';
+        _errorMessage = 'Error: $e';
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingIn = false;
+        });
+      }
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    db.close();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: const Color(0xFFC8B8AB), // Tan
-      backgroundColor: const Color(0xFFEFF3F9),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 20,
-                  offset: Offset(0, 8),
-                ),
-              ],
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bg-sawit-2.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withAlpha(100),
+              BlendMode.darken,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Column(
-                    children: const [
-                      Text(
-                        "E-Logsheet",
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 40),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 650),
+              child: Container(
+                padding: const EdgeInsets.only(
+                  top: 24,
+                  bottom: 12,
+                  right: 24,
+                  left: 24,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 20,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/logo-kpn-2.png',
+                            height: 50,
+                            width: 150,
+                          ),
+                          Text(
+                            "E-Logsheet",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF655F5B), // Neutral Gray
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: const Text(
+                        "Login",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 42,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF655F5B), // Neutral Gray
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Log In",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF655F5B), // Neutral Gray
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "Enter your details to login",
-                  style: TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 32),
-
-                // Username
-                TextFormField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person),
-                    hintText: "Enter your username",
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Password
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: !isPasswordVisible,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    hintText: "Enter your password",
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                    const SizedBox(height: 4),
+                    Center(
+                      child: const Text(
+                        "Enter your details to login",
+                        style: TextStyle(color: Colors.grey),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          isPasswordVisible = !isPasswordVisible;
-                        });
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Username
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.person),
+                        hintText: "Enter your username",
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Password
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_isPasswordVisible,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        hintText: "Enter your password",
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Business Unit
+                    Consumer<BusinessUnitProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isLoading) {
+                          // Return a disabled dropdown with a loading indicator or message
+                          return DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: null,
+                            items: [],
+                            onChanged: null, // Disable the dropdown
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Loading Business Unit...',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (provider.listBusinessUnits.isEmpty) {
+                          return TextFormField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Biz. Unit tidak ditemukan.',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Icon(Icons.warning_amber_rounded),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () async {
+                                  await context
+                                      .read<BusinessUnitProvider>()
+                                      .fetchAllBusinessUnits();
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                        return DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: selectedBusinessUnit,
+                          items:
+                              provider.listBusinessUnits.map((businessUnit) {
+                                return DropdownMenuItem<String>(
+                                  value: businessUnit.buCode,
+                                  child: Text(
+                                    "${businessUnit.buCode} - ${businessUnit.buName}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) async {
+                            setState(() {
+                              selectedBusinessUnit = value;
+                              context.read<PlantProvider>().clearPlants();
+                              selectedPlant = null;
+                            });
+
+                            if (value != null) {
+                              await context
+                                  .read<PlantProvider>()
+                                  .fetchPlantsByBusinessUnit(value);
+                            } else {
+                              context.read<PlantProvider>().clearPlants();
+                            }
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Business Unit',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Icon(Icons.business_center_rounded),
+                            ),
+                          ),
+                        );
                       },
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
 
-                // Dropdown Plant
-                DropdownButtonFormField<String>(
-                  value: selectedPlant,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.factory),
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  hint: const Text("Pilih Plant"),
-                  items:
-                      plantOptions
-                          .map(
-                            (plant) => DropdownMenuItem(
-                              value: plant,
-                              child: Text(plant),
+                    const SizedBox(height: 8),
+
+                    Consumer<PlantProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isLoading) {
+                          // Return a disabled dropdown with a loading indicator or message
+                          return DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: null,
+                            items: [],
+                            onChanged: null, // Disable the dropdown
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Loading Plant...',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
                             ),
-                          )
-                          .toList(),
-                  onChanged: (value) => setState(() => selectedPlant = value),
-                ),
-                const SizedBox(height: 16),
-
-                // Dropdown Company
-                DropdownButtonFormField<String>(
-                  value: selectedCompany,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.business),
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  hint: const Text("Pilih Company"),
-                  items:
-                      companyOptions
-                          .map(
-                            (company) => DropdownMenuItem(
-                              value: company,
-                              child: Text(company),
+                          );
+                        }
+                        if (provider.plantList.isEmpty) {
+                          return TextFormField(
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: const Color(0xFFF0ECE9),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              hintText: 'Plant tidak ditemukan.',
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: Icon(Icons.warning_amber_rounded),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () async {
+                                  await context
+                                      .read<PlantProvider>()
+                                      .fetchAllPlant();
+                                },
+                              ),
                             ),
-                          )
-                          .toList(),
-                  onChanged: (value) => setState(() => selectedCompany = value),
-                ),
-                const SizedBox(height: 8),
+                          );
+                        }
+                        return DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          value: selectedPlant,
+                          items:
+                              provider.plantList.map((plant) {
+                                return DropdownMenuItem<String>(
+                                  value: plant.code,
+                                  child: Text(
+                                    "${plant.code} - ${plant.name}",
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPlant = value!;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: const Color(0xFFF0ECE9),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: 'Plant',
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Icon(Icons.forest_rounded),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
-                if (errorMessage != null)
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                const SizedBox(height: 16),
+                    SizedBox(height: 8),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFAB2F2B), // Brick Red
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    if (_errorMessage != null)
+                      Center(
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoggingIn ? null : _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child:
+                            _isLoggingIn
+                                ? SizedBox(
+                                  width: 23,
+                                  height: 23,
+                                  child: const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                                : const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
                       ),
                     ),
-                    child: const Text(
-                      "Log In",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                Center(
-                  child: RichText(
-                    text: const TextSpan(
-                      text: "Don't have an account? ",
-                      style: TextStyle(color: Colors.black),
-                      children: [
-                        TextSpan(
-                          text: "Sign Up",
-                          style: TextStyle(
-                            color: Color(0xFFAB2F2B), // Brick Red
-                            fontWeight: FontWeight.bold,
+                    SizedBox(height: 18),
+                    Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Version 1.0.13",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                            ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            "Build 2025-10-9",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _saveToStorageService({
+    required UserEntity user,
+    required PlantEntity plant,
+    required BusinessUnitEntity bu,
+    required String password,
+  }) async {
+    log("LOGIN PAGE saveToStorageService: ${user.username}, $password");
+
+    final storage = StorageService();
+
+    await storage.saveUsername(user.username);
+    await storage.savePassword(password);
+    await storage.saveBusinessUnit(bu.buCode);
+    await storage.savePlant(plant.code);
   }
 }
