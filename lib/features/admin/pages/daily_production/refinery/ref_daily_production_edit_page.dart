@@ -299,7 +299,28 @@ class _RefDailyProductionEditPageState
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
                 }
                 return DropdownButtonFormField<String>(
                   value: selectedRefineryMachine,
@@ -355,7 +376,28 @@ class _RefDailyProductionEditPageState
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
                 if (provider.isOilTypeLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null, // Disable the dropdown
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Oil Types...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
                 }
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
@@ -829,6 +871,12 @@ class _RefDailyProductionEditPageState
       "${flowmeter1AwalController.text} ${flowmeter1AkhirController.text} ${flowmeter2AwalController.text} ${flowmeter2AkhirController.text} ${flowmeter3AwalController.text} ${flowmeter3AkhirController.text}",
     );
     log("$flow1Awal $flow1Akhir $flow2Awal $flow2Akhir $flow3Awal $flow3Akhir");
+    log(
+      "${flowmeter1TotalController.text} ${flowmeter2TotalController.text} ${flowmeter3TotalController.text}",
+    );
+    log(
+      "${parseDouble(flowmeter1TotalController)} ${parseDouble(flowmeter2TotalController)} ${parseDouble(flowmeter3TotalController)}",
+    );
 
     try {
       final updatedEntity = widget.entity.copyWith(
@@ -840,19 +888,19 @@ class _RefDailyProductionEditPageState
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
-        oilTypeRmTotal: parseDouble(flowmeter1TotalController),
+        oilTypeRmTotal: (flow1Akhir ?? 0) - (flow1Awal ?? 0),
         oilTypeFg: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
         oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
         oilTypeFgAkhirFlowmeter: flow2Akhir,
-        oilTypeFgTotal: parseDouble(flowmeter2TotalController),
+        oilTypeFgTotal: (flow2Akhir ?? 0) - (flow2Awal ?? 0),
         oilTypeFgToTank: selected2Tank,
         bpAwalJam: selectedTime3Awal,
         bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,
         bpAkhirFlowmeter: flow3Akhir,
-        bpTotal: parseDouble(flowmeter3TotalController),
+        bpTotal: (flow3Akhir ?? 0) - (flow3Awal ?? 0),
         bpToTank: selected3Tank,
         beRefTank: isBahanPenolongActive ? selectedRefineryMachine : null,
         beTotalBag: isBahanPenolongActive ? bleachingBagController.text : null,

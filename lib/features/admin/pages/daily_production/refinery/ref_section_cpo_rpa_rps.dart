@@ -106,7 +106,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
           children: [
             const CustomSectionTitle(title: 'Raw Material'),
             const SizedBox(height: 12),
-            const Text("From Tangki", style: _sectionTextStyle),
+            const Text("From Tank", style: _sectionTextStyle),
             const SizedBox(height: 10),
             Consumer<ValueProvider>(
               builder: (context, provider, child) {

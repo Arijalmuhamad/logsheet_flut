@@ -359,7 +359,7 @@ class _DailyProductionFractionPageState
     return Scaffold(
       backgroundColor: const Color(0xFFEFF3F9),
       appBar: CustomAppBar(
-        title: 'Daily Production - Fractination (${widget.dataForm.code})',
+        title: 'Daily Production - Fractionation (${widget.dataForm.code})',
         onRefresh: _refreshPage,
       ),
       body: SingleChildScrollView(

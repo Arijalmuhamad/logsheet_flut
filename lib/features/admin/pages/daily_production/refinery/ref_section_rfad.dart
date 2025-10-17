@@ -206,7 +206,7 @@ class _SectionRfadState extends State<SectionRfad> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text("To Tangki", style: _sectionTextStyle),
+                const Text("To Tank", style: _sectionTextStyle),
                 const SizedBox(height: 10),
                 Consumer<ValueProvider>(
                   builder: (context, provider, child) {
