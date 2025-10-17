@@ -21,6 +21,7 @@ class SectionRfad extends StatefulWidget {
   // final List<MasterValueEntity> oilList;
   String? selectedOil;
   String? selectedTank;
+  final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
   final Function(String?) onOilBpChanged;
 
@@ -39,6 +40,7 @@ class SectionRfad extends StatefulWidget {
     // required this.oilList,
     required this.selectedOil,
     required this.onOilBpChanged,
+    required this.selectedWorkCenter,
   });
 
   @override
@@ -46,6 +48,8 @@ class SectionRfad extends StatefulWidget {
 }
 
 class _SectionRfadState extends State<SectionRfad> {
+  String flowrateUnit = "T/H";
+
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
@@ -53,6 +57,14 @@ class _SectionRfadState extends State<SectionRfad> {
     //parse to double
     double flowRateAwal = double.tryParse(awalText) ?? 0.0;
     double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+
+    if (widget.selectedWorkCenter == "REF-01") {
+      flowRateAwal = flowRateAwal / 1000;
+      flowRateAkhir = flowRateAkhir / 1000;
+
+      // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
+      // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
+    }
 
     double totalFlowRate = flowRateAkhir - flowRateAwal;
 
@@ -85,6 +97,15 @@ class _SectionRfadState extends State<SectionRfad> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.selectedWorkCenter == "REF-01") {
+      setState(() {
+        flowrateUnit = "Kg/H";
+      });
+    } else {
+      setState(() {
+        flowrateUnit = "T/H";
+      });
+    }
     return Card(
       color: Colors.white,
       elevation: 8,
@@ -148,7 +169,7 @@ class _SectionRfadState extends State<SectionRfad> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: widget.flowRateAwalController,
-                  label: 'Flow Rate',
+                  label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
@@ -162,7 +183,7 @@ class _SectionRfadState extends State<SectionRfad> {
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: widget.flowRateAkhirController,
-                  label: 'Flow Rate',
+                  label: 'Flow Rate ($flowrateUnit)',
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
@@ -179,13 +200,13 @@ class _SectionRfadState extends State<SectionRfad> {
                     Text(
                       widget.flowRateTotalController.text.isEmpty
                           ? '0.000'
-                          : widget.flowRateTotalController.text,
+                          : "${widget.flowRateTotalController.text} T/H",
                       style: TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text("To Tangki", style: _sectionTextStyle),
+                const Text("To Tank", style: _sectionTextStyle),
                 const SizedBox(height: 10),
                 Consumer<ValueProvider>(
                   builder: (context, provider, child) {

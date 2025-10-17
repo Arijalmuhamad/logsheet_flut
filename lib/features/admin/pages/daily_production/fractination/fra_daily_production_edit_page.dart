@@ -14,7 +14,6 @@ import 'package:logsheet_app/features/admin/pages/daily_production/fractination/
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
 
-import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart'; // Added CustomSectionTitle import
@@ -320,9 +319,56 @@ class _FraDailyProductionEditPageState
             // === Dropdown: Work Center (Machine) ===
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
-                // Simplified loading/empty state for brevity in this edit page.
-                // It should mirror the input page's logic closely.
-                // Assuming data is loaded in initState or will load.
+                if (provider.isWorkCenterFractLoading) {
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (provider.workCenterFractLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Fract. Machine tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () async {
+                          await context
+                              .read<ValueProvider>()
+                              .fetchWorkCenterLists();
+                        },
+                      ),
+                    ),
+                  );
+                }
 
                 // Use the loaded list or an empty list if null/loading
                 final List<MasterValueEntity> workCenterList =
@@ -396,6 +442,56 @@ class _FraDailyProductionEditPageState
             // === Oil Type Dropdown (RM) ===
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
+                if (provider.isOilTypeLoading) {
+                  // Return a disabled dropdown with a loading indicator or message
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null, // Disable the dropdown
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Oil Types...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (provider.oilTypeLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Oil Types tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          context.read<ValueProvider>().fetchOilTypes();
+                        },
+                      ),
+                    ),
+                  );
+                }
                 final List<MasterValueEntity> oilTypeLists =
                     provider.oilTypeLists;
 

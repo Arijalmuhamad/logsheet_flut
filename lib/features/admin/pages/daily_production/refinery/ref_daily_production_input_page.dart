@@ -272,13 +272,13 @@ class _DailyProductionPageState
 
     if (awal1Text != '' && akhir1Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal1Text);
-      final int akhir = int.parse(akhir1Text);
+      final double awal = double.parse(awal1Text);
+      final double akhir = double.parse(akhir1Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter1TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -286,14 +286,14 @@ class _DailyProductionPageState
     }
 
     if (awal2Text != '' && akhir2Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal2Text);
-      final int akhir = int.parse(akhir2Text);
+      // Coba parse nilai ke doubleeger
+      final double awal = double.parse(awal2Text);
+      final double akhir = double.parse(akhir2Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter2TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -301,14 +301,14 @@ class _DailyProductionPageState
     }
 
     if (awal3Text != '' && akhir3Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal3Text);
-      final int akhir = int.parse(akhir3Text);
+      // Coba parse nilai ke doubleeger
+      final double awal = double.parse(awal3Text);
+      final double akhir = double.parse(akhir3Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter3TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -526,15 +526,6 @@ class _DailyProductionPageState
             ),
             const SizedBox(height: 8),
 
-            // === Dropdown: Part ===
-            // CustomDropdown.fromStringItems(
-            //   hint: 'Pilih Oil Type',
-            //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-            //   stringItems: oilTypeRm,
-            //   value: selectedOilRm,
-            //   onChanged: (value) => setState(() => selectedOilRm = value),
-            // ),
-
             // Oil Type Dropdown
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
@@ -634,6 +625,7 @@ class _DailyProductionPageState
               SectionCpoRpaRps(
                 selectedTimeAwal: selectedTime1Awal,
                 selectedTimeAkhir: selectedTime1Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime1Awal,
@@ -662,6 +654,7 @@ class _DailyProductionPageState
               SectionRbdpoRrbdpoRps(
                 selectedTimeAwal: selectedTime2Awal,
                 selectedTimeAkhir: selectedTime2Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime2Awal,
@@ -695,6 +688,7 @@ class _DailyProductionPageState
                 selectedTimeAwal: selectedTime3Awal,
                 selectedTimeAkhir: selectedTime3Akhir,
                 selectedOil: selectedOilBp,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime3Awal,
@@ -1007,6 +1001,29 @@ class _DailyProductionPageState
       return;
     }
 
+    double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
+
+    if (selectedRefineryMachine == "REF-01") {
+      flow1Awal = parseInt(flowmeter1AwalController.text)! / 1000;
+      flow1Akhir = parseInt(flowmeter1AkhirController.text)! / 1000;
+
+      flow2Awal = parseInt(flowmeter2AwalController.text)! / 1000;
+      flow2Akhir = parseInt(flowmeter2AkhirController.text)! / 1000;
+
+      flow3Awal = parseInt(flowmeter3AwalController.text)! / 1000;
+      flow3Akhir = parseInt(flowmeter3AkhirController.text)! / 1000;
+    } else {
+      flow1Awal = parseDouble(flowmeter1AwalController);
+      flow1Akhir = parseDouble(flowmeter1AkhirController);
+
+      flow2Awal = parseDouble(flowmeter2AwalController);
+      flow2Akhir = parseDouble(flowmeter2AkhirController);
+
+      flow3Awal = parseDouble(flowmeter3AwalController);
+      flow3Akhir = parseDouble(flowmeter3AkhirController);
+    }
+
+    log("$flow1Awal $flow1Akhir $flow2Awal $flow2Akhir $flow3Awal $flow3Akhir");
     try {
       final entity = DailyProductionRefineryEntity(
         id: ticketId,
@@ -1021,28 +1038,22 @@ class _DailyProductionPageState
         cpoTank: selected1Tank,
         oilTypeRm: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
-        oilTypeRmAwalFlowmeter: parseInt(flowmeter1AwalController.text),
+        oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
-        oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
-        oilTypeRmTotal:
-            (parseInt(flowmeter1AkhirController.text) ?? 0) -
-            (parseInt(flowmeter1AwalController.text) ?? 0),
+        oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmTotal: (flow1Akhir ?? 0.0) - (flow1Awal ?? 0.0),
         oilTypeFg: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
-        oilTypeFgAwalFlowmeter: parseInt(flowmeter2AwalController.text),
+        oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
-        oilTypeFgAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
-        oilTypeFgTotal:
-            (parseInt(flowmeter2AkhirController.text) ?? 0) -
-            (parseInt(flowmeter2AwalController.text) ?? 0),
+        oilTypeFgAkhirFlowmeter: flow2Akhir,
+        oilTypeFgTotal: (flow2Akhir ?? 0.0) - (flow2Awal ?? 0.0),
         oilTypeFgToTank: selected2Tank,
         bpAwalJam: selectedTime3Awal,
-        bpAwalFlowmeter: parseInt(flowmeter3AwalController.text),
+        bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,
-        bpAkhirFlowmeter: parseInt(flowmeter3AkhirController.text),
-        bpTotal:
-            (parseInt(flowmeter3AkhirController.text) ?? 0) -
-            (parseInt(flowmeter3AwalController.text) ?? 0),
+        bpAkhirFlowmeter: flow3Akhir,
+        bpTotal: (flow3Akhir ?? 0.0) - (flow3Awal ?? 0.0),
         bpToTank: selected3Tank,
         beRefTank: selectedRefineryMachine,
         beRefQty: "1 Bag (1000 Kg)",
