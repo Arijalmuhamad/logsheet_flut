@@ -49,18 +49,22 @@ class SectionRfad extends StatefulWidget {
 
 class _SectionRfadState extends State<SectionRfad> {
   String flowrateUnit = "T/H";
+  double flowRateAwal = 0.0;
+  double flowRateAkhir = 0.0;
 
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
 
     //parse to double
-    double flowRateAwal = double.tryParse(awalText) ?? 0.0;
-    double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+    flowRateAwal = double.tryParse(awalText) ?? 0.0;
+    flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
 
     if (widget.selectedWorkCenter == "REF-01") {
-      flowRateAwal = flowRateAwal / 1000;
-      flowRateAkhir = flowRateAkhir / 1000;
+      setState(() {
+        flowRateAwal = flowRateAwal / 1000;
+        flowRateAkhir = flowRateAkhir / 1000;
+      });
 
       // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
       // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
@@ -173,6 +177,9 @@ class _SectionRfadState extends State<SectionRfad> {
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
+                if (widget.selectedWorkCenter == 'REF-01') ...[
+                  Text("Flow Rate: $flowRateAwal T/H"),
+                ],
                 const SizedBox(height: 12),
                 const Text("Akhir", style: _sectionTextStyle),
                 const SizedBox(height: 10),
@@ -187,6 +194,9 @@ class _SectionRfadState extends State<SectionRfad> {
                   icon: Icons.speed,
                   isNumeric: true,
                 ),
+                if (widget.selectedWorkCenter == 'REF-01') ...[
+                  Text("Flow Rate: $flowRateAkhir T/H"),
+                ],
                 const SizedBox(height: 12),
                 Row(
                   children: [
