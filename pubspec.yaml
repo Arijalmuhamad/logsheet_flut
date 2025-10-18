@@ -57,6 +57,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^9.2.4
+  widgetbook: ^3.18.0
 
 dev_dependencies:
   flutter_test:
