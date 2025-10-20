@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
@@ -16,6 +17,7 @@ class SectionCpoRpaRps extends StatefulWidget {
   final TextEditingController flowRateTotalController;
   final List<TankEntity>? dummmyTanks;
   String? selectedTank;
+  final String? selectedWorkCenter;
   final Function(String?) onTankChanged;
 
   SectionCpoRpaRps({
@@ -30,6 +32,7 @@ class SectionCpoRpaRps extends StatefulWidget {
     required this.selectedTimeAkhir,
     required this.onTimeTapAwal,
     required this.onTimeTapAkhir,
+    required this.selectedWorkCenter,
   });
 
   @override
@@ -37,14 +40,26 @@ class SectionCpoRpaRps extends StatefulWidget {
 }
 
 class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
+  String flowrateUnit = "T/H";
+  double flowRateAwal = 0.0;
+  double flowRateAkhir = 0.0;
   void _calculateTotalFlowRate() {
     String awalText = widget.flowRateAwalController.text;
     String akhirText = widget.flowRateAkhirController.text;
 
     //parse to double
-    double flowRateAwal = double.tryParse(awalText) ?? 0.0;
-    double flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
+    flowRateAwal = double.tryParse(awalText) ?? 0.0;
+    flowRateAkhir = double.tryParse(akhirText) ?? 0.0;
 
+    if (widget.selectedWorkCenter == "REF-01") {
+      setState(() {
+        flowRateAwal = flowRateAwal / 1000;
+        flowRateAkhir = flowRateAkhir / 1000;
+      });
+
+      // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
+      // widget.flowRateAkhirController.text = flowRateAkhir.toStringAsFixed(3);
+    }
     double totalFlowRate = flowRateAkhir - flowRateAwal;
 
     String newTotal = totalFlowRate.toStringAsFixed(3);
@@ -76,6 +91,15 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.selectedWorkCenter == "REF-01") {
+      setState(() {
+        flowrateUnit = "Kg/H";
+      });
+    } else {
+      setState(() {
+        flowrateUnit = "T/H";
+      });
+    }
     return Card(
       color: Colors.white,
       elevation: 8,
@@ -87,7 +111,7 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
           children: [
             const CustomSectionTitle(title: 'Raw Material'),
             const SizedBox(height: 12),
-            const Text("From Tangki", style: _sectionTextStyle),
+            const Text("From Tank", style: _sectionTextStyle),
             const SizedBox(height: 10),
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
@@ -169,10 +193,13 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
             const SizedBox(height: 12),
             CustomTextField(
               controller: widget.flowRateAwalController,
-              label: 'Flow Rate',
+              label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
             ),
+            if (widget.selectedWorkCenter == 'REF-01') ...[
+              Text("Flow Rate: $flowRateAwal T/H"),
+            ],
             const SizedBox(height: 12),
             const Text("Akhir", style: _sectionTextStyle),
             const SizedBox(height: 10),
@@ -187,10 +214,13 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
             const SizedBox(height: 12),
             CustomTextField(
               controller: widget.flowRateAkhirController,
-              label: 'Flow Rate',
+              label: 'Flow Rate ($flowrateUnit)',
               icon: Icons.speed,
               isNumeric: true,
             ),
+            if (widget.selectedWorkCenter == 'REF-01') ...[
+              Text("Flow Rate: $flowRateAkhir T/H"),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [
@@ -200,8 +230,8 @@ class _SectionCpoRpaRpsState extends State<SectionCpoRpaRps> {
                 ),
                 Text(
                   widget.flowRateTotalController.text.isEmpty
-                      ? '0.000'
-                      : widget.flowRateTotalController.text,
+                      ? '0.000 T/H'
+                      : '${widget.flowRateTotalController.text} T/H',
                   style: TextStyle(fontSize: 14),
                 ),
               ],

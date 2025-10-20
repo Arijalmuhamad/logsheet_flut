@@ -84,7 +84,7 @@ class _DailyProductionRefineryDetailPageState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 150, // Adjusted width for potentially longer labels
+            width: 170,
             child: Text(
               label,
               style: const TextStyle(
@@ -241,22 +241,20 @@ class _DailyProductionRefineryDetailPageState
                 'Oil Type',
                 _displayValue(_currentReport.oilTypeRm),
               ),
-              // --- PERUBAHAN 2: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
                 _formatTimeOfDay(_currentReport.oilTypeRmAwalJam),
               ),
               _buildDataRow(
-                'Awal Flowmeter',
+                'Awal Flowmeter (T/H)',
                 _displayValue(_currentReport.oilTypeRmAwalFlowmeter),
               ),
               _buildDataRow(
                 'Akhir Jam',
                 _formatTimeOfDay(_currentReport.oilTypeRmAkhirJam),
               ),
-              // --- AKHIR PERUBAHAN 2 ---
               _buildDataRow(
-                'Akhir Flowmeter',
+                'Akhir Flowmeter (T/H)',
                 _displayValue(_currentReport.oilTypeRmAkhirFlowmeter),
               ),
               _buildDataRow(
@@ -270,13 +268,12 @@ class _DailyProductionRefineryDetailPageState
                 'Oil Type',
                 _displayValue(_currentReport.oilTypeFg),
               ),
-              // --- PERUBAHAN 3: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
                 _formatTimeOfDay(_currentReport.oilTypeFgAwalJam),
               ),
               _buildDataRow(
-                'Awal Flowmeter',
+                'Awal Flowmeter (T/H)',
                 _displayValue(_currentReport.oilTypeFgAwalFlowmeter),
               ),
               _buildDataRow(
@@ -285,7 +282,7 @@ class _DailyProductionRefineryDetailPageState
               ),
               // --- AKHIR PERUBAHAN 3 ---
               _buildDataRow(
-                'Akhir Flowmeter',
+                'Akhir Flowmeter (T/H)',
                 _displayValue(_currentReport.oilTypeFgAkhirFlowmeter),
               ),
               _buildDataRow(
@@ -299,22 +296,20 @@ class _DailyProductionRefineryDetailPageState
             ]),
 
             _buildSection('By-Product (BP) / PFAD', [
-              // --- PERUBAHAN 4: Menggunakan _formatTimeOfDay ---
               _buildDataRow(
                 'Awal Jam',
                 _formatTimeOfDay(_currentReport.bpAwalJam),
               ),
               _buildDataRow(
-                'Awal Flowmeter',
+                'Awal Flowmeter (T/H)',
                 _displayValue(_currentReport.bpAwalFlowmeter),
               ),
               _buildDataRow(
                 'Akhir Jam',
                 _formatTimeOfDay(_currentReport.bpAkhirJam),
               ),
-              // --- AKHIR PERUBAHAN 4 ---
               _buildDataRow(
-                'Akhir Flowmeter',
+                'Akhir Flowmeter (T/H)',
                 _displayValue(_currentReport.bpAkhirFlowmeter),
               ),
               _buildDataRow('Total', _displayValue(_currentReport.bpTotal)),

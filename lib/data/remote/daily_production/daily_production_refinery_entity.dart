@@ -14,26 +14,26 @@ class DailyProductionRefineryEntity {
   // Raw Material (RM)
   final String? oilTypeRm;
   final TimeOfDay? oilTypeRmAwalJam;
-  final int? oilTypeRmAwalFlowmeter;
+  final double? oilTypeRmAwalFlowmeter;
   final TimeOfDay? oilTypeRmAkhirJam;
-  final int? oilTypeRmAkhirFlowmeter;
-  final int? oilTypeRmTotal;
+  final double? oilTypeRmAkhirFlowmeter;
+  final double? oilTypeRmTotal;
 
   // Finished Goods (FG)
   final String? oilTypeFg;
   final TimeOfDay? oilTypeFgAwalJam;
-  final int? oilTypeFgAwalFlowmeter;
+  final double? oilTypeFgAwalFlowmeter;
   final TimeOfDay? oilTypeFgAkhirJam;
-  final int? oilTypeFgAkhirFlowmeter;
-  final int? oilTypeFgTotal;
+  final double? oilTypeFgAkhirFlowmeter;
+  final double? oilTypeFgTotal;
   final String? oilTypeFgToTank;
 
   // By Product (BP) / PFAD
   final TimeOfDay? bpAwalJam;
-  final int? bpAwalFlowmeter;
+  final double? bpAwalFlowmeter;
   final TimeOfDay? bpAkhirJam;
-  final int? bpAkhirFlowmeter;
-  final int? bpTotal;
+  final double? bpAkhirFlowmeter;
+  final double? bpTotal;
   final String? bpToTank;
 
   // Bleaching Earth (BE)
@@ -197,22 +197,22 @@ class DailyProductionRefineryEntity {
       cpoTank: map['cpo_tank'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
       oilTypeRmAwalJam: parseTimeOfDay(map['oil_type_rm_awal_jam']),
-      oilTypeRmAwalFlowmeter: parseInt(map['oil_type_rm_awal_flowmeter']),
+      oilTypeRmAwalFlowmeter: parseDouble(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
-      oilTypeRmAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
-      oilTypeRmTotal: parseInt(map['oil_type_rm_total']),
+      oilTypeRmAkhirFlowmeter: parseDouble(map['oil_type_rm_akhir_flowmeter']),
+      oilTypeRmTotal: parseDouble(map['oil_type_rm_total']),
       oilTypeFg: map['oil_type_fg'] as String?,
       oilTypeFgAwalJam: parseTimeOfDay(map['oil_type_fg_awal_jam']),
-      oilTypeFgAwalFlowmeter: parseInt(map['oil_type_fg_awal_flowmeter']),
+      oilTypeFgAwalFlowmeter: parseDouble(map['oil_type_fg_awal_flowmeter']),
       oilTypeFgAkhirJam: parseTimeOfDay(map['oil_type_fg_akhir_jam']),
-      oilTypeFgAkhirFlowmeter: parseInt(map['oil_type_fg_akhir_flowmeter']),
-      oilTypeFgTotal: parseInt(map['oil_type_fg_total']),
+      oilTypeFgAkhirFlowmeter: parseDouble(map['oil_type_fg_akhir_flowmeter']),
+      oilTypeFgTotal: parseDouble(map['oil_type_fg_total']),
       oilTypeFgToTank: map['oil_type_fg_to_tank'] as String?,
       bpAwalJam: parseTimeOfDay(map['bp_awal_jam']),
-      bpAwalFlowmeter: parseInt(map['bp_awal_flowmeter']),
+      bpAwalFlowmeter: parseDouble(map['bp_awal_flowmeter']),
       bpAkhirJam: parseTimeOfDay(map['bp_akhir_jam']),
-      bpAkhirFlowmeter: parseInt(map['bp_akhir_flowmeter']),
-      bpTotal: parseInt(map['bp_total']),
+      bpAkhirFlowmeter: parseDouble(map['bp_akhir_flowmeter']),
+      bpTotal: parseDouble(map['bp_total']),
       bpToTank: map['bp_to_tank'] as String?,
       beRefTank: map['be_ref_tank'] as String?,
       beRefQty: map['be_ref_qty'] as String?,
@@ -341,22 +341,22 @@ class DailyProductionRefineryEntity {
     String? cpoTank,
     String? oilTypeRm,
     TimeOfDay? oilTypeRmAwalJam,
-    int? oilTypeRmAwalFlowmeter,
+    double? oilTypeRmAwalFlowmeter,
     TimeOfDay? oilTypeRmAkhirJam,
-    int? oilTypeRmAkhirFlowmeter,
-    int? oilTypeRmTotal,
+    double? oilTypeRmAkhirFlowmeter,
+    double? oilTypeRmTotal,
     String? oilTypeFg,
     TimeOfDay? oilTypeFgAwalJam,
-    int? oilTypeFgAwalFlowmeter,
+    double? oilTypeFgAwalFlowmeter,
     TimeOfDay? oilTypeFgAkhirJam,
-    int? oilTypeFgAkhirFlowmeter,
-    int? oilTypeFgTotal,
+    double? oilTypeFgAkhirFlowmeter,
+    double? oilTypeFgTotal,
     String? oilTypeFgToTank,
     TimeOfDay? bpAwalJam,
-    int? bpAwalFlowmeter,
+    double? bpAwalFlowmeter,
     TimeOfDay? bpAkhirJam,
-    int? bpAkhirFlowmeter,
-    int? bpTotal,
+    double? bpAkhirFlowmeter,
+    double? bpTotal,
     String? bpToTank,
     String? beRefTank,
     String? beRefQty,
