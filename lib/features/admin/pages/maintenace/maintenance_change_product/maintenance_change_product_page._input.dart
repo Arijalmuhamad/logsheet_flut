@@ -5,6 +5,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
 import 'package:logsheet_app/features/admin/widgets/section_card.dart';
@@ -37,6 +38,45 @@ class _MaintenanceChangeChecklistPageState
   final List<String> dummyFirstParts = ['RPS', 'CPKO'];
   final List<String> dummyNextParts = ['CPO', 'CPKO'];
   final List<String> dummyLocations = ['Refinery', 'Fractination'];
+  final List<String> dummyPreTreatmentSectionItem = [
+    'Pre-Treatment Section item 1',
+    'Pre-Treatment Section item 2',
+  ];
+
+  final List<String> dummyBleacherSectionItem = [
+    'Bleacher Section item 1',
+    'Bleacher Section item 2',
+  ];
+
+  final List<String> dummyDeodorizationSectionItem = [
+    'DeodorizationItem Section item 1',
+    'DeodorizationItem Section item 2',
+  ];
+
+  final List<String> dummyFractinationSectionItem = [
+    'FractinationItem Section item 1',
+    'FractinationItem Section item 2',
+  ];
+
+  // final Map<String, Map<String, List<String>>> dummyChecklists = {
+  //   'Refinery': {
+  //     'Pre-Treatment Section': [
+  //       'Pre-Treatment Section item 1',
+  //       'Pre-Treatment Section item 2',
+  //     ],
+  //     'Bleacher Section': [
+  //       'Bleacher Section item 1',
+  //       'Bleacher Section item 2',
+  //     ],
+  //     'Deodorization Section': [
+  //       'Deodorization Section item 1',
+  //       'Deodorization Section item 2',
+  //     ],
+  //   },
+  //   'Fractination': {
+  //     'Fractination': ['Fractination item 1', 'Fractination item 2'],
+  //   },
+  // };
 
   @override
   void dispose() {
@@ -76,9 +116,17 @@ class _MaintenanceChangeChecklistPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Change & Start-Up Checklist',
-        onRefresh: _refreshPage,
+      appBar: AppBar(
+        centerTitle: false,
+        title: const Text("Change Product (F/RFA-015)"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _refreshPage();
+            },
+            icon: Icon(Icons.replay_rounded),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -87,38 +135,35 @@ class _MaintenanceChangeChecklistPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CustomDateField(
-                  controller: dateEntryController,
-                  label: 'Tanggal Aktivitas',
-                  icon: Icons.event,
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: () => _showHourPicker(context),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF0ECE9),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: const Icon(Icons.access_time),
-                    ),
-                    child: Text(
-                      selectedHour != null
-                          ? '${selectedHour.toString().padLeft(2, '0')}:00'
-                          : 'Pilih jam input',
-                      style: TextStyle(
-                        color:
-                            selectedHour != null
-                                ? const Color(0xFF655F5B)
-                                : Colors.grey.shade600,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: CustomDateField(
+                          controller: dateEntryController,
+                          label: 'Tanggal',
+                          icon: Icons.event,
+                        ),
                       ),
                     ),
-                  ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: CustomHourMinuteField(
+                          selectedTime:
+                              selectedHour != null
+                                  ? TimeOfDay(hour: selectedHour!, minute: 0)
+                                  : TimeOfDay(hour: 8, minute: 0),
+                          onTap: () => _showHourPicker(context),
+                          hint: '',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+
+                const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
                   hint: 'Pilih Produk Awal',
 
@@ -128,7 +173,7 @@ class _MaintenanceChangeChecklistPageState
                   onChanged:
                       (value) => setState(() => selectedFirstPart = value),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
                   hint: 'Pilih Produk Selanjutnya',
                   prefixIcon: PrefixIconHelper.get('factory'),
@@ -137,243 +182,216 @@ class _MaintenanceChangeChecklistPageState
                   onChanged:
                       (value) => setState(() => selectedNextPart = value),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
-                  hint: 'Pilih Lokasi',
+                  hint: 'Pilih Plant',
                   prefixIcon: PrefixIconHelper.get('location'),
                   stringItems: dummyLocations,
                   value: selectedLocation,
                   onChanged:
                       (value) => setState(() => selectedLocation = value),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 if (selectedLocation == 'Refinery') ...[
-                  SectionCard(
-                    title: 'Pre-Treatment Section',
-                    children: [
-                      ChecklistItemRow(
-                        number: 1,
-                        description:
-                            'Stop pompa P001, Buka by pass Degumming dan by pass Bleacher.',
-                        value: checklist1,
-                        onChanged:
-                            (val) => setState(() => checklist1 = val ?? false),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 16.0,
                       ),
-                      ChecklistItemRow(
-                        number: 2,
-                        description:
-                            'Blow Jalur Pre-Treatment (Blow Jalur dari Pump 001 sampai ke Bleacher).',
-                        value: checklist1,
-                        onChanged:
-                            (val) => setState(() => checklist1 = val ?? false),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pre-Treatment Section',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          SizedBox(height: 16.0),
+                          ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: dummyPreTreatmentSectionItem.length,
+                            itemBuilder: (context, index) {
+                              return ChecklistItemRow(
+                                number: index + 1,
+                                description:
+                                    dummyPreTreatmentSectionItem[index],
+                                value: checklist1,
+                                onChanged:
+                                    (val) => setState(
+                                      () => checklist1 = val ?? false,
+                                    ),
+                              );
+                            },
+                          ),
+                          Divider(
+                            height: 0.0,
+                            thickness: 1,
+                            endIndent: 0,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 24.0),
+                          Text(
+                            'Bleacher Section',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          SizedBox(height: 16.0),
+                          ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: dummyBleacherSectionItem.length,
+                            itemBuilder: (context, index) {
+                              return ChecklistItemRow(
+                                number: index + 1,
+                                description: dummyBleacherSectionItem[index],
+                                value: checklist1,
+                                onChanged:
+                                    (val) => setState(
+                                      () => checklist1 = val ?? false,
+                                    ),
+                              );
+                            },
+                          ),
+                          Divider(
+                            height: 0.0,
+                            thickness: 1,
+                            endIndent: 0,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 24.0),
+                          Text(
+                            'Deodorization Section',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          SizedBox(height: 16.0),
+                          ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: dummyDeodorizationSectionItem.length,
+                            itemBuilder: (context, index) {
+                              return ChecklistItemRow(
+                                number: index + 1,
+                                description:
+                                    dummyDeodorizationSectionItem[index],
+                                value: checklist1,
+                                onChanged:
+                                    (val) => setState(
+                                      () => checklist1 = val ?? false,
+                                    ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  SectionCard(
-                    title: 'Bleacher Section',
-                    children: [
-                      ChecklistItemRow(
-                        number: 1,
-                        description:
-                            'Kosongkan Slope Tank dan Tank Splash Oil.',
-                        value: checklist1,
-                        onChanged:
-                            (val) => setState(() => checklist1 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 2,
-                        description:
-                            'Kosongkan Bleacher Tank, Niagara Filter, dan dorong sisa-sisa minyak pada niagara dengan steam.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 3,
-                        description: 'Bersihkan strainer pompa P001.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 4,
-                        description: 'Ganti Filter bag 10 micron.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 5,
-                        description:
-                            'Lakukan penarikan feed raw material dari tanki yang sudah direlease oleh QC.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 6,
-                        description: 'Start-up bleacher section.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SectionCard(
-                    title: 'Deodorization Section',
-                    children: [
-                      ChecklistItemRow(
-                        number: 1,
-                        description:
-                            'Kosongkan isi Tank 701, Tank 703, dan Receiver Tank.',
-                        value: checklist1,
-                        onChanged:
-                            (val) => setState(() => checklist1 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 2,
-                        description: 'Matikan Power Thermopack.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 3,
-                        description:
-                            'Kosongkan Deodorize Tannk dari Tray 1,2,3 dan 4.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 4,
-                        description: 'Ganti Filter Bag 5 Micron.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 5,
-                        description:
-                            'Start-up Niagara dan hidupkan Thermopack.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 6,
-                        description:
-                            'Lakukan pengisian F701, D703, dan D702 sampai high level.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 7,
-                        description: 'Lakukan Start-up Deodorizer.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 8,
-                        description: 'Lakukan Pengisian Tray 1,2,3,4.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 9,
-                        description:
-                            'Sirkulasi hingga mencapai temperatur yang sesuai.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 10,
-                        description:
-                            'Quality Check oleh QC dan produk sudah inspec.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  SectionCard(
-                    title: 'Remark',
-                    children: [CustomRemarkField(controller: notesController)],
-                  ),
-                  const SizedBox(height: 24),
-                  CustomSaveButton(onPressed: () {}, label: 'Submit Laporan'),
                 ] else if (selectedLocation == 'Fractination') ...[
-                  const SizedBox(height: 12),
-                  SectionCard(
-                    title: 'Fractination Section',
-                    children: [
-                      ChecklistItemRow(
-                        number: 1,
-                        description:
-                            'Persiapkan tanki crystallizer yang akan dipakai.',
-                        value: checklist1,
-                        onChanged:
-                            (val) => setState(() => checklist1 = val ?? false),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 16.0,
                       ),
-                      ChecklistItemRow(
-                        number: 2,
-                        description: 'Lakukan blow jalur.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Fractination Section',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          SizedBox(height: 16.0),
+                          ListView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: dummyFractinationSectionItem.length,
+                            itemBuilder: (context, index) {
+                              return ChecklistItemRow(
+                                number: index + 1,
+                                description:
+                                    dummyFractinationSectionItem[index],
+                                value: checklist1,
+                                onChanged:
+                                    (val) => setState(
+                                      () => checklist1 = val ?? false,
+                                    ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      ChecklistItemRow(
-                        number: 3,
-                        description:
-                            'Lakukan penarikan Feed Raw Material yang sudah direlease oleh QC. (Pastikan Ketersediaan steam saat penarikan feed raw material).',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 4,
-                        description: 'Lakukan Washing Filter Press.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 5,
-                        description: 'Lakukan Cooling dan Filtrasi.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                      ChecklistItemRow(
-                        number: 6,
-                        description:
-                            'Quality Check oleh QC dan produk sudah inspec.',
-                        value: checklist2,
-                        onChanged:
-                            (val) => setState(() => checklist2 = val ?? false),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  SectionCard(
-                    title: 'Remark',
-                    children: [CustomRemarkField(controller: notesController)],
-                  ),
-                  const SizedBox(height: 24),
-                  CustomSaveButton(onPressed: () {}, label: 'Submit Laporan'),
                 ] else ...[
                   const SizedBox(height: 12),
                   const Center(
                     child: Text(
                       'Silakan pilih part terlebih dahulu',
                       style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ],
+                if (selectedLocation != null) ...[
+                  // SectionCard(
+                  //   title: 'Remark',
+                  //   children: [CustomRemarkField(controller: notesController)],
+                  // ),
+                  // const SizedBox(height: 24),
+                  // CustomSaveButton(onPressed: () {}, label: 'Submit Laporan'),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24.0),
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 16.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Remark',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                            SizedBox(height: 16.0),
+                            CustomRemarkField(controller: notesController),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: CustomSaveButton(
+                      onPressed: () {},
+                      label: 'Submit Laporan',
                     ),
                   ),
                 ],
