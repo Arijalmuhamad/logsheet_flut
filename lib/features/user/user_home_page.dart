@@ -56,7 +56,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formDailyProductionFractionation,
       formDailyProductionRefinery,
       formDryFractionation,
-      formChecklistLampsAndGlassControl;
+      formChecklistLampsAndGlassControl,
+      formChangeProductChecklist;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -247,6 +248,16 @@ class _UserHomePageState extends State<UserHomePage> {
             .where(
               (form) =>
                   form.isMenu == "Checklist_Lamps_And_Glass_Control" &&
+                  form.isActive == "T",
+            )
+            .first;
+    formChangeProductChecklist =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Change_Product_Checklist" &&
                   form.isActive == "T",
             )
             .first;
@@ -918,7 +929,7 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
           ],
 
-          // Show Maintenance section for all roles (as per your original code)
+          // Show Maintenance section for all roles
           _buildDrawerSubheader("Maintenance"),
           ExpansionTile(
             leading: const Icon(
@@ -969,6 +980,65 @@ class _UserHomePageState extends State<UserHomePage> {
               _buildDrawerItem(
                 icon: Icons.receipt_long_outlined,
                 title: 'Report (${formChecklistLampsAndGlassControl?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceLampsGlassReportPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          ExpansionTile(
+            leading: const Icon(
+              Icons.lightbulb_outline_rounded,
+              color: Color(0xFF655F5B),
+            ),
+            title: Text(
+              'Change Product\n(${formChangeProductChecklist?.code})',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: [
+              // Show Approval only to Managers and Leads (you can adjust roles here)
+              if (AppRoles.managerProd.contains(userRole))
+                _buildDrawerItem(
+                  icon: Icons.check_circle_outline,
+                  title: 'Approval (${formChangeProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceLampsGlassApprovalPage(),
+                      ),
+                    );
+                  },
+                ),
+              _buildDrawerItem(
+                icon: Icons.input_rounded,
+                title: 'Input (${formChangeProductChecklist?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceLampsGlassInputPage(
+                            userName: user.username,
+                          ),
+                    ),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report (${formChangeProductChecklist?.code})',
                 onTap: () {
                   Navigator.push(
                     context,
