@@ -6,6 +6,7 @@ import 'package:logsheet_app/data/repositories/daily_production/daily_production
 import 'package:logsheet_app/data/repositories/dry_fractionation/dry_fractionation_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/deodorizing_filtration_repository.dart';
 import 'package:logsheet_app/data/repositories/logsheet/pretreatment_bleaching_filtration_repository.dart';
+import 'package:logsheet_app/data/repositories/maintenance/change_product_checklist_repository/change_product_checklist_repository.dart';
 import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and_glass_repository.dart';
 import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
@@ -19,6 +20,7 @@ import 'package:logsheet_app/data/services/daily_production/daily_production_ref
 import 'package:logsheet_app/data/services/dry_fractionation/dry_fractionation_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
 import 'package:logsheet_app/data/services/logsheet/pretreatment_bleaching_filtration_mysql_service.dart';
+import 'package:logsheet_app/data/services/maintenance/change_product_checklist/change_product_checklist_mysql_service.dart';
 import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_glass_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
@@ -33,6 +35,7 @@ import 'package:logsheet_app/providers/daily_production/daily_production_refiner
 import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.dart';
 import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtration_provider.dart';
+import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
@@ -100,6 +103,9 @@ void main() async {
         ),
         Provider<DeodorizingFiltrationMySQLService>(
           create: (context) => DeodorizingFiltrationMySQLService(),
+        ),
+        Provider<ChangeProductChecklistMySQLService>(
+          create: (context) => ChangeProductChecklistMySQLService(),
         ),
 
         // Provide User Repository
@@ -186,6 +192,12 @@ void main() async {
                 context.read<DryFractionationMySQLService>(),
               ),
         ),
+        Provider<ChangeProductChecklistRepository>(
+          create:
+              (context) => ChangeProductChecklistRepository(
+                context.read<ChangeProductChecklistMySQLService>(),
+              ),
+        ),
 
         // Provide The User Provider
         ChangeNotifierProvider(
@@ -260,6 +272,12 @@ void main() async {
           create:
               (context) => DryFractionationProvider(
                 context.read<DryFractionationRepository>(),
+              ),
+        ),
+        ChangeNotifierProvider(
+          create:
+              (context) => ChangeProductChecklistProvider(
+                context.read<ChangeProductChecklistRepository>(),
               ),
         ),
 
