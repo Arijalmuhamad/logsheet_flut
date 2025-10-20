@@ -21,7 +21,8 @@ import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtratio
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page_input.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page_report_list.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
@@ -1011,6 +1012,20 @@ class _UserHomePageState extends State<UserHomePage> {
                             (_) => MaintenanceChangeChecklistPage(
                               userName: user.username,
                             ),
+                      ),
+                    );
+                  },
+                ),
+
+                 _buildDrawerItem(
+                  icon: Icons.input_rounded,
+                  title: 'Report List',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => MaintenanceChangeProductPageReportlist(),
                       ),
                     );
                   },
