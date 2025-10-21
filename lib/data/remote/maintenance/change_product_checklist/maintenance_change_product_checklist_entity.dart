@@ -1,6 +1,6 @@
 import 'package:logsheet_app/core/utils/parser_utils.dart';
 
-class ChangeProductChecklistEntity {
+class MaintenanceChangeProductChecklistEntity {
   final String code;
   final String? name;
   final int? sortNo;
@@ -9,7 +9,7 @@ class ChangeProductChecklistEntity {
   final String? workCenterGroup;
   final String? isActive;
 
-  ChangeProductChecklistEntity({
+  MaintenanceChangeProductChecklistEntity({
     required this.code,
     required this.name,
     required this.sortNo,
@@ -19,8 +19,10 @@ class ChangeProductChecklistEntity {
     required this.isActive,
   });
 
-  factory ChangeProductChecklistEntity.fromMap(Map<String, dynamic> map) {
-    return ChangeProductChecklistEntity(
+  factory MaintenanceChangeProductChecklistEntity.fromMap(
+    Map<String, dynamic> map,
+  ) {
+    return MaintenanceChangeProductChecklistEntity(
       code: map['code'] as String,
       name: map['name'] as String?,
       sortNo: parseInt(map['sort_no']),
@@ -43,7 +45,7 @@ class ChangeProductChecklistEntity {
     };
   }
 
-  ChangeProductChecklistEntity copyWith({
+  MaintenanceChangeProductChecklistEntity copyWith({
     String? code,
     String? name,
     int? sortNo,
@@ -52,7 +54,7 @@ class ChangeProductChecklistEntity {
     String? workCenterGroup,
     String? isActive,
   }) {
-    return ChangeProductChecklistEntity(
+    return MaintenanceChangeProductChecklistEntity(
       code: code ?? this.code,
       name: name ?? this.name,
       sortNo: sortNo ?? this.sortNo,

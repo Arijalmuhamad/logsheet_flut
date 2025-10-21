@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/logsheet/deodorizing_filtration_entity.dart';
 import 'package:logsheet_app/data/services/logsheet/deodorizing_filtration_mysql_service.dart';
 
@@ -93,5 +94,21 @@ class DeodorizingFiltrationRepository {
             .toList();
 
     return filteredTicketListFromMap;
+  }
+
+  Future<bool?> isDataExist({
+    required DateTime date,
+    required TimeOfDay time,
+    required String company,
+    required String plant,
+    required String workCenter,
+  }) async {
+    return await _mySQLService.isDataExist(
+      date: date,
+      time: time,
+      company: company,
+      plant: plant,
+      workCenter: workCenter,
+    );
   }
 }

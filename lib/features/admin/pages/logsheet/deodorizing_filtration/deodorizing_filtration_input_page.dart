@@ -298,8 +298,9 @@ class _DeodorizingFiltrationInputPageState
                         child: Text("${machine.code} - ${machine.name}"),
                       );
                     }).toList(),
-                onChanged:
-                    (value) => setState(() => selectedWorkCenter = value),
+                onChanged: (value) async {
+                  setState(() => selectedWorkCenter = value);
+                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFF0ECE9),
