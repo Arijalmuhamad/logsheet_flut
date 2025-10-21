@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
@@ -497,9 +498,59 @@ class DeodorizingFiltrationMySQLService {
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log(
-        "(DEODORIZING FILTRATION MySQL) Error getting all pretreatment bleaching filtration tickets: $e",
+        "(DEODORIZING FILTRATION MySQL) Error getting all Deodorizing filtration tickets: $e",
       );
       return [];
+    } finally {
+      if (connection != null) {
+        await connection.close();
+        log(
+          '(DEODORIZING FILTRATION MySQL) MySQL connection closed for getTickets.',
+        );
+      }
+    }
+  }
+
+  Future<bool?> isDataExist({
+    required DateTime date,
+    required TimeOfDay time,
+    required String company,
+    required String plant,
+    required String workCenter,
+  }) async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          '(DEODORIZING FILTRATION MySQL) Failed to get MySQL connection for isDataExist.',
+        );
+        return null;
+      }
+      connection = connResult.connection!;
+      final result = await connection.execute(
+        "SELECT COUNT(id) as count FROM t_deodorizing_filtration WHERE DATE(posting_date) = :date AND company = :company AND plant = :plant AND refinery_machine = :work_center AND time = :time",
+        {
+          'date': DateFormat('yyyy-MM-dd').format(date),
+          'company': company,
+          'plant': plant,
+          'work_center': workCenter,
+          'time': time,
+        },
+      );
+
+      if (result.rows.isNotEmpty) {
+        final count = int.parse(result.rows.first.assoc()['count']!);
+        return count > 0;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      log(
+        "(DEODORIZING FILTRATION MySQL) Error validating Deodorizing filtration tickets: $e",
+      );
+      return null;
     } finally {
       if (connection != null) {
         await connection.close();
