@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_control_detail_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/lamps_and_glass_control_entity.dart';
@@ -132,7 +131,7 @@ class MaintenanceLampsAndGlassMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for get all reports.');
+        log('Failed to get MySQL connection for get latest id.');
         return null;
       }
 
