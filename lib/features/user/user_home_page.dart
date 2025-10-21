@@ -21,7 +21,9 @@ import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtratio
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page._input.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
@@ -1025,103 +1027,35 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
+
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceChangeProductPageReportlist(),
+                    ),
+                  );
+                },
+              ),
+
+              _buildDrawerItem(
+                icon: Icons.check_circle_outline,
+                title: 'Approval',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceChangeProductApprovalPage(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
 
-          ExpansionTile(
-            leading: const Icon(
-              Icons.change_circle_outlined,
-              color: Color(0xFF655F5B),
-            ),
-            title: Text(
-              'Change Product Checklist',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: [
-              // Show Approval only to Managers and Leads (you can adjust roles here)
-              if (AppRoles.managerProd.contains(userRole))
-                _buildDrawerItem(
-                  icon: Icons.input_rounded,
-                  title: 'Input',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => MaintenanceChangeChecklistPage(
-                              userName: user.username,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-            ],
-          ),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.lightbulb_outline_rounded,
-              color: Color(0xFF655F5B),
-            ),
-            title: Text(
-              'Change Product\n(${formChangeProductChecklist?.code})',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: [
-              // Show Approval only to Managers and Leads (you can adjust roles here)
-              if (AppRoles.managerProd.contains(userRole))
-                _buildDrawerItem(
-                  icon: Icons.check_circle_outline,
-                  title: 'Approval (${formChangeProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MaintenanceLampsGlassApprovalPage(),
-                      ),
-                    );
-                  },
-                ),
-              _buildDrawerItem(
-                icon: Icons.input_rounded,
-                title: 'Input (${formChangeProductChecklist?.code})',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => MaintenanceLampsGlassInputPage(
-                            userName: user.username,
-                          ),
-                    ),
-                  );
-                },
-              ),
-              _buildDrawerItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Report (${formChangeProductChecklist?.code})',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceLampsGlassReportPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFAB2F2B)),

@@ -1,7 +1,7 @@
 // Widgetbook file: widgetbook.dart
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page_input.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_page_report_list.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:widgetbook/widgetbook.dart';
 

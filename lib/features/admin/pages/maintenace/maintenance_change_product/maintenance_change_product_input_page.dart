@@ -1,14 +1,19 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/checklist_item_row.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
-import 'package:logsheet_app/features/admin/widgets/section_card.dart';
+import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:provider/provider.dart';
 
 class MaintenanceChangeChecklistPage extends StatefulWidget {
   final String userName;
@@ -30,7 +35,10 @@ class _MaintenanceChangeChecklistPageState
   String? selectedFirstPart;
   String? selectedNextPart;
   String? selectedLocation;
+  String? selectedWorkCenter;
   int? selectedHour;
+
+  List<MasterValueEntity> workCenterList = [];
 
   bool checklist1 = false;
   bool checklist2 = false;
@@ -38,45 +46,15 @@ class _MaintenanceChangeChecklistPageState
   final List<String> dummyFirstParts = ['RPS', 'CPKO'];
   final List<String> dummyNextParts = ['CPO', 'CPKO'];
   final List<String> dummyLocations = ['Refinery', 'Fractination'];
-  final List<String> dummyPreTreatmentSectionItem = [
-    'Pre-Treatment Section item 1',
-    'Pre-Treatment Section item 2',
-  ];
 
-  final List<String> dummyBleacherSectionItem = [
-    'Bleacher Section item 1',
-    'Bleacher Section item 2',
-  ];
-
-  final List<String> dummyDeodorizationSectionItem = [
-    'DeodorizationItem Section item 1',
-    'DeodorizationItem Section item 2',
-  ];
-
-  final List<String> dummyFractinationSectionItem = [
-    'FractinationItem Section item 1',
-    'FractinationItem Section item 2',
-  ];
-
-  // final Map<String, Map<String, List<String>>> dummyChecklists = {
-  //   'Refinery': {
-  //     'Pre-Treatment Section': [
-  //       'Pre-Treatment Section item 1',
-  //       'Pre-Treatment Section item 2',
-  //     ],
-  //     'Bleacher Section': [
-  //       'Bleacher Section item 1',
-  //       'Bleacher Section item 2',
-  //     ],
-  //     'Deodorization Section': [
-  //       'Deodorization Section item 1',
-  //       'Deodorization Section item 2',
-  //     ],
-  //   },
-  //   'Fractination': {
-  //     'Fractination': ['Fractination item 1', 'Fractination item 2'],
-  //   },
-  // };
+  initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<ChangeProductChecklistProvider>().getLangkahKerja();
+      await context.read<ValueProvider>().fetchWorkCenterLists();
+      await context.read<ValueProvider>().fetchWorkCenterFractLists();
+    });
+  }
 
   @override
   void dispose() {
@@ -115,6 +93,10 @@ class _MaintenanceChangeChecklistPageState
 
   @override
   Widget build(BuildContext context) {
+    final langkahKerjaProvider =
+        context.watch<ChangeProductChecklistProvider>();
+    final valueProvider = context.read<ValueProvider>();
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -135,6 +117,62 @@ class _MaintenanceChangeChecklistPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                CustomDropdown.fromStringItems(
+                  hint: 'Pilih Plant',
+                  prefixIcon: PrefixIconHelper.get('location'),
+                  stringItems: dummyLocations,
+                  value: selectedLocation,
+                  onChanged: (value) {
+                    setState(() => selectedLocation = value);
+                    setState(() {
+                      if (value == 'Refinery') {
+                        workCenterList = valueProvider.workCenterLists;
+                      } else if (value == 'Fractination') {
+                        workCenterList = valueProvider.workCenterFractLists;
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedWorkCenter,
+                  items:
+                      workCenterList.map((workCenter) {
+                        return DropdownMenuItem<String>(
+                          value: workCenter.code,
+                          child: Text(
+                            "${workCenter.code} - ${workCenter.name}",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                  onChanged:
+                      selectedLocation == null
+                          ? null // Disable the dropdown if no location is selected
+                          : (value) {
+                            setState(() {
+                              selectedWorkCenter = value;
+                            });
+                          },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF0ECE9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: 'Work Center',
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/oil-refinery-tanks.svg',
+                        height: 24,
+                        width: 24,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -179,19 +217,12 @@ class _MaintenanceChangeChecklistPageState
                   prefixIcon: PrefixIconHelper.get('factory'),
                   stringItems: dummyNextParts,
                   value: selectedNextPart,
-                  onChanged:
-                      (value) => setState(() => selectedNextPart = value),
+                  onChanged: (value) {
+                    setState(() => selectedNextPart = value);
+                  },
                 ),
                 const SizedBox(height: 16),
-                CustomDropdown.fromStringItems(
-                  hint: 'Pilih Plant',
-                  prefixIcon: PrefixIconHelper.get('location'),
-                  stringItems: dummyLocations,
-                  value: selectedLocation,
-                  onChanged:
-                      (value) => setState(() => selectedLocation = value),
-                ),
-                const SizedBox(height: 24),
+
                 if (selectedLocation == 'Refinery') ...[
                   Card(
                     margin: EdgeInsets.zero,
@@ -216,12 +247,17 @@ class _MaintenanceChangeChecklistPageState
                             physics: const NeverScrollableScrollPhysics(),
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
-                            itemCount: dummyPreTreatmentSectionItem.length,
+                            itemCount:
+                                langkahKerjaProvider
+                                    .langkahKerjaPreTreatmentList
+                                    .length,
                             itemBuilder: (context, index) {
                               return ChecklistItemRow(
                                 number: index + 1,
                                 description:
-                                    dummyPreTreatmentSectionItem[index],
+                                    langkahKerjaProvider
+                                        .langkahKerjaPreTreatmentList[index]
+                                        .name!,
                                 value: checklist1,
                                 onChanged:
                                     (val) => setState(
@@ -250,11 +286,17 @@ class _MaintenanceChangeChecklistPageState
                             physics: const NeverScrollableScrollPhysics(),
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
-                            itemCount: dummyBleacherSectionItem.length,
+                            itemCount:
+                                langkahKerjaProvider
+                                    .langkahKerjaBleacherList
+                                    .length,
                             itemBuilder: (context, index) {
                               return ChecklistItemRow(
                                 number: index + 1,
-                                description: dummyBleacherSectionItem[index],
+                                description:
+                                    langkahKerjaProvider
+                                        .langkahKerjaBleacherList[index]
+                                        .name!,
                                 value: checklist1,
                                 onChanged:
                                     (val) => setState(
@@ -283,12 +325,17 @@ class _MaintenanceChangeChecklistPageState
                             physics: const NeverScrollableScrollPhysics(),
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
-                            itemCount: dummyDeodorizationSectionItem.length,
+                            itemCount:
+                                langkahKerjaProvider
+                                    .langkahKerjaDeodorizationList
+                                    .length,
                             itemBuilder: (context, index) {
                               return ChecklistItemRow(
                                 number: index + 1,
                                 description:
-                                    dummyDeodorizationSectionItem[index],
+                                    langkahKerjaProvider
+                                        .langkahKerjaDeodorizationList[index]
+                                        .name!,
                                 value: checklist1,
                                 onChanged:
                                     (val) => setState(
@@ -325,12 +372,17 @@ class _MaintenanceChangeChecklistPageState
                             physics: const NeverScrollableScrollPhysics(),
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
-                            itemCount: dummyFractinationSectionItem.length,
+                            itemCount:
+                                langkahKerjaProvider
+                                    .langkahKerjaFractionationList
+                                    .length,
                             itemBuilder: (context, index) {
                               return ChecklistItemRow(
                                 number: index + 1,
                                 description:
-                                    dummyFractinationSectionItem[index],
+                                    langkahKerjaProvider
+                                        .langkahKerjaFractionationList[index]
+                                        .name!,
                                 value: checklist1,
                                 onChanged:
                                     (val) => setState(
