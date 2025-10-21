@@ -53,6 +53,19 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   String? _latestId;
   String? get latestId => _latestId;
 
+
+  List<ChangeProductChecklistEntity> _langkahKerjaPreTreatmentList = [];
+  List<ChangeProductChecklistEntity> get langkahKerjaPreTreatmentList => _langkahKerjaPreTreatmentList;
+
+  List<ChangeProductChecklistEntity> _langkahKerjaBleacherList = [];
+  List<ChangeProductChecklistEntity> get langkahKerjaBleacherList => _langkahKerjaBleacherList;
+
+  List<ChangeProductChecklistEntity> _langkahKerjaDeodorizationList = [];
+  List<ChangeProductChecklistEntity> get langkahKerjaDeodorizationList => _langkahKerjaDeodorizationList;
+
+  List<ChangeProductChecklistEntity> _langkahKerjaFractionationList = [];
+  List<ChangeProductChecklistEntity> get langkahKerjaFractionationList => _langkahKerjaFractionationList;
+
   // functions for changing loading state
   void _setLoading(bool value) {
     _isLoading = value;
@@ -81,6 +94,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
 
   // Set Error Message
   void _setErrorMessage(String? value) {
+    // _setErrorMessage(value);
     _errorMessage = value;
     notifyListeners();
   }
@@ -91,6 +105,37 @@ class ChangeProductChecklistProvider with ChangeNotifier {
 
     try {
       _langkahkerjaList = await _repository.getLangkahKerja();
+
+      _langkahKerjaPreTreatmentList = _langkahkerjaList
+          .where((element) =>
+          element.category == 'Pre Treatment Section' &&
+          element.workCenter == 'Refinery')
+          .toList()
+        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+
+       _langkahKerjaBleacherList = _langkahkerjaList
+          .where((element) =>
+          element.category == 'Bleacher Section' &&
+          element.workCenter == 'Refinery')
+          .toList()
+        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+
+         _langkahKerjaDeodorizationList = _langkahkerjaList
+          .where((element) =>
+          element.category == 'Deodorization Section' &&
+          element.workCenter == 'Refinery')
+          .toList()
+        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+
+        _langkahKerjaFractionationList = _langkahkerjaList
+          .where((element) =>
+          element.category == 'Fractionation Section' &&
+          element.workCenter == 'Fractionation')
+          .toList()
+        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+
+      log('List Length: ${_langkahkerjaList.length}');
+     
       notifyListeners();
 
       log('List Length: ${_langkahkerjaList.length}');
