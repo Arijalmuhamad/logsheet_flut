@@ -123,13 +123,18 @@ class _MaintenanceChangeChecklistPageState
                   stringItems: dummyLocations,
                   value: selectedLocation,
                   onChanged: (value) {
-                    setState(() => selectedLocation = value);
                     setState(() {
+                      selectedLocation = value;
+                      selectedWorkCenter =
+                          null; 
+
                       if (value == 'Refinery') {
                         workCenterList = valueProvider.workCenterLists;
                       } else if (value == 'Fractination') {
                         workCenterList = valueProvider.workCenterFractLists;
                       }
+
+                      debugPrint("Updated workCenterList: $workCenterList");
                     });
                   },
                 ),
