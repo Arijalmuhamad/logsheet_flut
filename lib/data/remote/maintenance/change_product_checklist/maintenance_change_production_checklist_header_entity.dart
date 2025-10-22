@@ -3,7 +3,7 @@ import 'package:logsheet_app/core/utils/parser_utils.dart';
 
 class MaintenanceChangeProductionChecklistHeaderEntity {
   final String id;
-  final String company;
+  final String company;  
   final String plant;
   final DateTime? transactionDate;
   final TimeOfDay? transactionTime;
@@ -108,10 +108,10 @@ class MaintenanceChangeProductionChecklistHeaderEntity {
       'flag': flag,
       'entry_by': entryBy,
       'entry_date': entryDate?.toIso8601String(),
-      'verified_by': preparedBy,
-      'verified_date': preparedDate?.toIso8601String(),
-      'verified_status': preparedStatus,
-      'verified_status_remarks': preparedStatusRemarks,
+      'prepared_by': preparedBy,
+      'prepared_date': preparedDate?.toIso8601String(),
+      'prepared_status': preparedStatus,
+      'prepared_status_remarks': preparedStatusRemarks,
       'checked_by': checkedBy,
       'checked_date': checkedDate?.toIso8601String(),
       'checked_status': checkedStatus,

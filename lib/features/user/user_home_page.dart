@@ -23,6 +23,7 @@ import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleachin
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
@@ -1014,15 +1015,13 @@ class _UserHomePageState extends State<UserHomePage> {
               if (AppRoles.managerProd.contains(userRole))
                 _buildDrawerItem(
                   icon: Icons.input_rounded,
-                  title: 'Input',
+                  title: 'Change Product List',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => MaintenanceChangeChecklistPage(
-                              userName: user.username,
-                            ),
+                            (_) => MaintenanceChangeProductListPage(),
                       ),
                     );
                   },

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_detail_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_production_checklist_header_entity.dart';
 import 'package:logsheet_app/data/repositories/maintenance/change_product_checklist_repository/change_product_checklist_repository.dart';
 
 class ChangeProductChecklistProvider with ChangeNotifier {
@@ -44,6 +45,14 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   List<MaintenanceChangeProductChecklistReportEntity> _reportList = [];
   List<MaintenanceChangeProductChecklistReportEntity> get reportList =>
       _reportList;
+  
+  List<MaintenanceChangeProductChecklistReportEntity> _uniqueReportList = [];
+  List<MaintenanceChangeProductChecklistReportEntity> get uniqueReportList =>
+      _uniqueReportList;
+
+  List<MaintenanceChangeProductChecklistDetailEntity> _reportDetailList = [];
+  List<MaintenanceChangeProductChecklistDetailEntity> get reportDetailList =>
+      _reportDetailList;
 
   // List of Reports (Approval)
   List<MaintenanceChangeProductChecklistReportEntity> _approvalList = [];
@@ -53,18 +62,24 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   String? _latestId;
   String? get latestId => _latestId;
 
+  List<MaintenanceChangeProductChecklistEntity> _langkahKerjaPreTreatmentList =
+      [];
+  List<MaintenanceChangeProductChecklistEntity>
+  get langkahKerjaPreTreatmentList => _langkahKerjaPreTreatmentList;
 
-  List<ChangeProductChecklistEntity> _langkahKerjaPreTreatmentList = [];
-  List<ChangeProductChecklistEntity> get langkahKerjaPreTreatmentList => _langkahKerjaPreTreatmentList;
+  List<MaintenanceChangeProductChecklistEntity> _langkahKerjaBleacherList = [];
+  List<MaintenanceChangeProductChecklistEntity> get langkahKerjaBleacherList =>
+      _langkahKerjaBleacherList;
 
-  List<ChangeProductChecklistEntity> _langkahKerjaBleacherList = [];
-  List<ChangeProductChecklistEntity> get langkahKerjaBleacherList => _langkahKerjaBleacherList;
+  List<MaintenanceChangeProductChecklistEntity> _langkahKerjaDeodorizationList =
+      [];
+  List<MaintenanceChangeProductChecklistEntity>
+  get langkahKerjaDeodorizationList => _langkahKerjaDeodorizationList;
 
-  List<ChangeProductChecklistEntity> _langkahKerjaDeodorizationList = [];
-  List<ChangeProductChecklistEntity> get langkahKerjaDeodorizationList => _langkahKerjaDeodorizationList;
-
-  List<ChangeProductChecklistEntity> _langkahKerjaFractionationList = [];
-  List<ChangeProductChecklistEntity> get langkahKerjaFractionationList => _langkahKerjaFractionationList;
+  List<MaintenanceChangeProductChecklistEntity> _langkahKerjaFractionationList =
+      [];
+  List<MaintenanceChangeProductChecklistEntity>
+  get langkahKerjaFractionationList => _langkahKerjaFractionationList;
 
   // functions for changing loading state
   void _setLoading(bool value) {
@@ -106,36 +121,48 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     try {
       _langkahkerjaList = await _repository.getLangkahKerja();
 
-      _langkahKerjaPreTreatmentList = _langkahkerjaList
-          .where((element) =>
-          element.category == 'Pre Treatment Section' &&
-          element.workCenter == 'Refinery')
-          .toList()
-        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+      _langkahKerjaPreTreatmentList =
+          _langkahkerjaList
+              .where(
+                (element) =>
+                    element.category == 'Pre Treatment Section' &&
+                    element.workCenter == 'Refinery',
+              )
+              .toList()
+            ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
 
-       _langkahKerjaBleacherList = _langkahkerjaList
-          .where((element) =>
-          element.category == 'Bleacher Section' &&
-          element.workCenter == 'Refinery')
-          .toList()
-        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+      _langkahKerjaBleacherList =
+          _langkahkerjaList
+              .where(
+                (element) =>
+                    element.category == 'Bleacher Section' &&
+                    element.workCenter == 'Refinery',
+              )
+              .toList()
+            ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
 
-         _langkahKerjaDeodorizationList = _langkahkerjaList
-          .where((element) =>
-          element.category == 'Deodorization Section' &&
-          element.workCenter == 'Refinery')
-          .toList()
-        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+      _langkahKerjaDeodorizationList =
+          _langkahkerjaList
+              .where(
+                (element) =>
+                    element.category == 'Deodorization Section' &&
+                    element.workCenter == 'Refinery',
+              )
+              .toList()
+            ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
 
-        _langkahKerjaFractionationList = _langkahkerjaList
-          .where((element) =>
-          element.category == 'Fractionation Section' &&
-          element.workCenter == 'Fractionation')
-          .toList()
-        ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
+      _langkahKerjaFractionationList =
+          _langkahkerjaList
+              .where(
+                (element) =>
+                    element.category == 'Fractionation Section' &&
+                    element.workCenter == 'Fractionation',
+              )
+              .toList()
+            ..sort((a, b) => (a.sortNo ?? 0).compareTo(b.sortNo ?? 0));
 
       log('List Length: ${_langkahkerjaList.length}');
-     
+
       notifyListeners();
 
       log('List Length: ${_langkahkerjaList.length}');
@@ -145,26 +172,54 @@ class ChangeProductChecklistProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+
+  // Future<void> getAllChangeProductFromDate(String date) async {
+  //   _setLoading(true);
+  //   _setErrorMessage(null);
+
+  //   try {
+  //     _reportList = await _repository.getAllChangeProductFromDate(date);
+  //     notifyListeners();
+
+  //     log('List Length: ${_reportList.length}');
+  //   } catch (e) {
+  //     _setErrorMessage("$e");
+  //   } finally {
+  //     _setLoading(false);
+  //   }
+  // }
+
 
   Future<void> getAllChangeProductFromDate(String date) async {
-    _setLoading(true);
-    _setErrorMessage(null);
+  _setLoading(true);
+  _setErrorMessage(null);
 
-    try {
-      _reportList = await _repository.getAllChangeProductFromDate(date);
-      notifyListeners();
+  try {
+    final _reportList = await _repository.getAllChangeProductFromDate(date);
 
-      log('List Length: ${_reportList.length}');
-    } catch (e) {
-      _setErrorMessage("$e");
-    } finally {
-      _setLoading(false);
+    final uniqueData = <String, MaintenanceChangeProductChecklistReportEntity>{};
+
+    for (var item in _reportList) {
+      if (!uniqueData.containsKey(item.id)) {
+        uniqueData[item.id] = item;
+      }
     }
+
+    _uniqueReportList = uniqueData.values.toList();
+
+    notifyListeners();
+    log('Unique Header Count: ${_reportList.length}');
+  } catch (e) {
+    _setErrorMessage("$e");
+  } finally {
+    _setLoading(false);
   }
+}
+
 
   Future<bool> insertChangeProductChecklist({
-    required header,
-    required details,
+    required MaintenanceChangeProductionChecklistHeaderEntity header,
+    required List<MaintenanceChangeProductChecklistDetailEntity> details,
   }) async {
     _setLoadingInput(true);
     _setErrorMessage(null);
@@ -329,4 +384,122 @@ class ChangeProductChecklistProvider with ChangeNotifier {
       _setLoading(false);
     }
   }
+
+  Future<String?> fetchLatestId(String plantCode) async {
+    _setLoading(false);
+    _setErrorMessage(null);
+    try {
+      _latestId = await _repository.getLatestId(plantCode);
+      log("latest ID = $_latestId");
+      return _latestId;
+    } catch (e) {
+      _setLoading(false);
+      _setErrorMessage('Failed to get latest id: $e');
+      return null;
+    }
+  }
+
+  // void setReportDetailList(
+  //   List<MaintenanceChangeProductChecklistDetailEntity> details,
+  // ) {
+  //   _reportDetailList = details;
+  //   notifyListeners();
+  // }
+
+  void updateChecklistStatus(String checkItemCode, String newStatus) {
+    final index = _reportDetailList.indexWhere(
+      (item) => item.checkItem == checkItemCode,
+    );
+
+    if (index != -1) {
+      _reportDetailList[index] = MaintenanceChangeProductChecklistDetailEntity(
+        id: _reportDetailList[index].id,
+        idHdr: _reportDetailList[index].idHdr,
+        checkItem: _reportDetailList[index].checkItem,
+        statusItem: newStatus,
+      );
+    }
+    notifyListeners();
+  }
+
+  void prepopulateReportDetailList() {
+    //  1. Clear Report Detail List
+    _reportDetailList.clear();
+
+    // Safety check in case _latestId is null
+    if (_latestId == null || _latestId!.isEmpty) {
+      log("Error: _latestId is null or empty in prepopulateReportDetailList");
+      _setErrorMessage("Cannot generate detail list: Latest ID is missing.");
+      notifyListeners();
+      return;
+    }
+
+    // 1. Create idHdr by removing the last character from _latestId
+    // Example: "CPCPS21250" -> "CPCPS2125"
+    final idLatest =
+        _latestId!.length > 9 ? _latestId!.substring(0, 9) : _latestId!;
+
+    // 2. Create the base for the detail ID by adding 'D' after the 3rd char
+    // Example: "CPCPS2125" -> "CPCDPS2125"
+    final idDetailBase = "${idLatest.substring(0, 3)}D${idLatest.substring(3)}";
+
+    //  2. Iterate Langkah Kerja List
+    for (var i = 0; i < _langkahkerjaList.length; i++) {
+      final langkahKerja = _langkahkerjaList[i];
+
+      // 3. Create the final detailId by appending the incrementing number
+      // Example: "CPCDPS2125" + "01" -> "CPCDPS212501"
+      // final detailId = "$idDetailBase${(i + 1).toString().padLeft(2, '0')}";
+      final detailId = "$idDetailBase${(i + 1).toString().padLeft(6, '0')}";
+
+      //  3. For each item... create a detail item
+      final detailItem = MaintenanceChangeProductChecklistDetailEntity(
+        id: detailId,
+        idHdr: "", // Use the new base header ID
+        checkItem: langkahKerja.code,
+        statusItem: 'F',
+      );
+
+      //  4. Add detail item to report detail list
+      _reportDetailList.add(detailItem);
+    }
+    notifyListeners();
+  }
+
+Future<String> generateHeaderId(String plantCode) async {
+  if (_latestId == null || _latestId!.isEmpty) {
+    log("⚠️ _latestId is null or empty in _generateHeaderId");
+    return'';
+  }
+
+  final latest = _latestId!;
+  log("🧩 Latest ID: $latest");
+
+  // Pisahkan bagian depan (prefix + plantid + accountingyear) dan autonumber
+  final prefixPart = latest.length > 9 ? latest.substring(0, 9) : latest;
+  final autoPart = latest.length > 9 ? latest.substring(9) : "";
+
+  // Konversi autonumber ke int dan tambah 1
+  int newAuto = 1; // default kalau autoPart kosong atau gagal parsing
+  if (autoPart.isNotEmpty) {
+    try {
+      newAuto = int.parse(autoPart) + 1;
+    } catch (e) {
+      log("⚠️ Gagal parsing autonumber: $e");
+    }
+  }
+
+  // Pad autonumber agar tetap memiliki panjang sama (mis. 6 digit)
+  // final newAutoStr = newAuto.toString().padLeft(autoPart.length, '0');
+  final newAutoStr = newAuto.toString().padLeft(6, '0');
+
+  // Gabungkan lagi jadi ID baru
+  final newId = "$prefixPart$newAutoStr";
+
+  log("✅ Generated new ID: $newId");
+
+  await updateAutoNumber(plantCode, newAuto);
+
+  return newId;
+}
 }

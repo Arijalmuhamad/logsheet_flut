@@ -1,8 +1,8 @@
-class MaintenanceChangeProductChecklistDetailEntity {
-  final String id;
-  final String idHdr;
-  final String checkItem;
-  final String statusItem;
+  class MaintenanceChangeProductChecklistDetailEntity {
+    final String id;
+    String idHdr;
+    final String checkItem;
+    final String statusItem;
 
   MaintenanceChangeProductChecklistDetailEntity({
     required this.id,
