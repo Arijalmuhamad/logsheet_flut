@@ -12,6 +12,7 @@ class DailyProductionRefineryEntity {
   final String? cpoTank;
 
   // Raw Material (RM)
+  final String? oilTypeRmId;
   final String? oilTypeRm;
   final TimeOfDay? oilTypeRmAwalJam;
   final double? oilTypeRmAwalFlowmeter;
@@ -20,6 +21,7 @@ class DailyProductionRefineryEntity {
   final double? oilTypeRmTotal;
 
   // Finished Goods (FG)
+  final String? oilTypeFgId;
   final String? oilTypeFg;
   final TimeOfDay? oilTypeFgAwalJam;
   final double? oilTypeFgAwalFlowmeter;
@@ -29,6 +31,8 @@ class DailyProductionRefineryEntity {
   final String? oilTypeFgToTank;
 
   // By Product (BP) / PFAD
+  final String? oilTypeBpId;
+  final String? oilTypeBp;
   final TimeOfDay? bpAwalJam;
   final double? bpAwalFlowmeter;
   final TimeOfDay? bpAkhirJam;
@@ -93,19 +97,23 @@ class DailyProductionRefineryEntity {
     required this.workCenter,
     required this.shift,
     required this.cpoTank,
-    required this.oilTypeRm,
+    required this.oilTypeRmId,
+    this.oilTypeRm,
     required this.oilTypeRmAwalJam,
     required this.oilTypeRmAwalFlowmeter,
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
-    required this.oilTypeFg,
+    required this.oilTypeFgId,
+    this.oilTypeFg,
     required this.oilTypeFgAwalJam,
     required this.oilTypeFgAwalFlowmeter,
     required this.oilTypeFgAkhirJam,
     required this.oilTypeFgAkhirFlowmeter,
     required this.oilTypeFgTotal,
     required this.oilTypeFgToTank,
+    required this.oilTypeBpId,
+    this.oilTypeBp,
     required this.bpAwalJam,
     required this.bpAwalFlowmeter,
     required this.bpAkhirJam,
@@ -195,12 +203,14 @@ class DailyProductionRefineryEntity {
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
       cpoTank: map['cpo_tank'] as String?,
+      oilTypeRmId: map['oil_type_rm_id'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
       oilTypeRmAwalJam: parseTimeOfDay(map['oil_type_rm_awal_jam']),
       oilTypeRmAwalFlowmeter: parseDouble(map['oil_type_rm_awal_flowmeter']),
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseDouble(map['oil_type_rm_akhir_flowmeter']),
       oilTypeRmTotal: parseDouble(map['oil_type_rm_total']),
+      oilTypeFgId: map['oil_type_fg_id'] as String?,
       oilTypeFg: map['oil_type_fg'] as String?,
       oilTypeFgAwalJam: parseTimeOfDay(map['oil_type_fg_awal_jam']),
       oilTypeFgAwalFlowmeter: parseDouble(map['oil_type_fg_awal_flowmeter']),
@@ -212,6 +222,8 @@ class DailyProductionRefineryEntity {
       bpAwalFlowmeter: parseDouble(map['bp_awal_flowmeter']),
       bpAkhirJam: parseTimeOfDay(map['bp_akhir_jam']),
       bpAkhirFlowmeter: parseDouble(map['bp_akhir_flowmeter']),
+      oilTypeBpId: map['bp_oil_type_id'] as String?,
+      oilTypeBp: map['bp_oil_type'] as String?,
       bpTotal: parseDouble(map['bp_total']),
       bpToTank: map['bp_to_tank'] as String?,
       beRefTank: map['be_ref_tank'] as String?,
@@ -273,13 +285,13 @@ class DailyProductionRefineryEntity {
       'work_center': workCenter,
       'shift': shift,
       'cpo_tank': cpoTank,
-      'oil_type_rm': oilTypeRm,
+      'oil_type_rm': oilTypeRmId,
       'oil_type_rm_awal_jam': formatTimeOfDay(oilTypeRmAwalJam),
       'oil_type_rm_awal_flowmeter': oilTypeRmAwalFlowmeter,
       'oil_type_rm_akhir_jam': formatTimeOfDay(oilTypeRmAkhirJam),
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
       'oil_type_rm_total': oilTypeRmTotal,
-      'oil_type_fg': oilTypeFg,
+      'oil_type_fg': oilTypeFgId,
       'oil_type_fg_awal_jam': formatTimeOfDay(oilTypeFgAwalJam),
       'oil_type_fg_awal_flowmeter': oilTypeFgAwalFlowmeter,
       'oil_type_fg_akhir_jam': formatTimeOfDay(oilTypeFgAkhirJam),
@@ -290,6 +302,7 @@ class DailyProductionRefineryEntity {
       'bp_awal_flowmeter': bpAwalFlowmeter,
       'bp_akhir_jam': formatTimeOfDay(bpAkhirJam),
       'bp_akhir_flowmeter': bpAkhirFlowmeter,
+      'bp_oil_type': oilTypeBpId,
       'bp_total': bpTotal,
       'bp_to_tank': bpToTank,
       'be_ref_tank': beRefTank,
@@ -339,12 +352,14 @@ class DailyProductionRefineryEntity {
     String? workCenter,
     String? shift,
     String? cpoTank,
+    String? oilTypeRmId,
     String? oilTypeRm,
     TimeOfDay? oilTypeRmAwalJam,
     double? oilTypeRmAwalFlowmeter,
     TimeOfDay? oilTypeRmAkhirJam,
     double? oilTypeRmAkhirFlowmeter,
     double? oilTypeRmTotal,
+    String? oilTypeFgId,
     String? oilTypeFg,
     TimeOfDay? oilTypeFgAwalJam,
     double? oilTypeFgAwalFlowmeter,
@@ -352,6 +367,8 @@ class DailyProductionRefineryEntity {
     double? oilTypeFgAkhirFlowmeter,
     double? oilTypeFgTotal,
     String? oilTypeFgToTank,
+    String? oilTypeBpId,
+    String? oilTypeBp,
     TimeOfDay? bpAwalJam,
     double? bpAwalFlowmeter,
     TimeOfDay? bpAkhirJam,
@@ -404,6 +421,7 @@ class DailyProductionRefineryEntity {
       workCenter: workCenter ?? this.workCenter,
       shift: shift ?? this.shift,
       cpoTank: cpoTank ?? this.cpoTank,
+      oilTypeRmId: oilTypeRmId ?? this.oilTypeRmId,
       oilTypeRm: oilTypeRm ?? this.oilTypeRm,
       oilTypeRmAwalJam: oilTypeRmAwalJam ?? this.oilTypeRmAwalJam,
       oilTypeRmAwalFlowmeter:
@@ -412,6 +430,7 @@ class DailyProductionRefineryEntity {
       oilTypeRmAkhirFlowmeter:
           oilTypeRmAkhirFlowmeter ?? this.oilTypeRmAkhirFlowmeter,
       oilTypeRmTotal: oilTypeRmTotal ?? this.oilTypeRmTotal,
+      oilTypeFgId: oilTypeFgId ?? this.oilTypeFgId,
       oilTypeFg: oilTypeFg ?? this.oilTypeFg,
       oilTypeFgAwalJam: oilTypeFgAwalJam ?? this.oilTypeFgAwalJam,
       oilTypeFgAwalFlowmeter:
@@ -421,6 +440,8 @@ class DailyProductionRefineryEntity {
           oilTypeFgAkhirFlowmeter ?? this.oilTypeFgAkhirFlowmeter,
       oilTypeFgTotal: oilTypeFgTotal ?? this.oilTypeFgTotal,
       oilTypeFgToTank: oilTypeFgToTank ?? this.oilTypeFgToTank,
+      oilTypeBpId: oilTypeBpId ?? this.oilTypeBpId,
+      oilTypeBp: oilTypeBp ?? this.oilTypeBp,
       bpAwalJam: bpAwalJam ?? this.bpAwalJam,
       bpAwalFlowmeter: bpAwalFlowmeter ?? this.bpAwalFlowmeter,
       bpAkhirJam: bpAkhirJam ?? this.bpAkhirJam,

@@ -19,6 +19,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +51,9 @@ class _RefDailyProductionEditPageState
   String? selectedOilRm;
   String? selectedOilFg;
   String? selectedOilBp;
+  String? selectedOilNameRm;
+  String? selectedOilNameFg;
+  String? selectedOilNameBp;
   String? selectedRefineryMachine;
 
   // Time selections
@@ -151,6 +155,36 @@ class _RefDailyProductionEditPageState
     flowmeter2AkhirController.addListener(_calculateTotalFlowmeter);
     flowmeter3AwalController.addListener(_calculateTotalFlowmeter);
     flowmeter3AkhirController.addListener(_calculateTotalFlowmeter);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Get both providers
+      final valueProvider = context.read<ValueProvider>();
+      final productProvider =
+          context.read<ProductProvider>(); // <-- Get ProductProvider
+
+      // Fetch tank/work center data if it's not already loaded
+      if (valueProvider.tankSourceList.isEmpty) {
+        await valueProvider.fetchAllInitialData().then((_) {
+          if (mounted) {
+            // Check if the widget is still active
+            setState(() {
+              tankLists = valueProvider.tankSourceList;
+            });
+          }
+        });
+      } else {
+        // If data is already there, just assign it
+        tankLists = valueProvider.tankSourceList;
+      }
+
+      // --- ADDED THIS PART ---
+      // Fetch product (oil type) data if it's not already loaded
+      if (productProvider.productRefineryList.isEmpty) {
+        // This will fetch the list and notify the Consumer widgets
+        // in your build method to rebuild with the new item list.
+        await productProvider.fetchProducts();
+      }
+    });
   }
 
   @override
@@ -373,9 +407,9 @@ class _RefDailyProductionEditPageState
             const SizedBox(height: 8),
 
             // --- Oil Type Dropdown ---
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   return DropdownButtonFormField<String>(
                     value: null,
                     items: [],
@@ -399,14 +433,38 @@ class _RefDailyProductionEditPageState
                     ),
                   );
                 }
+                if (provider.productRefineryList.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Oil Types tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () async {
+                          await provider.fetchProducts();
+                        },
+                      ),
+                    ),
+                  );
+                }
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.productRefineryList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
+                          value: oil.id,
                           child: Text(
-                            oil.name,
+                            oil.rawMaterial!,
                             style: const TextStyle(fontSize: 14),
                           ),
                         );
@@ -414,6 +472,26 @@ class _RefDailyProductionEditPageState
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .finishGood;
+
+                      selectedOilBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .byProduct;
                     });
                   },
                   decoration: InputDecoration(
@@ -684,7 +762,7 @@ class _RefDailyProductionEditPageState
 
     // Set top-level dropdowns and values
     selectedRefineryMachine = entity.workCenter;
-    selectedOilRm = entity.oilTypeRm?.trim();
+    selectedOilRm = entity.oilTypeRmId;
     selectedShiftBleaching = entity.shift;
     selectedShiftPhosphoric = entity.shift;
 
@@ -698,7 +776,7 @@ class _RefDailyProductionEditPageState
     //     entity.oilTypeRmAkhirFlowmeter?.toString() ?? '';
 
     // Section 2: RBDPO / RRBDPO / RRPS
-    selectedOilFg = entity.oilTypeFg?.trim();
+    selectedOilFg = entity.oilTypeFgId;
     selected2Tank = entity.oilTypeFgToTank;
     selectedTime2Awal = entity.oilTypeFgAwalJam;
     selectedTime2Akhir = entity.oilTypeFgAkhirJam;
@@ -708,7 +786,7 @@ class _RefDailyProductionEditPageState
     //     entity.oilTypeFgAkhirFlowmeter?.toString() ?? '';
 
     // Section 3: PFAD
-    selectedOilBp = "PFAD"; // Default value for By-Product
+    selectedOilBp = entity.oilTypeBpId;
     selected3Tank = entity.bpToTank;
     selectedTime3Awal = entity.bpAwalJam;
     selectedTime3Akhir = entity.bpAkhirJam;
@@ -883,19 +961,20 @@ class _RefDailyProductionEditPageState
         workCenter: selectedRefineryMachine,
         shift: selectedShiftBleaching,
         cpoTank: selected1Tank,
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
         oilTypeRmTotal: (flow1Akhir ?? 0) - (flow1Awal ?? 0),
-        oilTypeFg: selectedOilFg,
+        oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
         oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
         oilTypeFgAkhirFlowmeter: flow2Akhir,
         oilTypeFgTotal: (flow2Akhir ?? 0) - (flow2Awal ?? 0),
         oilTypeFgToTank: selected2Tank,
+        oilTypeBpId: selectedOilBp,
         bpAwalJam: selectedTime3Awal,
         bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,

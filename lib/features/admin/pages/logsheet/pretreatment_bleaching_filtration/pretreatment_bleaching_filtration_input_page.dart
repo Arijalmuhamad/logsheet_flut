@@ -11,6 +11,7 @@ import 'package:logsheet_app/providers/logsheet/pretreatment_bleaching_filtratio
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -434,9 +435,9 @@ class _FiltrationPerformInputPageState
               ),
               const SizedBox(height: 6),
               // OIL TYPE DROPDOWN
-              Consumer<ValueProvider>(
+              Consumer<ProductProvider>(
                 builder: (context, provider, child) {
-                  if (provider.isOilTypeLoading) {
+                  if (provider.isLoading) {
                     return DropdownButtonFormField<String>(
                       value: null,
                       items: [],
@@ -448,7 +449,7 @@ class _FiltrationPerformInputPageState
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
-                        hintText: 'Loading Work Center...',
+                        hintText: 'Loading Oil Type...',
                         prefixIcon: const Padding(
                           padding: EdgeInsets.all(12.0),
                           child: SizedBox(
@@ -461,7 +462,7 @@ class _FiltrationPerformInputPageState
                     );
                   }
 
-                  if (provider.oilTypeLists.isEmpty) {
+                  if (provider.productRefineryList.isEmpty) {
                     return TextFormField(
                       readOnly: true,
                       decoration: InputDecoration(
@@ -478,8 +479,8 @@ class _FiltrationPerformInputPageState
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.refresh),
-                          onPressed: () {
-                            provider.fetchOilTypes();
+                          onPressed: () async {
+                            await provider.fetchProducts();
                           },
                         ),
                       ),
@@ -489,10 +490,10 @@ class _FiltrationPerformInputPageState
                   return DropdownButtonFormField(
                     value: selectedOilType,
                     items:
-                        provider.oilTypeLists.map((oil) {
+                        provider.productRefineryList.map((oil) {
                           return DropdownMenuItem<String>(
-                            value: oil.code,
-                            child: Text(oil.name),
+                            value: oil.id,
+                            child: Text(oil.rawMaterial!),
                           );
                         }).toList(),
                     onChanged: (value) {
@@ -831,7 +832,7 @@ class _FiltrationPerformInputPageState
         shift: shift,
 
         //Pretreatment
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         ptFit001: parseDouble(ptFit001Controller),
         ptE001aInlet: parseDouble(ptE001aInletController),
         ptF0012: parseDouble(ptFit0012Controller),

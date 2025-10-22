@@ -119,25 +119,151 @@ class QualityReportProductionMySQLService {
         case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
-            t_quality_report_refinery.*
+            a.id,
+            a.id_fk,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
           FROM
-            t_quality_report_refinery
+            t_quality_report_refinery AS a
           JOIN
-            m_roles_shift_prepared ON t_quality_report_refinery.shift = m_roles_shift_prepared.shift_code
+            m_product AS b
+          ON
+            a.oil_type = b.id
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_quality_report_refinery.plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T')
+            plant = :plantCode AND (flag IS NULL OR flag = 'T') AND prepared_status IS NULL AND checked_status IS NULL
         """;
-          params["username"] = username;
-          params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
         case 'OPR' || 'OPR_PROD':
           baseQuery = """
           SELECT
-            *
+            a.id,
+            a.id_fk,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
           FROM
-            t_quality_report_refinery
-          WHERE plant = :plantCode AND (t_quality_report_refinery.flag IS NULL OR t_quality_report_refinery.flag = 'T') 
+            t_quality_report_refinery AS a
+          JOIN 
+            m_product AS b
+          ON 
+            a.oil_type = b.id
+
+          WHERE
+             plant = :plantCode AND (flag IS NULL OR flag = 'T')
         """;
 
           params["plantCode"] = plantCode;
@@ -157,8 +283,79 @@ class QualityReportProductionMySQLService {
           break;
         case 'ADM':
           // Query for Admin: Can see all reports.
-          baseQuery =
-              "SELECT * FROM t_quality_report_refinery WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
+          baseQuery = """
+          SELECT
+            a.id,
+            a.id_fk,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM
+            t_quality_report_refinery AS a
+          JOIN 
+            m_product AS b
+          ON 
+            a.oil_type = b.id
+
+          WHERE
+             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+          """;
           params["plantCode"] = plantCode;
           break;
 
@@ -262,8 +459,9 @@ class QualityReportProductionMySQLService {
 
   Future<bool> updateTicket(
     QualityReportProductionEntity entity,
-    UserEntity currentUser,
-  ) async {
+    UserEntity currentUser, {
+    bool isEditFromQc = false,
+  }) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -276,26 +474,74 @@ class QualityReportProductionMySQLService {
 
       connection = connResult.connection;
 
-      final sql = """UPDATE t_quality_report_refinery SET 
+      if (isEditFromQc) {
+        final entityData = entity.toMap();
+        final List<String> setClause = [];
+        final Map<String, dynamic> sqlExecuteParams = {};
+
+        entityData.forEach((keyInEntityMap, value) {
+          if (keyInEntityMap != "id" && keyInEntityMap != "id_fk") {
+            String actualDbColumnName = keyInEntityMap;
+            String safeParameterName = keyInEntityMap;
+
+            if (keyInEntityMap == 'rm_mni') {
+              actualDbColumnName = 'rm_m&i';
+              safeParameterName = 'rm_mni_param';
+            } else if (keyInEntityMap == 'fg_mni') {
+              actualDbColumnName = 'fg_m&i';
+              safeParameterName = 'fg_mni_param';
+            } else if (keyInEntityMap == 'bp_mni') {
+              actualDbColumnName = 'bp_m&i';
+              safeParameterName = 'bp_mni_param';
+            } else if (keyInEntityMap == 'wsbeqc') {
+              actualDbColumnName = 'w_sbe_qc';
+              safeParameterName = 'w_sbe_qc_param';
+            } else if (keyInEntityMap == 'w_sbe_mni') {
+              actualDbColumnName = 'w_sbe_m&i';
+              safeParameterName = 'w_sbe_mni_param';
+            } else if (keyInEntityMap == 'w_sbe_m&i') {
+              actualDbColumnName = 'w_sbe_m&i';
+              safeParameterName = 'w_sbe_mni_param';
+            }
+
+            setClause.add('`$actualDbColumnName` = :$safeParameterName');
+
+            sqlExecuteParams[safeParameterName] = value;
+          }
+        });
+        sqlExecuteParams['id'] = entity.id;
+
+        final sql =
+            "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id_fk = :id";
+
+        log('Generated UPDATE SQL: $sql');
+        log('Params for SQL: $sqlExecuteParams');
+
+        final result = await connection!.execute(sql, sqlExecuteParams);
+        log("ticket updated: ${result.affectedRows} row(s) affected.");
+        return result.affectedRows > BigInt.from(0);
+      } else {
+        final sql = """UPDATE t_quality_report_refinery SET 
         `rm_temp` = :rm_temp, 
         `remarks` = :remarks, 
         `updated_by` = :updated_by, 
         `updated_date` = :updated_date
         WHERE 
-        id = :id_produksi""";
+        id_fk = :id_produksi""";
 
-      final params = {
-        'rm_temp': entity.rmTemp,
-        'remarks': entity.remarks,
-        'updated_by': currentUser.username,
-        'updated_date': DateTime.now(),
-        'id_produksi': entity.id,
-      };
+        final params = {
+          'rm_temp': entity.rmTemp,
+          'remarks': entity.remarks,
+          'updated_by': currentUser.username,
+          'updated_date': DateTime.now(),
+          'id_produksi': entity.id,
+        };
 
-      log('Generated UPDATE SQL: $sql');
-      final result = await connection!.execute(sql, params);
-      log('ticket updated: ${result.affectedRows} row(s) affected.');
-      return result.affectedRows > BigInt.from(0);
+        log('Generated UPDATE SQL: $sql');
+        final result = await connection!.execute(sql, params);
+        log('ticket updated: ${result.affectedRows} row(s) affected.');
+        return result.affectedRows > BigInt.from(0);
+      }
     } catch (e) {
       log('Error updating report: $e');
       return false;
@@ -320,7 +566,78 @@ class QualityReportProductionMySQLService {
       }
       connection = connResult.connection;
       final result = await connection!.execute(
-        "SELECT * FROM t_quality_report_refinery WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
+        """
+          SELECT
+            a.id,
+            a.id_fk,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM
+            t_quality_report_refinery AS a
+          JOIN 
+            m_product AS b
+          ON 
+            a.oil_type = b.id
+	        WHERE 
+            prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+        """,
         {"plantCode": plantCode},
       );
       log('Fetched ${result.rows.length} row.');
@@ -528,8 +845,77 @@ class QualityReportProductionMySQLService {
         return [];
       }
       connection = connResult.connection;
-      String query =
-          "SELECT * FROM t_quality_report_refinery WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+      String query = """
+          SELECT
+            a.id,
+            a.id_fk,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM
+            t_quality_report_refinery AS a
+          JOIN 
+            m_product AS b
+          ON 
+            a.oil_type = b.id
+	        WHERE 
+	          DATE(posting_date) = :dateFilter AND plant = :plantCode
+      """;
 
       dateFilter ??= DateTime.now();
 

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:logsheet_app/data/remote/master/product_entity.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
-import 'package:logsheet_app/data/remote/master/value_entity.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -116,40 +115,24 @@ class _SectionRfadState extends State<SectionRfad> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Consumer<ValueProvider>(
+        child: Consumer<ProductProvider>(
           builder: (context, provider, child) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CustomSectionTitle(title: 'RFAD'),
-
-                // CustomDropdown.fromStringItems(
-                //   hint: 'Pilih Oil Type',
-                //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-                //   stringItems: widget.oilList,
-                //   value: widget.selectedOil,
-                //   onChanged: widget.onOilBpChanged,
-                // ),
-                DropdownButtonFormField<MasterValueEntity>(
-                  value:
-                      widget.selectedOil != null &&
-                              provider.oilTypeListsDailyProduction.any(
-                                (oil) => oil.code == widget.selectedOil,
-                              )
-                          ? provider.oilTypeListsDailyProduction.firstWhere(
-                            (oil) => oil.code == widget.selectedOil,
-                          )
-                          : null,
+                DropdownButtonFormField<String>(
+                  value: widget.selectedOil,
                   items:
-                      provider.oilTypeListsDailyProduction.map((oil) {
-                        return DropdownMenuItem<MasterValueEntity>(
-                          value: oil,
-                          child: Text(" ${oil.name}"),
+                      provider.productRefineryList.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.id,
+                          child: Text(" ${oil.byProduct}"),
                         );
                       }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      widget.onOilBpChanged(value.code); // simpan code-nya saja
+                      widget.onOilBpChanged(value); // simpan code-nya saja
                     }
                   },
                   decoration: InputDecoration(

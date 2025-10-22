@@ -84,35 +84,243 @@ class DailyProductionRefineryMySQLService {
         case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
-            t_daily_production_refinery.*
-          FROM
-            t_daily_production_refinery
-          JOIN
-            m_roles_shift_prepared ON t_daily_production_refinery.shift = m_roles_shift_prepared.shift_code
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.shift,
+            a.cpo_tank,
+            a.oil_type_rm AS oil_type_rm_id,
+            b.raw_material AS oil_type_rm,
+            a.oil_type_rm_awal_jam,
+            a.oil_type_rm_awal_flowmeter,
+            a.oil_type_rm_akhir_jam,
+            a.oil_type_rm_akhir_flowmeter,
+            a.oil_type_rm_total,
+            a.oil_type_fg AS oil_type_fg_id,
+            b.finish_good AS oil_type_fg,
+            a.oil_type_fg_awal_jam,
+            a.oil_type_fg_awal_flowmeter,
+            a.oil_type_fg_akhir_jam,
+            a.oil_type_fg_akhir_flowmeter,
+            a.oil_type_fg_total,
+            a.oil_type_fg_to_tank,
+            a.bp_oil_type AS bp_oil_type_id,
+            b.by_product AS bp_oil_type,
+            a.bp_awal_jam,
+            a.bp_awal_flowmeter,
+            a.bp_akhir_jam,
+            a.bp_akhir_flowmeter,
+            a.bp_total,
+            a.bp_to_tank,
+            a.be_ref_tank,
+            a.be_ref_qty,
+            a.be_total_bag,
+            a.be_total_jenis,
+            a.be_lot_batch_number,
+            a.be_yield_percent,
+            a.pa_ref_tank,
+            a.pa_ref_qty,
+            a.pa_total,
+            a.pa_lot_batch_number,
+            a.pa_yield_percent,
+            a.remarks,
+            a.flag,
+            a.uu_item,
+            a.uu_budget_ref_tank,
+            a.uu_budget_qty,
+            a.uu_total_cpo,
+            a.uu_total_steam,
+            a.uu_steam_cpo,
+            a.uu_yield_percent,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.verified_by,
+            a.verified_date,
+            a.verified_status,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM 
+                t_daily_production_refinery AS a
+          JOIN m_product AS b 
+          ON a.oil_type_rm = b.id
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_daily_production_refinery.plant = :plantCode AND (t_daily_production_refinery.flag IS NULL OR t_daily_production_refinery.flag = 'T')
+            a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
   
           """;
-          params["username"] = username;
-          params["is_active"] = "T";
+
           params["plantCode"] = plantCode;
           break;
         case 'OPR' || 'OPR_PROD' || 'MGR' || 'MGR_PROD':
           baseQuery = """
-        SELECT 
-          *
+        SELECT
+          a.id,
+          a.company,
+          a.plant,
+          a.transaction_date,
+          a.posting_date,
+          a.work_center,
+          a.shift,
+          a.cpo_tank,
+          a.oil_type_rm AS oil_type_rm_id,
+          b.raw_material AS oil_type_rm,
+          a.oil_type_rm_awal_jam,
+          a.oil_type_rm_awal_flowmeter,
+          a.oil_type_rm_akhir_jam,
+          a.oil_type_rm_akhir_flowmeter,
+          a.oil_type_rm_total,
+          a.oil_type_fg AS oil_type_fg_id,
+          b.finish_good AS oil_type_fg,
+          a.oil_type_fg_awal_jam,
+          a.oil_type_fg_awal_flowmeter,
+          a.oil_type_fg_akhir_jam,
+          a.oil_type_fg_akhir_flowmeter,
+          a.oil_type_fg_total,
+          a.oil_type_fg_to_tank,
+          a.bp_oil_type AS bp_oil_type_id,
+          b.by_product AS bp_oil_type,
+          a.bp_awal_jam,
+          a.bp_awal_flowmeter,
+          a.bp_akhir_jam,
+          a.bp_akhir_flowmeter,
+          a.bp_total,
+          a.bp_to_tank,
+          a.be_ref_tank,
+          a.be_ref_qty,
+          a.be_total_bag,
+          a.be_total_jenis,
+          a.be_lot_batch_number,
+          a.be_yield_percent,
+          a.pa_ref_tank,
+          a.pa_ref_qty,
+          a.pa_total,
+          a.pa_lot_batch_number,
+          a.pa_yield_percent,
+          a.remarks,
+          a.flag,
+          a.uu_item,
+          a.uu_budget_ref_tank,
+          a.uu_budget_qty,
+          a.uu_total_cpo,
+          a.uu_total_steam,
+          a.uu_steam_cpo,
+          a.uu_yield_percent,
+          a.entry_by,
+          a.entry_date,
+          a.prepared_by,
+          a.prepared_date,
+          a.prepared_status,
+          a.prepared_status_remarks,
+          a.verified_by,
+          a.verified_date,
+          a.verified_status,
+          a.checked_by,
+          a.checked_date,
+          a.checked_status,
+          a.checked_status_remarks,
+          a.form_no,
+          a.date_issued,
+          a.revision_no,
+          a.revision_date
         FROM 
-          t_daily_production_refinery
+          t_daily_production_refinery AS a
+        JOIN m_product AS b 
+        ON a.oil_type_rm = b.id
         WHERE
-          plant = :plantCode AND (flag IS NULL OR flag = 'T') 
+          a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') 
         """;
           params["plantCode"] = plantCode;
           break;
 
         case 'ADM':
           // Query for Admin: Can see all reports.
-          baseQuery =
-              "SELECT * FROM t_daily_production_refinery WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
+          baseQuery = """
+              SELECT
+                a.id,
+                a.company,
+                a.plant,
+                a.transaction_date,
+                a.posting_date,
+                a.work_center,
+                a.shift,
+                a.cpo_tank,
+                a.oil_type_rm AS oil_type_rm_id,
+                b.raw_material AS oil_type_rm,
+                a.oil_type_rm_awal_jam,
+                a.oil_type_rm_awal_flowmeter,
+                a.oil_type_rm_akhir_jam,
+                a.oil_type_rm_akhir_flowmeter,
+                a.oil_type_rm_total,
+                a.oil_type_fg AS oil_type_fg_id,
+                b.finish_good AS oil_type_fg,
+                a.oil_type_fg_awal_jam,
+                a.oil_type_fg_awal_flowmeter,
+                a.oil_type_fg_akhir_jam,
+                a.oil_type_fg_akhir_flowmeter,
+                a.oil_type_fg_total,
+                a.oil_type_fg_to_tank,
+                a.bp_oil_type AS bp_oil_type_id,
+                b.by_product AS bp_oil_type,
+                a.bp_awal_jam,
+                a.bp_awal_flowmeter,
+                a.bp_akhir_jam,
+                a.bp_akhir_flowmeter,
+                a.bp_total,
+                a.bp_to_tank,
+                a.be_ref_tank,
+                a.be_ref_qty,
+                a.be_total_bag,
+                a.be_total_jenis,
+                a.be_lot_batch_number,
+                a.be_yield_percent,
+                a.pa_ref_tank,
+                a.pa_ref_qty,
+                a.pa_total,
+                a.pa_lot_batch_number,
+                a.pa_yield_percent,
+                a.remarks,
+                a.flag,
+                a.uu_item,
+                a.uu_budget_ref_tank,
+                a.uu_budget_qty,
+                a.uu_total_cpo,
+                a.uu_total_steam,
+                a.uu_steam_cpo,
+                a.uu_yield_percent,
+                a.entry_by,
+                a.entry_date,
+                a.prepared_by,
+                a.prepared_date,
+                a.prepared_status,
+                a.prepared_status_remarks,
+                a.verified_by,
+                a.verified_date,
+                a.verified_status,
+                a.checked_by,
+                a.checked_date,
+                a.checked_status,
+                a.checked_status_remarks,
+                a.form_no,
+                a.date_issued,
+                a.revision_no,
+                a.revision_date
+              FROM 
+                t_daily_production_refinery AS a
+              JOIN m_product AS b 
+              ON a.oil_type_rm = b.id
+              WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')""";
           params["plantCode"] = plantCode;
           break;
         default:
@@ -122,22 +330,22 @@ class DailyProductionRefineryMySQLService {
       // Add date and time filters to the query for all roles
       if (dateFilter != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND report_date = :reportDate";
+          baseQuery += " AND a.transaction_date = :reportDate";
         } else {
-          baseQuery += " WHERE report_date = :reportDate";
+          baseQuery += " WHERE a.transaction_date = :reportDate";
         }
         params["reportDate"] = dateFilter;
       }
       if (time != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND time = :time";
+          baseQuery += " AND a.time = :time";
         } else {
-          baseQuery += " WHERE time = :time";
+          baseQuery += " WHERE a.time = :time";
         }
         params["time"] = time;
       }
 
-      baseQuery += " ORDER BY transaction_date DESC";
+      baseQuery += " ORDER BY a.transaction_date DESC";
 
       final IResultSet result = await connection!.execute(baseQuery, params);
       log(

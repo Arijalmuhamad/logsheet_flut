@@ -54,9 +54,14 @@ class QualityReportProductionRepository {
 
   Future<bool> updateReportTicket(
     QualityReportProductionEntity report,
-    UserEntity currentUser,
-  ) async {
-    return await _mySQLService.updateTicket(report, currentUser);
+    UserEntity currentUser, {
+    bool isEditFromQc = false,
+  }) async {
+    return await _mySQLService.updateTicket(
+      report,
+      currentUser,
+      isEditFromQc: isEditFromQc,
+    );
   }
 
   Future<List<QualityReportProductionEntity>> getReportsForManager(

@@ -295,7 +295,11 @@ class _DailyProductionRefineryDetailPageState
               ),
             ]),
 
-            _buildSection('By-Product (BP) / PFAD', [
+            _buildSection('By-Product (BP)', [
+              _buildDataRow(
+                'Oil Type',
+                _displayValue(_currentReport.oilTypeBp),
+              ),
               _buildDataRow(
                 'Awal Jam',
                 _formatTimeOfDay(_currentReport.bpAwalJam),

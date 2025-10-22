@@ -117,7 +117,6 @@ class _LogsheetPretreatmentBleachingFiltrationDetailPageState
           _buildSection('ID', [_buildDataRow('Ticket ID', _currentReport.id)]),
           _buildSection('Company & Plant', [
             _buildDataRow('Company', company),
-            _buildDataRow('Plant', plant),
             _buildDataRow('Plant', _currentReport.plant ?? '-'),
             _buildDataRow('Work Center', _currentReport.refineryMachine ?? '-'),
             _buildDataRow('Oil Type', _currentReport.oilType ?? '-'),

@@ -8,7 +8,6 @@ import 'package:logsheet_app/features/admin/pages/quality/production/quality_edi
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -299,6 +298,14 @@ class _QualityDetailProductionPageState
     UserEntity? user,
     BuildContext context,
   ) {
+    String isNull(double? value) {
+      if (value == null) {
+        return '-';
+      } else {
+        return value.toString();
+      }
+    }
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.only(
@@ -339,23 +346,23 @@ class _QualityDetailProductionPageState
               _buildDataRow('Work Center', _currentReport.workCenter ?? '-'),
               _buildDataRow('Tank Source', _currentReport.rmTankSource ?? '-'),
               _buildDataRow("Flow Rate", _currentReport.rmFlowRate.toString()),
-              _buildDataRow('Temp (°C)', _currentReport.rmTemp.toString()),
-              _buildDataRow('FFA (%)', _currentReport.rmFFA.toString()),
-              _buildDataRow('IV', _currentReport.rmIV.toString()),
-              _buildDataRow('PV', _currentReport.rmPV.toString()),
-              _buildDataRow('AV', _currentReport.rmAV.toString()),
-              _buildDataRow('DOBI', _currentReport.rmDobi.toString()),
-              _buildDataRow('M&I (%)', _currentReport.rmMNI.toString()),
-              _buildDataRow('Totox', _currentReport.rmToTox.toString()),
-              _buildDataRow('Color R', _currentReport.rmColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.rmColorY.toString()),
-              _buildDataRow('Color B', _currentReport.rmColorB.toString()),
+              _buildDataRow('Temp (°C)', isNull(_currentReport.rmTemp)),
+              _buildDataRow('FFA (%)', isNull(_currentReport.rmFFA)),
+              _buildDataRow('IV', isNull(_currentReport.rmIV)),
+              _buildDataRow('PV', isNull(_currentReport.rmPV)),
+              _buildDataRow('AV', isNull(_currentReport.rmAV)),
+              _buildDataRow('DOBI', isNull(_currentReport.rmDobi)),
+              _buildDataRow('M&I (%)', isNull(_currentReport.rmMNI)),
+              _buildDataRow('Totox', isNull(_currentReport.rmToTox)),
+              _buildDataRow('Color R', isNull(_currentReport.rmColorR)),
+              _buildDataRow('Color Y', isNull(_currentReport.rmColorY)),
+              _buildDataRow('Color B', isNull(_currentReport.rmColorB)),
             ]),
 
             _buildSection('Bleach Oil', [
-              _buildDataRow('Color R', _currentReport.boColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.boColorY.toString()),
-              _buildDataRow('Color B', _currentReport.boColorB.toString()),
+              _buildDataRow('Color R', isNull(_currentReport.boColorR)),
+              _buildDataRow('Color Y', isNull(_currentReport.boColorY)),
+              _buildDataRow('Color B', isNull(_currentReport.boColorB)),
               _buildDataRow(
                 'Break Test',
                 _currentReport.boBreakTest.toString(),
@@ -363,16 +370,13 @@ class _QualityDetailProductionPageState
             ]),
 
             _buildSection(finishedGoodsTitle, [
-              _buildDataRow('FFA (%)', _currentReport.fgFFA.toString()),
-              _buildDataRow('IV', _currentReport.fgIV.toString()),
-              _buildDataRow('PV', _currentReport.fgPV.toString()),
-              _buildDataRow('Moisture', _currentReport.fgMoisture.toString()),
-              _buildDataRow(
-                'Impurities',
-                _currentReport.fgImpurities.toString(),
-              ),
-              _buildDataRow('Color R', _currentReport.fgColorR.toString()),
-              _buildDataRow('Color Y', _currentReport.fgColorY.toString()),
+              _buildDataRow('FFA (%)', isNull(_currentReport.fgFFA)),
+              _buildDataRow('IV', isNull(_currentReport.fgIV)),
+              _buildDataRow('PV', isNull(_currentReport.fgPV)),
+              _buildDataRow('Moisture', isNull(_currentReport.fgMoisture)),
+              _buildDataRow('Impurities', isNull(_currentReport.fgImpurities)),
+              _buildDataRow('Color R', isNull(_currentReport.fgColorR)),
+              _buildDataRow('Color Y', isNull(_currentReport.fgColorY)),
               _buildDataRow(
                 'Color B',
                 _currentReport.fgColorB?.toStringAsFixed(0) ?? '-',
@@ -385,14 +389,14 @@ class _QualityDetailProductionPageState
             ]),
 
             _buildSection('By-Product', [
-              _buildDataRow('FFA (%)', _currentReport.bpFFA.toString()),
-              _buildDataRow('M&I (%)', _currentReport.bpMNI.toString()),
+              _buildDataRow('FFA (%)', isNull(_currentReport.bpFFA)),
+              _buildDataRow('M&I (%)', isNull(_currentReport.bpMNI)),
               _buildDataRow('To Tank', _currentReport.bpToTank.toString()),
             ]),
 
             _buildSection('Waste', [
-              _buildDataRow('OC', _currentReport.wSBEQC.toString()),
-              _buildDataRow('M&I', _currentReport.wasteMNI.toString()),
+              _buildDataRow('OC', isNull(_currentReport.wSBEQC)),
+              _buildDataRow('M&I', isNull(_currentReport.wasteMNI)),
             ]),
 
             _buildSection('Metadata & Remarks', [
