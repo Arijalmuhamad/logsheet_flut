@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/product_entity.dart';
 import 'package:logsheet_app/data/repositories/master/product_repository.dart';
@@ -47,6 +49,10 @@ class ProductProvider extends ChangeNotifier {
           _productList
               .where((product) => product.processName == 'fractionation')
               .toList();
+
+      log(
+        "FRACTIONATION LIST LENGTH FROM PROVIDER: ${productFractionationList.length}",
+      );
     } catch (e) {
       _setErrorMessage("$e");
     } finally {

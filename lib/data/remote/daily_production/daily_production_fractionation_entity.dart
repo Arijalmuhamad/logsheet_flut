@@ -11,6 +11,7 @@ class DailyProductionFractionationEntity {
   final String? shift;
 
   // Oil Type - Raw Material
+  final String? oilTypeRmId;
   final String? oilTypeRm;
   final int? oilTypeRmNo;
   final int? oilTypeRmCr;
@@ -22,6 +23,7 @@ class DailyProductionFractionationEntity {
   final int? oilTypeRmTotal;
 
   // Oil Type - Finish Good
+  final String? oilTypeFgsId;
   final String? oilTypeFgs;
   final int? oilTypeFgsNo;
   final int? oilTypeFgsCr;
@@ -33,6 +35,7 @@ class DailyProductionFractionationEntity {
   final String? oilTypeFgsToTank;
 
   // Oil Type - By Product
+  final String? oilTypeFghId;
   final String? oilTypeFgh;
   final int? oilTypeFghNo;
   final TimeOfDay? oilTypeFghAwalJam;
@@ -86,7 +89,8 @@ class DailyProductionFractionationEntity {
     required this.postingDate,
     required this.workCenter,
     required this.shift,
-    required this.oilTypeRm,
+    required this.oilTypeRmId,
+    this.oilTypeRm,
     required this.oilTypeRmNo,
     required this.oilTypeRmCr,
     required this.oilTypeRmFromTank,
@@ -95,7 +99,8 @@ class DailyProductionFractionationEntity {
     required this.oilTypeRmAkhirJam,
     required this.oilTypeRmAkhirFlowmeter,
     required this.oilTypeRmTotal,
-    required this.oilTypeFgs,
+    required this.oilTypeFgsId,
+    this.oilTypeFgs,
     required this.oilTypeFgsNo,
     required this.oilTypeFgsCr,
     required this.oilTypeFgsAwalJam,
@@ -104,7 +109,8 @@ class DailyProductionFractionationEntity {
     required this.oilTypeFgsAkhirFlowmeter,
     required this.oilTypeFgsTotal,
     required this.oilTypeFgsToTank,
-    required this.oilTypeFgh,
+    required this.oilTypeFghId,
+    this.oilTypeFgh,
     required this.oilTypeFghNo,
     required this.oilTypeFghAwalJam,
     required this.oilTypeFghAwalFlowmeter,
@@ -186,6 +192,7 @@ class DailyProductionFractionationEntity {
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
+      oilTypeRmId: map['oil_type_rm_id'] as String?,
       oilTypeRm: map['oil_type_rm'] as String?,
       oilTypeRmNo: parseInt(map['oil_type_rm_no']),
       oilTypeRmCr: parseInt(map['oil_type_rm_cr']),
@@ -195,6 +202,7 @@ class DailyProductionFractionationEntity {
       oilTypeRmAkhirJam: parseTimeOfDay(map['oil_type_rm_akhir_jam']),
       oilTypeRmAkhirFlowmeter: parseInt(map['oil_type_rm_akhir_flowmeter']),
       oilTypeRmTotal: parseInt(map['oil_type_rm_total']),
+      oilTypeFgsId: map['oil_type_fgs_id'] as String?,
       oilTypeFgs: map['oil_type_fgs'] as String?,
       oilTypeFgsNo: parseInt(map['oil_type_fgs_no']),
       oilTypeFgsCr: parseInt(map['oil_type_fgs_cr']),
@@ -204,6 +212,7 @@ class DailyProductionFractionationEntity {
       oilTypeFgsAkhirFlowmeter: parseInt(map['oil_type_fgs_akhir_flowmeter']),
       oilTypeFgsTotal: parseInt(map['oil_type_fgs_total']),
       oilTypeFgsToTank: map['oil_type_fgs_to_tank'] as String?,
+      oilTypeFghId: map['oil_type_fgh_id'] as String?,
       oilTypeFgh: map['oil_type_fgh'] as String?,
       oilTypeFghNo: parseInt(map['oil_type_fgh_no']),
       oilTypeFghAwalJam: parseTimeOfDay(map['oil_type_bp_awal_jam']),
@@ -264,7 +273,7 @@ class DailyProductionFractionationEntity {
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
       'shift': shift,
-      'oil_type_rm': oilTypeRm,
+      'oil_type_rm': oilTypeRmId,
       'oil_type_rm_no': oilTypeRmNo,
       'oil_type_rm_cr': oilTypeRmCr,
       'oil_type_rm_from_tank': oilTypeRmFromTank,
@@ -273,7 +282,7 @@ class DailyProductionFractionationEntity {
       'oil_type_rm_akhir_jam': formatTimeOfDay(oilTypeRmAkhirJam),
       'oil_type_rm_akhir_flowmeter': oilTypeRmAkhirFlowmeter,
       'oil_type_rm_total': oilTypeRmTotal,
-      'oil_type_fgs': oilTypeFgs,
+      'oil_type_fgs': oilTypeFgsId,
       'oil_type_fgs_no': oilTypeFgsNo,
       'oil_type_fgs_cr': oilTypeFgsCr,
       'oil_type_fgs_awal_jam': formatTimeOfDay(oilTypeFgsAwalJam),
@@ -282,7 +291,7 @@ class DailyProductionFractionationEntity {
       'oil_type_fgs_akhir_flowmeter': oilTypeFgsAkhirFlowmeter,
       'oil_type_fgs_total': oilTypeFgsTotal,
       'oil_type_fgs_to_tank': oilTypeFgsToTank,
-      'oil_type_fgh': oilTypeFgh,
+      'oil_type_fgh': oilTypeFghId,
       'oil_type_fgh_no': oilTypeFghNo,
       'oil_type_fgh_awal_jam': formatTimeOfDay(oilTypeFghAwalJam),
       'oil_type_fgh_awal_flowmeter': oilTypeFghAwalFlowmeter,

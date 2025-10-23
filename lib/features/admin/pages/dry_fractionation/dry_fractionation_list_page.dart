@@ -251,7 +251,9 @@ class _DryFractionationListPageState extends State<DryFractionationListPage> {
                             ),
                             SizedBox(width: 8),
                             Text(
-                              timeOfDayToString(item.fillingStartTime!),
+                              timeOfDayToString(
+                                item.fillingStartTime ?? TimeOfDay.now(),
+                              ),
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
