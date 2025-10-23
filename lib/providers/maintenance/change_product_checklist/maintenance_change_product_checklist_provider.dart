@@ -45,7 +45,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   List<MaintenanceChangeProductChecklistReportEntity> _reportList = [];
   List<MaintenanceChangeProductChecklistReportEntity> get reportList =>
       _reportList;
-  
+
   List<MaintenanceChangeProductChecklistReportEntity> _uniqueReportList = [];
   List<MaintenanceChangeProductChecklistReportEntity> get uniqueReportList =>
       _uniqueReportList;
@@ -189,33 +189,33 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   //   }
   // }
 
-
   Future<void> getAllChangeProductFromDate(String date) async {
-  _setLoading(true);
-  _setErrorMessage(null);
+    _setLoading(true);
+    _setErrorMessage(null);
 
-  try {
-    final _reportList = await _repository.getAllChangeProductFromDate(date);
+    try {
+      _reportList = await _repository.getAllChangeProductFromDate(date);
 
-    final uniqueData = <String, MaintenanceChangeProductChecklistReportEntity>{};
+      final uniqueData =
+          <String, MaintenanceChangeProductChecklistReportEntity>{};
 
-    for (var item in _reportList) {
-      if (!uniqueData.containsKey(item.id)) {
-        uniqueData[item.id] = item;
+      for (var item in _reportList) {
+        if (!uniqueData.containsKey(item.id) && item.flag != 'D') {
+          uniqueData[item.id] = item;
+        }
       }
+
+      _uniqueReportList = uniqueData.values.toList();
+
+      notifyListeners();
+      log('Unique Header Count: ${_reportList.length}');
+      log('Report List Length: ${_uniqueReportList.length}');
+    } catch (e) {
+      _setErrorMessage("$e");
+    } finally {
+      _setLoading(false);
     }
-
-    _uniqueReportList = uniqueData.values.toList();
-
-    notifyListeners();
-    log('Unique Header Count: ${_reportList.length}');
-  } catch (e) {
-    _setErrorMessage("$e");
-  } finally {
-    _setLoading(false);
   }
-}
-
 
   Future<bool> insertChangeProductChecklist({
     required MaintenanceChangeProductionChecklistHeaderEntity header,
@@ -466,40 +466,57 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     notifyListeners();
   }
 
-Future<String> generateHeaderId(String plantCode) async {
-  if (_latestId == null || _latestId!.isEmpty) {
-    log("⚠️ _latestId is null or empty in _generateHeaderId");
-    return'';
-  }
+  void prepopulateReportDetailListForDetail(String idHdr) {
+    _reportDetailList.clear();
 
-  final latest = _latestId!;
-  log("🧩 Latest ID: $latest");
+    final _selectedReportList = _reportList.where((report) => report.id == idHdr).toList();
 
-  // Pisahkan bagian depan (prefix + plantid + accountingyear) dan autonumber
-  final prefixPart = latest.length > 9 ? latest.substring(0, 9) : latest;
-  final autoPart = latest.length > 9 ? latest.substring(9) : "";
-
-  // Konversi autonumber ke int dan tambah 1
-  int newAuto = 1; // default kalau autoPart kosong atau gagal parsing
-  if (autoPart.isNotEmpty) {
-    try {
-      newAuto = int.parse(autoPart) + 1;
-    } catch (e) {
-      log("⚠️ Gagal parsing autonumber: $e");
+    for (var reportItem in _selectedReportList) {
+      final detailItem = MaintenanceChangeProductChecklistDetailEntity(
+        id: reportItem.detailId,
+        idHdr: idHdr, 
+        checkItem: reportItem.checkItem,
+        statusItem: reportItem.statusItem,
+      );
+      _reportDetailList.add(detailItem);
     }
+    notifyListeners();
   }
 
-  // Pad autonumber agar tetap memiliki panjang sama (mis. 6 digit)
-  // final newAutoStr = newAuto.toString().padLeft(autoPart.length, '0');
-  final newAutoStr = newAuto.toString().padLeft(6, '0');
+  Future<String> generateHeaderId(String plantCode) async {
+    if (_latestId == null || _latestId!.isEmpty) {
+      log("⚠️ _latestId is null or empty in _generateHeaderId");
+      return '';
+    }
 
-  // Gabungkan lagi jadi ID baru
-  final newId = "$prefixPart$newAutoStr";
+    final latest = _latestId!;
+    log("🧩 Latest ID: $latest");
 
-  log("✅ Generated new ID: $newId");
+    // Pisahkan bagian depan (prefix + plantid + accountingyear) dan autonumber
+    final prefixPart = latest.length > 9 ? latest.substring(0, 9) : latest;
+    final autoPart = latest.length > 9 ? latest.substring(9) : "";
 
-  await updateAutoNumber(plantCode, newAuto);
+    // Konversi autonumber ke int dan tambah 1
+    int newAuto = 1; // default kalau autoPart kosong atau gagal parsing
+    if (autoPart.isNotEmpty) {
+      try {
+        newAuto = int.parse(autoPart) + 1;
+      } catch (e) {
+        log("⚠️ Gagal parsing autonumber: $e");
+      }
+    }
 
-  return newId;
-}
+    // Pad autonumber agar tetap memiliki panjang sama (mis. 6 digit)
+    // final newAutoStr = newAuto.toString().padLeft(autoPart.length, '0');
+    final newAutoStr = newAuto.toString().padLeft(6, '0');
+
+    // Gabungkan lagi jadi ID baru
+    final newId = "$prefixPart$newAutoStr";
+
+    log("✅ Generated new ID: $newId");
+
+    await updateAutoNumber(plantCode, newAuto);
+
+    return newId;
+  }
 }

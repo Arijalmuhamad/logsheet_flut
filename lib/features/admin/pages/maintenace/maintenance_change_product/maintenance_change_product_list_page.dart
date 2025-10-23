@@ -53,7 +53,14 @@ class _MaintenanceChangeProductListPageState
                     userName: username ?? "",
                   ),
             ),
-          );
+          ).then((_) async {
+            // Refresh the list when returning from the detail page
+            if (!mounted) return;
+            final formatted = parseDateTimeForQuery(dateEntryController.text);
+            await context
+                .read<ChangeProductChecklistProvider>()
+                .getAllChangeProductFromDate(formatted ?? '');
+          });
         },
         label: const Text("Tambah Change Product"),
         icon: Icon(Icons.add),
@@ -71,13 +78,13 @@ class _MaintenanceChangeProductListPageState
             .where((form) => form.isMenu == "Change_Product_Checklist")
             .first;
     return AppBar(
-      title: Text("Quality List (${formData!.code})"),
+      title: Text("Change Product (${formData!.code})"),
       actions: [
-        context.watch<QualityReportQCProvider>().isLoading
+        context.watch<ChangeProductChecklistProvider>().isLoading
             ? CircularProgressIndicator()
             : IconButton(
               onPressed: () async {},
-              icon: Consumer<QualityReportQCProvider>(
+              icon: Consumer<ChangeProductChecklistProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading) {
                     return const CircularProgressIndicator();
@@ -154,6 +161,7 @@ class _MaintenanceChangeProductListPageState
                     .read<ChangeProductChecklistProvider>()
                     .getAllChangeProductFromDate(formattedDate);
               }
+              
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -186,7 +194,14 @@ class _MaintenanceChangeProductListPageState
             builder:
                 (context) => MaintenanceChangeProductListDetailPage(id: id),
           ),
-        );
+        ).then((_) {
+          // Refresh the list when returning from the detail page
+          if (!mounted) return;
+          final formatted = parseDateTimeForQuery(dateEntryController.text);
+          context
+              .read<ChangeProductChecklistProvider>()
+              .getAllChangeProductFromDate(formatted ?? '');
+        });
       },
       child: Card(
         child: Padding(

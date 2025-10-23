@@ -559,6 +559,7 @@ class _MaintenanceChangeProductInputPageState
                                     "Berhasil menyimpan data checklist",
                                     context,
                                   );
+                                  Navigator.of(context).pop();
                                 } else {
                                   showSnackBar(
                                     "Gagal meyimpan data checklist",
