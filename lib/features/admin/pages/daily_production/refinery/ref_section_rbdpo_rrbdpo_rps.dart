@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:logsheet_app/core/utils/parser_utils.dart';
-import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
-import 'package:logsheet_app/data/remote/master/value_entity.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_dropdown.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -65,9 +62,6 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
         flowRateAwal = flowRateAwal / 1000;
         flowRateAkhir = flowRateAkhir / 1000;
       });
-
-      // widget.flowRateAwalController.text = flowRateAwal.toStringAsFixed(3);
-      // widget.flowRateAkhirController.text = flowRateAwal.toStringAsFixed(3);
     }
 
     double totalFlowRate = flowRateAkhir - flowRateAwal;
@@ -115,32 +109,24 @@ class _SectionRbdpoRrbdpoRpsState extends State<SectionRbdpoRrbdpoRps> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Consumer<ValueProvider>(
+        child: Consumer<ProductProvider>(
           builder: (context, provider, child) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CustomSectionTitle(title: 'RBDPO/RRBDPO/RPS'),
-                DropdownButtonFormField<MasterValueEntity>(
-                  value:
-                      widget.selectedOil != null &&
-                              provider.oilTypeListsDailyProduction.any(
-                                (oil) => oil.code == widget.selectedOil,
-                              )
-                          ? provider.oilTypeListsDailyProduction.firstWhere(
-                            (oil) => oil.code == widget.selectedOil,
-                          )
-                          : null,
+                DropdownButtonFormField<String?>(
+                  value: widget.selectedOil,
                   items:
-                      provider.oilTypeListsDailyProduction.map((oil) {
-                        return DropdownMenuItem<MasterValueEntity>(
-                          value: oil,
-                          child: Text(" ${oil.name}"),
+                      provider.productRefineryList.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.id,
+                          child: Text(" ${oil.finishGood}"),
                         );
                       }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      widget.onOilFgChanged(value.code); // simpan code-nya saja
+                      widget.onOilFgChanged(value); // simpan code-nya saja
                     }
                   },
                   decoration: InputDecoration(

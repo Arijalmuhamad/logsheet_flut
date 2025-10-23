@@ -18,6 +18,7 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -68,6 +69,9 @@ class _DailyProductionPageState
   String? selectedOilRm;
   String? selectedOilFg;
   String? selectedOilBp;
+  String? selectedOilNameRm;
+  String? selectedOilNameFg;
+  String? selectedOilNameBp;
   String? selectedRefineryMachine;
   String? budgetValue;
   String? paValue;
@@ -241,10 +245,13 @@ class _DailyProductionPageState
     super.initState();
 
     final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
     if (valueProvider.tankSourceList.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await context.read<ValueProvider>().fetchAllInitialData();
-        oilTypeLists = valueProvider.oilTypeListsDailyProduction;
+        if (productProvider.productList.isEmpty) {
+          await productProvider.fetchProducts();
+        }
       });
     }
 
@@ -527,9 +534,9 @@ class _DailyProductionPageState
             const SizedBox(height: 8),
 
             // Oil Type Dropdown
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   // Return a disabled dropdown with a loading indicator or message
                   return DropdownButtonFormField<String>(
                     value: null,
@@ -555,7 +562,7 @@ class _DailyProductionPageState
                   );
                 }
 
-                if (provider.oilTypeListsDailyProduction.isEmpty) {
+                if (provider.productRefineryList.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -573,9 +580,7 @@ class _DailyProductionPageState
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
                         onPressed: () async {
-                          await context
-                              .read<ValueProvider>()
-                              .fetchOilTypesDailyProd();
+                          await context.read<ProductProvider>().fetchProducts();
                         },
                       ),
                     ),
@@ -584,15 +589,38 @@ class _DailyProductionPageState
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
-                      provider.oilTypeListsDailyProduction.map((oil) {
+                      provider.productRefineryList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                          value: oil.id,
+                          child: Text(
+                            oil.rawMaterial!,
+                            style: TextStyle(fontSize: 14),
+                          ),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .finishGood;
+
+                      selectedOilBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .byProduct;
                     });
                   },
                   decoration: InputDecoration(
@@ -896,7 +924,7 @@ class _DailyProductionPageState
     final currentPlant = context.read<PlantProvider>().currentPlant;
     final plantCode = currentPlant!.code;
     final companyName =
-        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+        context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode;
     DateTime getTransactionDate() {
       final DateTime now = DateTime.now();
       return DateTime(
@@ -988,12 +1016,12 @@ class _DailyProductionPageState
     final dataForm = widget.dataForm;
     final oilTypeFg =
         context
-            .read<ValueProvider>()
-            .oilTypeListsDailyProduction
-            .where((oil) => oil.code == selectedOilRm)
+            .read<ProductProvider>()
+            .productRefineryList
+            .where((oil) => oil.id == selectedOilRm)
             .first;
 
-    oilTypefgController.text = oilTypeFg.outputOilType!;
+    oilTypefgController.text = oilTypeFg.finishGood!;
 
     final ticketId = await buildTicketNumber();
 
@@ -1036,19 +1064,20 @@ class _DailyProductionPageState
             selectedShiftBleaching ??
             getShiftBasedOnTimeAndDate(postingDate).toString(),
         cpoTank: selected1Tank,
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
         oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: flow1Akhir,
         oilTypeRmTotal: (flow1Akhir ?? 0.0) - (flow1Awal ?? 0.0),
-        oilTypeFg: selectedOilFg,
+        oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
         oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
         oilTypeFgAkhirFlowmeter: flow2Akhir,
         oilTypeFgTotal: (flow2Akhir ?? 0.0) - (flow2Awal ?? 0.0),
         oilTypeFgToTank: selected2Tank,
+        oilTypeBpId: selectedOilBp,
         bpAwalJam: selectedTime3Awal,
         bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,

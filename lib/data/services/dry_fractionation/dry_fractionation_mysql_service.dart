@@ -166,10 +166,60 @@ class DryFractionationMySQLService {
             'ADM':
           baseQuery = """
           SELECT
-            *
-          FROM 
-            t_dry_fractionation
-          WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')
+              a.id,
+              a.company,
+              a.plant,
+              a.transaction_date,
+              a.posting_date,
+              a.work_center,
+              a.shift,
+              a.oil_type AS oil_type_id,
+              b.raw_material AS oil_type,
+              a.crystalizier,
+              a.filling_start_time,
+              a.filling_end_time,
+              a.colling_start_time,
+              a.initial_oil_level,
+              a.initial_tank,
+              a.feed_iv,
+              a.agitator_speed,
+              a.water_pump_press,
+              a.crystal_start_time,
+              a.crystal_temp,
+              a.filtration_start_time,
+              a.filtration_temp,
+              a.filtration_cycle_no,
+              a.filtration_oil_level,
+              a.olein_iv_red,
+              a.olein_cloud_point,
+              a.stearin_iv,
+              a.stearin_slep_point_red,
+              a.olein_yield,
+              a.remarks,
+              a.flag,
+              a.entry_by,
+              a.entry_date,
+              a.prepared_by,
+              a.prepared_date,
+              a.prepared_status,
+              a.prepared_status_remarks,
+              a.checked_by,
+              a.checked_date,
+              a.checked_status,
+              a.checked_status_remarks,
+              a.updated_by,
+              a.updated_date,
+              a.form_no,
+              a.date_issued,
+              a.revision_no,
+              a.revision_date
+          FROM
+              t_dry_fractionation AS a
+          JOIN 
+              m_product AS b
+          ON 
+              a.oil_type = b.id
+          WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
           """;
           params["plantCode"] = plantCode;
           break;
@@ -181,23 +231,23 @@ class DryFractionationMySQLService {
 
       if (dateFilter != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND report_date = :reportDate";
+          baseQuery += " AND a.transaction_date = :reportDate";
         } else {
-          baseQuery += " WHERE report_date = :reportDate";
+          baseQuery += " WHERE a.transaction_date = :reportDate";
         }
         params['reportDate'] = dateFilter;
       }
 
       if (time != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND time = :time";
+          baseQuery += " AND a.time = :time";
         } else {
-          baseQuery += " WHERE time = :time";
+          baseQuery += " WHERE a.time = :time";
         }
         params["time"] = time;
       }
 
-      baseQuery += " ORDER BY transaction_date DESC";
+      baseQuery += " ORDER BY a.transaction_date DESC";
 
       final IResultSet result = await connection!.execute(baseQuery, params);
 

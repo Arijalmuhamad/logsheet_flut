@@ -27,7 +27,7 @@ class _QualityApprovalListProductionPageState
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context
+      (_) async => await context
           .read<QualityReportProductionProvider>()
           .fetchReportsForManager(plantCode),
     );
@@ -84,11 +84,11 @@ class _QualityApprovalListProductionPageState
               children: [
                 Text('Error: ${provider.errorMessage}'),
                 OutlinedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final plantCode =
                         context.read<PlantProvider>().currentPlant?.code ?? "";
 
-                    provider.fetchReportsForManager(plantCode);
+                    await provider.fetchReportsForManager(plantCode);
                   },
                   child: const Text("Refresh"),
                 ),

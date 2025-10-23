@@ -182,36 +182,6 @@ class PretreatmentBleachingFiltrationProvider extends ChangeNotifier {
       notifyListeners();
       log("pretreatment ticket list length is ${_pretreatmentList.length}");
 
-      // switch (role) {
-      //   case "LEAD":
-      //     // preparedStatusShift1 or 2 or 3 must be empty
-      //     if (filter) {
-      //       _pretreatmentList =
-      //           _pretreatmentList
-      //               .where((report) => report.preparedBy == null)
-      //               .toList();
-      //       notifyListeners();
-      //     }
-      //     break;
-
-      //   case "MGR":
-      //     if (filter) {
-      //       _pretreatmentList =
-      //           _pretreatmentList
-      //               .where(
-      //                 (report) =>
-      //                     report.preparedBy != null &&
-      //                     report.checkedStatus == null,
-      //               )
-      //               .toList();
-      //       notifyListeners();
-      //     }
-      //     break;
-      //   default:
-      //     break;
-      // }
-      // notifyListeners();
-
       _setLoading(false);
       _setErrorMessage(null);
     } catch (e) {

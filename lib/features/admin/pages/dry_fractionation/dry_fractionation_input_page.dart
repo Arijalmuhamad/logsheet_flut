@@ -18,6 +18,7 @@ import 'package:logsheet_app/features/admin/widgets/show_save_confirmation_dialo
 import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -93,10 +94,11 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
   void initState() {
     super.initState();
     final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await valueProvider.fetchWorkCenterFractLists();
-      if (valueProvider.oilTypeLists.isEmpty) {
-        await valueProvider.fetchOilTypes();
+      if (productProvider.productFractionationList.isEmpty) {
+        await productProvider.fetchProducts();
       }
 
       if (valueProvider.toTankGroupLists.isEmpty) {
@@ -235,11 +237,12 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                 ),
               ),
               const SizedBox(height: 8),
+              // OIL TYPE LIST
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Consumer<ValueProvider>(
+                child: Consumer<ProductProvider>(
                   builder: (context, provider, child) {
-                    if (provider.isOilTypeLoading) {
+                    if (provider.isLoading) {
                       return DropdownButtonFormField<String>(
                         value: null,
                         items: [],
@@ -251,7 +254,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
-                          hintText: 'Loading Work Center...',
+                          hintText: 'Loading Oil Type...',
                           prefixIcon: const Padding(
                             padding: EdgeInsets.all(12.0),
                             child: SizedBox(
@@ -264,7 +267,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                       );
                     }
 
-                    if (provider.oilTypeLists.isEmpty) {
+                    if (provider.productFractionationList.isEmpty) {
                       return TextFormField(
                         readOnly: true,
                         decoration: InputDecoration(
@@ -281,8 +284,8 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                           ),
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.refresh),
-                            onPressed: () {
-                              provider.fetchOilTypes();
+                            onPressed: () async {
+                              await provider.fetchProducts();
                             },
                           ),
                         ),
@@ -292,10 +295,10 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
                     return DropdownButtonFormField(
                       value: selectedOilType,
                       items:
-                          provider.oilTypeLists.map((oil) {
+                          provider.productFractionationList.map((oil) {
                             return DropdownMenuItem<String>(
-                              value: oil.code,
-                              child: Text(oil.name),
+                              value: oil.id,
+                              child: Text("${oil.rawMaterial}"),
                             );
                           }).toList(),
                       onChanged: (value) {
@@ -693,7 +696,7 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
         postingDate: postingDate,
         workCenter: selectedWorkCenter,
         shift: selectedShift,
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         crystalizier: crystalizierController.text,
         fillingStartTime: fillingStartTime,
         fillingEndTime: fillingEndTime,
@@ -760,8 +763,5 @@ class _DryFractionationInputPageState extends State<DryFractionationInputPage> {
       if (!context.mounted) return;
       showSnackBar("Error: $e", context);
     }
-
-    // Fetch Latest ID
-    // Build Ticket Number
   }
 }

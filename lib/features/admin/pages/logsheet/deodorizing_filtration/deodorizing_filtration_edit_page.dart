@@ -11,6 +11,7 @@ import 'package:logsheet_app/providers/logsheet/deodorizing_filtration_provider.
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,9 @@ class _DeodorizingFiltrationInputPageState
   String? selectedWorkCenter;
   String? selectedOilType;
   String? selectedOilTypeFg;
+  String? selectedOilTypeNameFg;
   String? selectedOilTypeBp;
+  String? selectedOilTypeNameBp;
   int currentStep = 0;
   DataFormNoEntity? formData;
 
@@ -65,9 +68,9 @@ class _DeodorizingFiltrationInputPageState
     final logsheet = widget.logsheet;
     selectedWorkCenter = logsheet.refineryMachine;
     selectedHour = logsheet.time?.hour;
-    selectedOilType = widget.logsheet.oilType;
-    selectedOilTypeFg = widget.logsheet.oilTypeFg;
-    selectedOilTypeBp = widget.logsheet.oilTypeBp;
+    selectedOilType = widget.logsheet.oilTypeId;
+    selectedOilTypeFg = widget.logsheet.oilTypeFgId;
+    selectedOilTypeBp = widget.logsheet.oilTypeBpId;
 
     fit701BpoController.text = logsheet.fit701?.toString() ?? '';
     d701VacumController.text = logsheet.d701Vacum?.toString() ?? '';
@@ -94,9 +97,34 @@ class _DeodorizingFiltrationInputPageState
     clarityController.text = logsheet.clarity ?? '';
     remarksController.text = logsheet.remarks ?? '';
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => await context.read<ValueProvider>().fetchWorkCenterLists(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final productProvider = context.read<ProductProvider>();
+      await context.read<ValueProvider>().fetchWorkCenterLists();
+
+      if (productProvider.productList.isEmpty) {
+        await productProvider.fetchProducts();
+      }
+
+      selectedOilTypeFg =
+          productProvider.productRefineryList
+              .firstWhere((item) => item.id == selectedOilType)
+              .id;
+
+      selectedOilTypeNameFg =
+          productProvider.productRefineryList
+              .firstWhere((item) => item.id == selectedOilType)
+              .finishGood;
+
+      selectedOilTypeBp =
+          productProvider.productRefineryList
+              .firstWhere((item) => item.id == selectedOilType)
+              .id;
+
+      selectedOilTypeNameBp =
+          productProvider.productRefineryList
+              .firstWhere((item) => item.id == selectedOilType)
+              .byProduct;
+    });
   }
 
   @override
@@ -382,9 +410,9 @@ class _DeodorizingFiltrationInputPageState
           const SizedBox(height: 6),
 
           // OIL TYPE DROPDOWN
-          Consumer<ValueProvider>(
+          Consumer<ProductProvider>(
             builder: (context, provider, child) {
-              if (provider.isOilTypeLoading) {
+              if (provider.isLoading) {
                 return DropdownButtonFormField<String>(
                   value: null,
                   items: [],
@@ -396,7 +424,7 @@ class _DeodorizingFiltrationInputPageState
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: 'Loading Work Center...',
+                    hintText: 'Loading Oil Type...',
                     prefixIcon: const Padding(
                       padding: EdgeInsets.all(12.0),
                       child: SizedBox(
@@ -409,7 +437,7 @@ class _DeodorizingFiltrationInputPageState
                 );
               }
 
-              if (provider.oilTypeLists.isEmpty) {
+              if (provider.productRefineryList.isEmpty) {
                 return TextFormField(
                   readOnly: true,
                   decoration: InputDecoration(
@@ -426,8 +454,8 @@ class _DeodorizingFiltrationInputPageState
                     ),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh),
-                      onPressed: () {
-                        provider.fetchOilTypes();
+                      onPressed: () async {
+                        await provider.fetchProducts();
                       },
                     ),
                   ),
@@ -437,15 +465,35 @@ class _DeodorizingFiltrationInputPageState
               return DropdownButtonFormField(
                 value: selectedOilType,
                 items:
-                    provider.oilTypeLists.map((oil) {
+                    provider.productRefineryList.map((oil) {
                       return DropdownMenuItem<String>(
-                        value: oil.code,
-                        child: Text(oil.name),
+                        value: oil.id,
+                        child: Text(oil.rawMaterial!),
                       );
                     }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedOilType = value;
+
+                    selectedOilTypeFg =
+                        provider.productRefineryList
+                            .firstWhere((item) => item.id == selectedOilType)
+                            .id;
+
+                    selectedOilTypeNameFg =
+                        provider.productRefineryList
+                            .firstWhere((item) => item.id == selectedOilType)
+                            .finishGood;
+
+                    selectedOilTypeBp =
+                        provider.productRefineryList
+                            .firstWhere((item) => item.id == selectedOilType)
+                            .id;
+
+                    selectedOilTypeNameBp =
+                        provider.productRefineryList
+                            .firstWhere((item) => item.id == selectedOilType)
+                            .byProduct;
                   });
                 },
                 decoration: InputDecoration(
@@ -714,7 +762,7 @@ class _DeodorizingFiltrationInputPageState
         postingDate: postingDate,
         refineryMachine: selectedWorkCenter,
         time: DateFormat('HH:mm:ss').parse(formattedTime),
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         shift: shift,
         fit701: parseDouble(fit701BpoController),
         d701Vacum: parseDouble(d701VacumController),
@@ -734,10 +782,10 @@ class _DeodorizingFiltrationInputPageState
         f702A: parseDouble(f702AController),
         f702B: parseDouble(f702BController),
         f702C: parseDouble(f702CController),
-        oilTypeFg: selectedOilTypeFg,
+        oilTypeFgId: selectedOilTypeFg,
         fit704: parseDouble(fit704RpoController),
         e704: parseDouble(e704Controller),
-        oilTypeBp: selectedOilTypeBp,
+        oilTypeBpId: selectedOilTypeBp,
         fit705: parseDouble(fit705PfadController),
         e705: parseDouble(e705Controller),
         clarity: clarityController.text,
@@ -902,9 +950,9 @@ class _DeodorizingFiltrationInputPageState
         return Column(
           children: [
             // OIL TYPE DROPDOWN
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   return DropdownButtonFormField<String>(
                     value: null,
                     items: [],
@@ -916,7 +964,7 @@ class _DeodorizingFiltrationInputPageState
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'Loading Work Center...',
+                      hintText: 'Loading Oil Type...',
                       prefixIcon: const Padding(
                         padding: EdgeInsets.all(12.0),
                         child: SizedBox(
@@ -929,7 +977,7 @@ class _DeodorizingFiltrationInputPageState
                   );
                 }
 
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.productRefineryList.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -946,8 +994,8 @@ class _DeodorizingFiltrationInputPageState
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          provider.fetchOilTypes();
+                        onPressed: () async {
+                          await provider.fetchProducts();
                         },
                       ),
                     ),
@@ -957,15 +1005,21 @@ class _DeodorizingFiltrationInputPageState
                 return DropdownButtonFormField(
                   value: selectedOilTypeFg,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.productRefineryList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name),
+                          value: oil.id,
+                          child: Text(oil.finishGood!),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilTypeFg = value;
+                      selectedOilTypeNameFg =
+                          provider.productRefineryList
+                              .firstWhere(
+                                (item) => item.id == selectedOilTypeFg,
+                              )
+                              .finishGood;
                     });
                   },
                   decoration: InputDecoration(
@@ -990,13 +1044,13 @@ class _DeodorizingFiltrationInputPageState
               label:
                   selectedOilTypeFg == null
                       ? 'FIT 704 - tph'
-                      : 'FIT 704 ($selectedOilTypeFg) - tph',
+                      : 'FIT 704 ($selectedOilTypeNameFg) - tph',
               isNumeric: true,
             ),
             // OIL TYPE DROPDOWN
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   return DropdownButtonFormField<String>(
                     value: null,
                     items: [],
@@ -1008,7 +1062,7 @@ class _DeodorizingFiltrationInputPageState
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: 'Loading Work Center...',
+                      hintText: 'Loading Oil Type...',
                       prefixIcon: const Padding(
                         padding: EdgeInsets.all(12.0),
                         child: SizedBox(
@@ -1021,7 +1075,7 @@ class _DeodorizingFiltrationInputPageState
                   );
                 }
 
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.productRefineryList.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -1038,8 +1092,8 @@ class _DeodorizingFiltrationInputPageState
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          provider.fetchOilTypes();
+                        onPressed: () async {
+                          await provider.fetchProducts();
                         },
                       ),
                     ),
@@ -1049,15 +1103,21 @@ class _DeodorizingFiltrationInputPageState
                 return DropdownButtonFormField(
                   value: selectedOilTypeBp,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.productRefineryList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name),
+                          value: oil.id,
+                          child: Text(oil.byProduct!),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilTypeBp = value;
+                      selectedOilTypeNameBp =
+                          provider.productRefineryList
+                              .firstWhere(
+                                (item) => item.id == selectedOilTypeBp,
+                              )
+                              .byProduct;
                     });
                   },
                   decoration: InputDecoration(
@@ -1082,7 +1142,7 @@ class _DeodorizingFiltrationInputPageState
               label:
                   selectedOilTypeBp == null
                       ? 'FIT 705 - tph'
-                      : 'FIT 705 ($selectedOilTypeBp) - tph',
+                      : 'FIT 705 ($selectedOilTypeNameBp) - tph',
               isNumeric: true,
             ),
           ],

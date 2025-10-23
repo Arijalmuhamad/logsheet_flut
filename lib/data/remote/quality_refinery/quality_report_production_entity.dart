@@ -11,6 +11,7 @@ class QualityReportProductionEntity {
   final DateTime? postingDate; // postingDate
   final String? workCenter;
 
+  final String? oilTypeId;
   final String? oilType;
   final DateTime? time;
   final int? shift;
@@ -80,7 +81,8 @@ class QualityReportProductionEntity {
   DateTime? revisionDate;
 
   QualityReportProductionEntity({
-    required this.oilType,
+    required this.oilTypeId,
+    this.oilType,
     required this.transactionDate,
     required this.id,
     this.idFk,
@@ -195,6 +197,7 @@ class QualityReportProductionEntity {
       transactionDate: parseDateTime(map['transaction_date']),
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'],
+      oilTypeId: map['oil_type_id'] as String?,
       oilType: map['oil_type'] as String?,
       time: parseTime(map['time']),
       shift: parseInt(map['shift']),
@@ -265,7 +268,7 @@ class QualityReportProductionEntity {
       'transaction_date': formatDate(transactionDate),
       'posting_date': formatDate(postingDate),
       'work_center': workCenter,
-      'oil_type': oilType,
+      'oil_type': oilTypeId,
       'time': formatTime(time), // Format time as HH:mm:ss string
       'shift': shift,
       'rm_flowrate': rmFlowRate,

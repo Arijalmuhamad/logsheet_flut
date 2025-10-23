@@ -9,6 +9,7 @@ class DryFractionationEntity {
   final DateTime? postingDate;
   final String? workCenter;
   final String? shift;
+  final String? oilTypeId;
   final String? oilType;
 
   final String? crystalizier;
@@ -64,7 +65,8 @@ class DryFractionationEntity {
     required this.postingDate,
     required this.workCenter,
     required this.shift,
-    required this.oilType,
+    required this.oilTypeId,
+    this.oilType,
     required this.crystalizier,
     required this.fillingStartTime,
     required this.fillingEndTime,
@@ -114,6 +116,7 @@ class DryFractionationEntity {
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'] as String?,
       shift: map['shift'] as String?,
+      oilTypeId: map['oil_type_id'] as String?,
       oilType: map['oil_type'] as String?,
       crystalizier: map['crystalizier'] as String?,
       fillingStartTime: parseTimeOfDay(map['filling_start_time']),
@@ -165,7 +168,7 @@ class DryFractionationEntity {
       'posting_date': postingDate?.toIso8601String(),
       'work_center': workCenter,
       'shift': shift,
-      'oil_type': oilType,
+      'oil_type': oilTypeId,
       'crystalizier': crystalizier,
       'filling_start_time': formatTimeOfDay(fillingStartTime),
       'filling_end_time': formatTimeOfDay(fillingEndTime),
@@ -215,6 +218,7 @@ class DryFractionationEntity {
     DateTime? postingDate,
     String? workCenter,
     String? shift,
+    String? oilTypeId,
     String? oilType,
     String? crystalizier,
     TimeOfDay? fillingStartTime,
@@ -263,6 +267,7 @@ class DryFractionationEntity {
       postingDate: postingDate ?? this.postingDate,
       workCenter: workCenter ?? this.workCenter,
       shift: shift ?? this.shift,
+      oilTypeId: oilTypeId ?? this.oilTypeId,
       oilType: oilType ?? this.oilType,
       crystalizier: crystalizier ?? this.crystalizier,
       fillingStartTime: fillingStartTime ?? this.fillingStartTime,

@@ -10,6 +10,7 @@ class QualityReportQcEntity {
   final DateTime? postingDate; // postingDate
   final String? workCenter;
 
+  final String? oilTypeId;
   final String? oilType;
   final DateTime? time;
   final int? shift;
@@ -79,7 +80,8 @@ class QualityReportQcEntity {
   DateTime? revisionDate;
 
   QualityReportQcEntity({
-    required this.oilType,
+    required this.oilTypeId,
+    this.oilType,
     required this.transactionDate,
     required this.id,
     required this.postingDate,
@@ -192,6 +194,7 @@ class QualityReportQcEntity {
       transactionDate: parseDateTime(map['transaction_date']),
       postingDate: parseDateTime(map['posting_date']),
       workCenter: map['work_center'],
+      oilTypeId: map['oil_type_id'] as String?,
       oilType: map['oil_type'] as String?,
       time: parseTime(map['time']),
       shift: parseInt(map['shift']),
@@ -261,7 +264,7 @@ class QualityReportQcEntity {
       'transaction_date': formatDate(transactionDate),
       'posting_date': formatDate(postingDate),
       'work_center': workCenter,
-      'oil_type': oilType,
+      'oil_type': oilTypeId,
       'time': formatTime(time), // Format time as HH:mm:ss string
       'shift': shift,
       'rm_flowrate': rmFlowRate,
@@ -326,6 +329,7 @@ class QualityReportQcEntity {
       transactionDate: transactionDate,
       postingDate: postingDate,
       workCenter: workCenter,
+      oilTypeId: oilTypeId,
       oilType: oilType,
       time: time,
       shift: shift,
@@ -365,14 +369,14 @@ class QualityReportQcEntity {
       flag: flag,
       entryBy: entryBy,
       entryDate: entryDate,
-      preparedBy: preparedBy,
-      preparedDate: preparedDate,
-      preparedStatus: preparedStatus,
-      preparedStatusRemarks: preparedStatusRemarks,
-      checkedBy: checkedBy,
-      checkedDate: checkedDate,
-      checkedStatus: checkedStatus,
-      checkedStatusRemarks: checkedStatusRemarks,
+      preparedBy: null,
+      preparedDate: null,
+      preparedStatus: null,
+      preparedStatusRemarks: null,
+      checkedBy: null,
+      checkedDate: null,
+      checkedStatus: null,
+      checkedStatusRemarks: null,
       updatedBy: updatedBy,
       updatedDate: updatedDate,
       formNo: formNo,
