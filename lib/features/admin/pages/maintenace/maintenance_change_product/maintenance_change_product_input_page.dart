@@ -2,7 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_production_checklist_header_entity.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/checklist_item_row.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
@@ -11,23 +14,30 @@ import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class MaintenanceChangeChecklistPage extends StatefulWidget {
+class MaintenanceChangeProductInputPage extends StatefulWidget {
   final String userName;
 
-  const MaintenanceChangeChecklistPage({super.key, required this.userName});
+  const MaintenanceChangeProductInputPage({super.key, required this.userName});
 
   @override
-  State<MaintenanceChangeChecklistPage> createState() =>
-      _MaintenanceChangeChecklistPageState();
+  State<MaintenanceChangeProductInputPage> createState() =>
+      _MaintenanceChangeProductInputPageState();
 }
 
-class _MaintenanceChangeChecklistPageState
-    extends State<MaintenanceChangeChecklistPage> {
+class _MaintenanceChangeProductInputPageState
+    extends State<MaintenanceChangeProductInputPage> {
   bool isLoading = false;
+
+  DataFormNoEntity? form;
 
   final TextEditingController dateEntryController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
@@ -40,9 +50,6 @@ class _MaintenanceChangeChecklistPageState
 
   List<MasterValueEntity> workCenterList = [];
 
-  bool checklist1 = false;
-  bool checklist2 = false;
-
   final List<String> dummyFirstParts = ['RPS', 'CPKO'];
   final List<String> dummyNextParts = ['CPO', 'CPKO'];
   final List<String> dummyLocations = ['Refinery', 'Fractination'];
@@ -53,6 +60,25 @@ class _MaintenanceChangeChecklistPageState
       await context.read<ChangeProductChecklistProvider>().getLangkahKerja();
       await context.read<ValueProvider>().fetchWorkCenterLists();
       await context.read<ValueProvider>().fetchWorkCenterFractLists();
+
+      final changeProductChecklistProvider =
+          context.read<ChangeProductChecklistProvider>();
+
+      final plant = context.read<PlantProvider>().currentPlant;
+      await changeProductChecklistProvider.fetchLatestId(plant?.code ?? "");
+      changeProductChecklistProvider.prepopulateReportDetailList();
+      // var pertanyaan = changeProductChecklistProvider.reportDetailList;
+
+      form =
+          context
+              .read<DataFormNoProvider>()
+              .dataFormNoList
+              .where(
+                (form) =>
+                    form.isMenu == "Change_Product_Checklist" &&
+                    form.isActive == "T",
+              )
+              .first;
     });
   }
 
@@ -93,7 +119,7 @@ class _MaintenanceChangeChecklistPageState
 
   @override
   Widget build(BuildContext context) {
-    final langkahKerjaProvider =
+    final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
     final valueProvider = context.read<ValueProvider>();
 
@@ -125,8 +151,7 @@ class _MaintenanceChangeChecklistPageState
                   onChanged: (value) {
                     setState(() {
                       selectedLocation = value;
-                      selectedWorkCenter =
-                          null; 
+                      selectedWorkCenter = null;
 
                       if (value == 'Refinery') {
                         workCenterList = valueProvider.workCenterLists;
@@ -250,24 +275,45 @@ class _MaintenanceChangeChecklistPageState
                           SizedBox(height: 16.0),
                           ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
-                            scrollDirection: Axis.vertical,
                             shrinkWrap: true,
                             itemCount:
-                                langkahKerjaProvider
+                                changeProductChecklistProvider
                                     .langkahKerjaPreTreatmentList
                                     .length,
                             itemBuilder: (context, index) {
+                              final langkah =
+                                  changeProductChecklistProvider
+                                      .langkahKerjaPreTreatmentList[index];
+
+                              // cari item yang cocok di reportDetailList berdasarkan checkItem == code
+                              final detailIndex = changeProductChecklistProvider
+                                  .reportDetailList
+                                  .indexWhere(
+                                    (detail) =>
+                                        detail.checkItem == langkah.code,
+                                  );
+
+                              // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                              final isChecked =
+                                  detailIndex != -1
+                                      ? changeProductChecklistProvider
+                                              .reportDetailList[detailIndex]
+                                              .statusItem ==
+                                          "T"
+                                      : false;
+
                               return ChecklistItemRow(
                                 number: index + 1,
-                                description:
-                                    langkahKerjaProvider
-                                        .langkahKerjaPreTreatmentList[index]
-                                        .name!,
-                                value: checklist1,
-                                onChanged:
-                                    (val) => setState(
-                                      () => checklist1 = val ?? false,
-                                    ),
+                                description: langkah.name ?? '-',
+                                value: isChecked,
+                                onChanged: (val) {
+                                  final newStatus = (val ?? false) ? "T" : "F";
+                                  changeProductChecklistProvider
+                                      .updateChecklistStatus(
+                                        langkah.code!,
+                                        newStatus,
+                                      );
+                                },
                               );
                             },
                           ),
@@ -292,21 +338,39 @@ class _MaintenanceChangeChecklistPageState
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
                             itemCount:
-                                langkahKerjaProvider
+                                changeProductChecklistProvider
                                     .langkahKerjaBleacherList
                                     .length,
+
                             itemBuilder: (context, index) {
+                              final langkah =
+                                  changeProductChecklistProvider
+                                      .langkahKerjaBleacherList[index];
+                              final detailIndex = changeProductChecklistProvider
+                                  .reportDetailList
+                                  .indexWhere(
+                                    (detail) =>
+                                        detail.checkItem == langkah.code,
+                                  );
+                              final isChecked =
+                                  detailIndex != -1
+                                      ? changeProductChecklistProvider
+                                              .reportDetailList[detailIndex]
+                                              .statusItem ==
+                                          "T"
+                                      : false;
                               return ChecklistItemRow(
                                 number: index + 1,
-                                description:
-                                    langkahKerjaProvider
-                                        .langkahKerjaBleacherList[index]
-                                        .name!,
-                                value: checklist1,
-                                onChanged:
-                                    (val) => setState(
-                                      () => checklist1 = val ?? false,
-                                    ),
+                                description: langkah.name ?? '-',
+                                value: isChecked,
+                                onChanged: (val) {
+                                  final newStatus = (val ?? false) ? "T" : "F";
+                                  changeProductChecklistProvider
+                                      .updateChecklistStatus(
+                                        langkah.code!,
+                                        newStatus,
+                                      );
+                                },
                               );
                             },
                           ),
@@ -331,21 +395,39 @@ class _MaintenanceChangeChecklistPageState
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
                             itemCount:
-                                langkahKerjaProvider
+                                changeProductChecklistProvider
                                     .langkahKerjaDeodorizationList
                                     .length,
                             itemBuilder: (context, index) {
+                              final langkah =
+                                  changeProductChecklistProvider
+                                      .langkahKerjaDeodorizationList[index];
+
+                              final detailIndex = changeProductChecklistProvider
+                                  .reportDetailList
+                                  .indexWhere(
+                                    (detail) =>
+                                        detail.checkItem == langkah.code,
+                                  );
+                              final isChecked =
+                                  detailIndex != -1
+                                      ? changeProductChecklistProvider
+                                              .reportDetailList[detailIndex]
+                                              .statusItem ==
+                                          "T"
+                                      : false;
                               return ChecklistItemRow(
                                 number: index + 1,
-                                description:
-                                    langkahKerjaProvider
-                                        .langkahKerjaDeodorizationList[index]
-                                        .name!,
-                                value: checklist1,
-                                onChanged:
-                                    (val) => setState(
-                                      () => checklist1 = val ?? false,
-                                    ),
+                                description: langkah.name ?? '-',
+                                value: isChecked,
+                                onChanged: (val) {
+                                  final newStatus = (val ?? false) ? "T" : "F";
+                                  changeProductChecklistProvider
+                                      .updateChecklistStatus(
+                                        langkah.code!,
+                                        newStatus,
+                                      );
+                                },
                               );
                             },
                           ),
@@ -378,21 +460,39 @@ class _MaintenanceChangeChecklistPageState
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
                             itemCount:
-                                langkahKerjaProvider
+                                changeProductChecklistProvider
                                     .langkahKerjaFractionationList
                                     .length,
                             itemBuilder: (context, index) {
+                              final langkah =
+                                  changeProductChecklistProvider
+                                      .langkahKerjaFractionationList[index];
+
+                              final detailIndex = changeProductChecklistProvider
+                                  .reportDetailList
+                                  .indexWhere(
+                                    (detail) =>
+                                        detail.checkItem == langkah.code,
+                                  );
+                              final isChecked =
+                                  detailIndex != -1
+                                      ? changeProductChecklistProvider
+                                              .reportDetailList[detailIndex]
+                                              .statusItem ==
+                                          "T"
+                                      : false;
                               return ChecklistItemRow(
                                 number: index + 1,
-                                description:
-                                    langkahKerjaProvider
-                                        .langkahKerjaFractionationList[index]
-                                        .name!,
-                                value: checklist1,
-                                onChanged:
-                                    (val) => setState(
-                                      () => checklist1 = val ?? false,
-                                    ),
+                                description: langkah.name ?? '-',
+                                value: isChecked,
+                                onChanged: (val) {
+                                  final newStatus = (val ?? false) ? "T" : "F";
+                                  changeProductChecklistProvider
+                                      .updateChecklistStatus(
+                                        langkah.code!,
+                                        newStatus,
+                                      );
+                                },
                               );
                             },
                           ),
@@ -446,10 +546,29 @@ class _MaintenanceChangeChecklistPageState
 
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24.0),
-                    child: CustomSaveButton(
-                      onPressed: () {},
-                      label: 'Submit Laporan',
-                    ),
+                    child:
+                        (context
+                                .watch<ChangeProductChecklistProvider>()
+                                .isLoadingInput)
+                            ? Center(child: CircularProgressIndicator())
+                            : CustomSaveButton(
+                              onPressed: () async {
+                                bool isSuccess = await _insertCheckList();
+                                if (isSuccess) {
+                                  showSnackBar(
+                                    "Berhasil menyimpan data checklist",
+                                    context,
+                                  );
+                                  Navigator.of(context).pop();
+                                } else {
+                                  showSnackBar(
+                                    "Gagal meyimpan data checklist",
+                                    context,
+                                  );
+                                }
+                              },
+                              label: 'Submit Laporan',
+                            ),
                   ),
                 ],
               ],
@@ -458,5 +577,80 @@ class _MaintenanceChangeChecklistPageState
         ],
       ),
     );
+  }
+
+  DateTime? parseDateFormatFromController(String? selectedDate) {
+    if (selectedDate == null || selectedDate.isEmpty) return null;
+    try {
+      // UI format = "dd-MM-yyyy"
+      final inputFormat = DateFormat('dd-MM-yyyy');
+      final dateTime = inputFormat.parse(selectedDate);
+
+      // langsung return objek DateTime (bukan String)
+      return dateTime;
+    } catch (e) {
+      log('Date parse error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> _insertCheckList() async {
+    final selectedDate = dateEntryController.text;
+    final formattedDate = parseDateFormatFromController(selectedDate);
+
+    final plant = context.read<PlantProvider>().currentPlant;
+    final businessUnit =
+        context.read<BusinessUnitProvider>().currentBusinessUnit;
+    final user = context.read<UserProvider>();
+
+    final idHeader = await context
+        .read<ChangeProductChecklistProvider>()
+        .generateHeaderId(plant?.code ?? "");
+
+    final header = MaintenanceChangeProductionChecklistHeaderEntity(
+      id: idHeader,
+      company: businessUnit?.buCode ?? "", //business unit provider
+      plant: plant?.code ?? '',
+      transactionDate: formattedDate,
+      transactionTime:
+          selectedHour != null
+              ? TimeOfDay(hour: selectedHour!, minute: 0)
+              : null,
+      firstProduct: selectedFirstPart ?? '',
+      nextProduct: selectedNextPart ?? '',
+      workCenter: selectedWorkCenter ?? '',
+      remarks: notesController.text,
+      flag: 'T',
+      entryBy: user.currentUser?.username ?? '',
+      entryDate: DateTime.now(),
+      preparedBy: null, //null mulai dari
+      preparedDate: null,
+      preparedStatus: null,
+      preparedStatusRemarks: null,
+      checkedBy: null,
+      checkedDate: null,
+      checkedStatus: null,
+      checkedStatusRemarks: null,
+      updatedBy: null,
+      updatedDate: null, // sampai sini null
+      formNo: form?.code, // fetch di form sampe kebawah
+      dateIssued: form?.dateIssued,
+      revisionNo: form?.revisionNo.toString(),
+      revisionDate: form?.revisionDate,
+    );
+
+    context.read<ChangeProductChecklistProvider>().reportDetailList.forEach((
+      detail,
+    ) {
+      detail.idHdr = idHeader;
+    });
+
+    final details =
+        context.read<ChangeProductChecklistProvider>().reportDetailList;
+
+    var isSuccess = context
+        .read<ChangeProductChecklistProvider>()
+        .insertChangeProductChecklist(header: header, details: details);
+    return isSuccess;
   }
 }
