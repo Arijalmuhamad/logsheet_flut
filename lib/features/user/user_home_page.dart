@@ -1001,7 +1001,7 @@ class _UserHomePageState extends State<UserHomePage> {
               color: Color(0xFF655F5B),
             ),
             title: Text(
-              'Change Product Checklist',
+              'Change Product Checklist\n(${formChangeProductChecklist?.code})',
               style: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w600,
@@ -1015,7 +1015,7 @@ class _UserHomePageState extends State<UserHomePage> {
               if (AppRoles.managerProd.contains(userRole))
                 _buildDrawerItem(
                   icon: Icons.input_rounded,
-                  title: 'Change Product List',
+                  title: 'List',
                   onTap: () {
                     Navigator.push(
                       context,

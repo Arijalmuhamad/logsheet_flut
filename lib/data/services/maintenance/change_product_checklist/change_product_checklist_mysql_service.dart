@@ -85,14 +85,16 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection;
       final result = await connection!.execute(
         """
-        SELECT 
+          SELECT 
           h.id, 
           h.company, 
           h.plant, 
           h.transaction_date, 
           h.transaction_time,
-          h.first_product,
-          h.next_product,
+          h.first_product AS first_product_id,
+          p1.raw_material AS first_product,
+          h.next_product AS next_product_id,
+          p2.raw_material AS next_product,
           h.work_center, 
           h.remarks, 
           h.flag,
@@ -112,16 +114,23 @@ class ChangeProductChecklistMySQLService {
           h.date_issued,
           h.revision_no,
           h.revision_date,
-          d.id as detail_id, 
+          d.id AS detail_id, 
           d.check_item, 
           d.status_item 
-        FROM 
-          $changeProductChecklistHeader h 
-        INNER JOIN 
-          $changeProductChecklistDetail d ON h.id = d.id_hdr 
-        WHERE 
-          DATE(h.transaction_date) = :date 
-        ORDER BY 
+      FROM 
+          t_change_product_checklist h
+      INNER JOIN 
+          t_change_product_checklist_detail d 
+          ON h.id = d.id_hdr
+      LEFT JOIN 
+          m_product p1 
+          ON h.first_product = p1.id
+      LEFT JOIN 
+          m_product p2 
+          ON h.next_product = p2.id
+      WHERE 
+          DATE(h.transaction_date) = :date
+      ORDER BY 
           h.id ASC;
         """,
         {"date": date},
@@ -298,7 +307,7 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection!;
 
       final sqlHeader =
-          "UPDATE $changeProductChecklistHeader SET company = :company, plant =:plant, work_center_ref = :work_center, check_date = :check_date, remarks = :remarks WHERE id = :id";
+          "UPDATE $changeProductChecklistHeader SET company = :company, plant =:plant, work_center = :work_center, checked_date = :check_date, remarks = :remarks WHERE id = :id";
       final paramsHeader = {
         "id": id,
         "company": company,
@@ -552,44 +561,53 @@ class ChangeProductChecklistMySQLService {
       }
       connection = connResult.connection;
       final result = await connection!.execute("""
-        SELECT 
-          h.id, 
-          h.company, 
-          h.plant, 
-          h.transaction_date, 
-          h.transaction_time,
-          h.first_product,
-          h.next_product,
-          h.work_center, 
-          h.remarks, 
-          h.flag,
-          h.entry_by,
-          h.entry_date,
-          h.prepared_by,
-          h.prepared_date,
-          h.prepared_status,
-          h.prepared_status_remarks,
-          h.checked_by,
-          h.checked_date,
-          h.checked_status,
-          h.checked_status_remarks,
-          h.updated_by,
-          h.updated_date,
-          h.form_no,
-          h.date_issued,
-          h.revision_no,
-          h.revision_date,
-          d.id as detail_id, 
-          d.check_item, 
-          d.status_item 
-        FROM 
-          $changeProductChecklistHeader h 
-        INNER JOIN 
-          $changeProductChecklistDetail d ON h.id = d.id_hdr 
-        WHERE 
-          h.prepared_status IS NOT NULL AND h.checked_status IS NULL
-        ORDER BY 
-          h.id ASC;
+          SELECT 
+              h.id, 
+              h.company, 
+              h.plant, 
+              h.transaction_date, 
+              h.transaction_time,
+              h.first_product AS first_product_id,
+              p1.raw_material AS first_product,
+              h.next_product AS next_product_id,
+              p2.raw_material AS next_product,
+              h.work_center, 
+              h.remarks, 
+              h.flag,
+              h.entry_by,
+              h.entry_date,
+              h.prepared_by,
+              h.prepared_date,
+              h.prepared_status,
+              h.prepared_status_remarks,
+              h.checked_by,
+              h.checked_date,
+              h.checked_status,
+              h.checked_status_remarks,
+              h.updated_by,
+              h.updated_date,
+              h.form_no,
+              h.date_issued,
+              h.revision_no,
+              h.revision_date,
+              d.id AS detail_id, 
+              d.check_item, 
+              d.status_item 
+          FROM 
+              t_change_product_checklist h
+          INNER JOIN 
+              t_change_product_checklist_detail d 
+              ON h.id = d.id_hdr
+          LEFT JOIN 
+              m_product p1 
+              ON h.first_product = p1.id
+          LEFT JOIN 
+              m_product p2 
+              ON h.next_product = p2.id
+          WHERE 
+              DATE(h.transaction_date) = :date AND  h.prepared_status IS NOT NULL AND h.checked_status IS NULL
+          ORDER BY 
+              h.id ASC;
         """);
       log(
         'Fetched ${result.rows.length} Change Product Checklists for approval.',

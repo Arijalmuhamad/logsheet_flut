@@ -49,9 +49,7 @@ class _MaintenanceChangeProductListPageState
             context,
             MaterialPageRoute(
               builder:
-                  (context) => MaintenanceChangeProductInputPage(
-                    userName: username ?? "",
-                  ),
+                  (context) => MaintenanceChangeProductInputPage(),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page
@@ -100,36 +98,43 @@ class _MaintenanceChangeProductListPageState
   Widget _buildBody() {
     final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
+
+    final isLoading = changeProductChecklistProvider.isLoading;
+    final reportList = changeProductChecklistProvider.uniqueReportList;
+
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
       children: [
         _buildFilterSection(context),
         Expanded(
           child: Card(
             child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child:
-                  (context.watch<ChangeProductChecklistProvider>().isLoading)
-                      ? Center(child: CircularProgressIndicator())
-                      : ListView.builder(
-                        itemCount:
-                            changeProductChecklistProvider
-                                .uniqueReportList
-                                .length,
-                        itemBuilder: (context, index) {
-                          final reportItem =
-                              changeProductChecklistProvider.uniqueReportList;
-                          return _changeProductsCardItem(
-                            id: reportItem[index].id,
-                            date: reportItem[index].transactionDateRef,
-                            time: reportItem[index].transactionTimeRef,
-                            workCenter: reportItem[index].workCenterRef ?? '',
-                            entryBy: reportItem[index].entryBy ?? '',
-                          );
-                        },
-                      ),
+              padding: const EdgeInsets.all(8.0),
+              child: Builder(
+                builder: (context) {
+                  if (isLoading) {
+                    // 🔹 Tampilkan indikator loading
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (reportList.isEmpty) {
+                    // 🔹 Tampilkan teks jika tidak ada data
+                    return const Center(child: Text("No Data Available"));
+                  } else {
+                    // 🔹 Tampilkan list jika ada data
+                    return ListView.builder(
+                      itemCount: reportList.length,
+                      itemBuilder: (context, index) {
+                        final item = reportList[index];
+                        return _changeProductsCardItem(
+                          id: item.id,
+                          date: item.transactionDate,
+                          time: item.transactionTime,
+                          workCenter: item.workCenter ?? '',
+                          entryBy: item.entryBy ?? '',
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -161,7 +166,6 @@ class _MaintenanceChangeProductListPageState
                     .read<ChangeProductChecklistProvider>()
                     .getAllChangeProductFromDate(formattedDate);
               }
-              
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),

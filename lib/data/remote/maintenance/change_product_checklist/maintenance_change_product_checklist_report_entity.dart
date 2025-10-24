@@ -2,11 +2,13 @@ class MaintenanceChangeProductChecklistReportEntity {
   final String id;
   final String company;
   final String plant;
-  final String transactionDateRef;
-  final String transactionTimeRef;
-  final String? firstProductRef;
-  final String? nextProductRef;
-  final String? workCenterRef;
+  final String transactionDate;
+  final String transactionTime;
+  final String? firstProduct;
+  final String? firstProductId;
+  final String? nextProduct;
+  final String? nextProductId;
+  final String? workCenter;
   final String? remarks;
   final String? flag;
   final String? entryBy;
@@ -33,11 +35,13 @@ class MaintenanceChangeProductChecklistReportEntity {
     required this.id,
     required this.company,
     required this.plant,
-    required this.transactionDateRef,
-    required this.transactionTimeRef,
-    this.firstProductRef,
-    this.nextProductRef,
-    this.workCenterRef,
+    required this.transactionDate,
+    required this.transactionTime,
+    this.firstProduct,
+    this.nextProduct,
+    required this.firstProductId,
+    required this.nextProductId,
+    this.workCenter,
     this.remarks,
     this.flag,
     this.entryBy,
@@ -68,11 +72,13 @@ class MaintenanceChangeProductChecklistReportEntity {
       id: map['id'] as String,
       company: map['company'] as String,
       plant: map['plant'] as String,
-      transactionDateRef: map['transaction_date'] as String,
-      transactionTimeRef: map['transaction_time'] as String,
-      firstProductRef: map['first_product'] as String?,
-      nextProductRef: map['next_product'] as String?,
-      workCenterRef: map['work_center'] as String?,
+      transactionDate: map['transaction_date'] as String,
+      transactionTime: map['transaction_time'] as String,
+      firstProduct: map['first_product'] as String?,
+      nextProduct: map['next_product'] as String?,
+      firstProductId: map['first_product_id'] as String?,
+      nextProductId: map['next_product_id'] as String?,
+      workCenter: map['work_center'] as String?,
       remarks: map['remarks'] as String?,
       flag: map['flag'] as String?,
       entryBy: map['entry_by'] as String?,
@@ -101,11 +107,11 @@ class MaintenanceChangeProductChecklistReportEntity {
       'id': id,
       'company': company,
       'plant': plant,
-      'transaction_date': transactionDateRef,
-      'transaction_time': transactionTimeRef,
-      'first_product': firstProductRef,
-      'next_product': nextProductRef,
-      'work_center': workCenterRef,
+      'transaction_date': transactionDate,
+      'transaction_time': transactionTime,
+      'first_product': firstProductId,
+      'next_product': nextProductId,
+      'work_center': workCenter,
       'remarks': remarks,
       'flag': flag,
       'entry_by': entryBy,
@@ -134,11 +140,11 @@ class MaintenanceChangeProductChecklistReportEntity {
     String? id,
     String? company,
     String? plant,
-    String? transactionDateRef,
-    String? transactionTimeRef,
-    String? firstProductRef,
-    String? nextProductRef,
-    String? workCenterRef,
+    String? transactionDate,
+    String? transactionTime,
+    String? firstProductId,
+    String? nextProductId,
+    String? workCenter,
     String? remarks,
     String? flag,
     String? entryBy,
@@ -165,11 +171,11 @@ class MaintenanceChangeProductChecklistReportEntity {
       id: id ?? this.id,
       company: company ?? this.company,
       plant: plant ?? this.plant,
-      transactionDateRef: transactionDateRef ?? this.transactionDateRef,
-      transactionTimeRef: transactionTimeRef ?? this.transactionTimeRef,
-      firstProductRef: firstProductRef ?? this.firstProductRef,
-      nextProductRef: nextProductRef ?? this.nextProductRef,
-      workCenterRef: workCenterRef ?? this.workCenterRef,
+      transactionDate: transactionDate ?? this.transactionDate,
+      transactionTime: transactionTime ?? this.transactionTime,
+      firstProductId: firstProductId ?? this.firstProductId,
+      nextProductId: nextProductId ?? this.nextProductId,
+      workCenter: workCenter ?? this.workCenter,
       remarks: remarks ?? this.remarks,
       flag: flag ?? this.flag,
       entryBy: entryBy ?? this.entryBy,

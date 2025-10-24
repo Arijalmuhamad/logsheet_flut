@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/prefix_icon_helper.dart';
+import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_production_checklist_header_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
@@ -19,14 +20,14 @@ import 'package:logsheet_app/providers/maintenance/change_product_checklist/main
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
 class MaintenanceChangeProductInputPage extends StatefulWidget {
-  final String userName;
 
-  const MaintenanceChangeProductInputPage({super.key, required this.userName});
+  const MaintenanceChangeProductInputPage({super.key});
 
   @override
   State<MaintenanceChangeProductInputPage> createState() =>
@@ -40,20 +41,21 @@ class _MaintenanceChangeProductInputPageState
   DataFormNoEntity? form;
 
   final TextEditingController dateEntryController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
+  final TextEditingController remarkController = TextEditingController();
 
-  String? selectedFirstPart;
-  String? selectedNextPart;
-  String? selectedLocation;
+  String? selectedFirstProduct;
+  String? selectedNextProduct;
+  String? selectedPlant;
   String? selectedWorkCenter;
   int? selectedHour;
 
   List<MasterValueEntity> workCenterList = [];
 
-  final List<String> dummyFirstParts = ['RPS', 'CPKO'];
-  final List<String> dummyNextParts = ['CPO', 'CPKO'];
-  final List<String> dummyLocations = ['Refinery', 'Fractination'];
-
+  List<String> firstProducts = [];
+  final List<String> nextProducts = [];
+  final List<String> plants = ['Refinery', 'Fractination'];
+  
+  @override
   initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
@@ -65,9 +67,20 @@ class _MaintenanceChangeProductInputPageState
           context.read<ChangeProductChecklistProvider>();
 
       final plant = context.read<PlantProvider>().currentPlant;
+
       await changeProductChecklistProvider.fetchLatestId(plant?.code ?? "");
       changeProductChecklistProvider.prepopulateReportDetailList();
       // var pertanyaan = changeProductChecklistProvider.reportDetailList;
+      await context.read<ProductProvider>().fetchProducts();
+
+      firstProducts = context
+          .read<ProductProvider>()
+          .productList
+          .map((product) => product.rawMaterial ?? '-')
+          .toSet()
+          .toList();
+
+      nextProducts.addAll(firstProducts);
 
       form =
           context
@@ -122,6 +135,7 @@ class _MaintenanceChangeProductInputPageState
     final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
     final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -146,11 +160,11 @@ class _MaintenanceChangeProductInputPageState
                 CustomDropdown.fromStringItems(
                   hint: 'Pilih Plant',
                   prefixIcon: PrefixIconHelper.get('location'),
-                  stringItems: dummyLocations,
-                  value: selectedLocation,
+                  stringItems: plants,
+                  value: selectedPlant,
                   onChanged: (value) {
                     setState(() {
-                      selectedLocation = value;
+                      selectedPlant = value;
                       selectedWorkCenter = null;
 
                       if (value == 'Refinery') {
@@ -177,7 +191,7 @@ class _MaintenanceChangeProductInputPageState
                         );
                       }).toList(),
                   onChanged:
-                      selectedLocation == null
+                      selectedPlant == null
                           ? null // Disable the dropdown if no location is selected
                           : (value) {
                             setState(() {
@@ -236,24 +250,24 @@ class _MaintenanceChangeProductInputPageState
                   hint: 'Pilih Produk Awal',
 
                   prefixIcon: PrefixIconHelper.get('factory'),
-                  stringItems: dummyFirstParts,
-                  value: selectedFirstPart,
+                  stringItems: firstProducts,
+                  value: selectedFirstProduct,
                   onChanged:
-                      (value) => setState(() => selectedFirstPart = value),
+                      (value) => setState(() => selectedFirstProduct = value),
                 ),
                 const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
                   hint: 'Pilih Produk Selanjutnya',
                   prefixIcon: PrefixIconHelper.get('factory'),
-                  stringItems: dummyNextParts,
-                  value: selectedNextPart,
+                  stringItems: nextProducts,
+                  value: selectedNextProduct,
                   onChanged: (value) {
-                    setState(() => selectedNextPart = value);
+                    setState(() => selectedNextProduct = value);
                   },
                 ),
                 const SizedBox(height: 16),
 
-                if (selectedLocation == 'Refinery') ...[
+                if (selectedPlant == 'Refinery') ...[
                   Card(
                     margin: EdgeInsets.zero,
                     child: Padding(
@@ -435,7 +449,7 @@ class _MaintenanceChangeProductInputPageState
                       ),
                     ),
                   ),
-                ] else if (selectedLocation == 'Fractination') ...[
+                ] else if (selectedPlant == 'Fractination') ...[
                   Card(
                     margin: EdgeInsets.zero,
                     child: Padding(
@@ -509,7 +523,7 @@ class _MaintenanceChangeProductInputPageState
                     ),
                   ),
                 ],
-                if (selectedLocation != null) ...[
+                if (selectedPlant != null) ...[
                   // SectionCard(
                   //   title: 'Remark',
                   //   children: [CustomRemarkField(controller: notesController)],
@@ -537,7 +551,7 @@ class _MaintenanceChangeProductInputPageState
                               ),
                             ),
                             SizedBox(height: 16.0),
-                            CustomRemarkField(controller: notesController),
+                            CustomRemarkField(controller: remarkController),
                           ],
                         ),
                       ),
@@ -616,10 +630,10 @@ class _MaintenanceChangeProductInputPageState
           selectedHour != null
               ? TimeOfDay(hour: selectedHour!, minute: 0)
               : null,
-      firstProduct: selectedFirstPart ?? '',
-      nextProduct: selectedNextPart ?? '',
+      firstProduct: selectedFirstProduct ?? '',
+      nextProduct: selectedNextProduct ?? '',
       workCenter: selectedWorkCenter ?? '',
-      remarks: notesController.text,
+      remarks: remarkController.text,
       flag: 'T',
       entryBy: user.currentUser?.username ?? '',
       entryDate: DateTime.now(),

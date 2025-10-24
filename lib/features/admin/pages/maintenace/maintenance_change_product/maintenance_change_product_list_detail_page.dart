@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
@@ -104,12 +105,12 @@ class _MaintenanceChangeProductListDetailPageState
                     children: [
                       _buildInfoCard(
                         'Tanggal',
-                        _formatDateString(reportItem?.transactionDateRef),
+                        _formatDateString(reportItem?.transactionDate),
                       ),
                       const SizedBox(width: 8),
                       _buildInfoCard(
                         'Waktu',
-                        _formatTimeString(reportItem?.transactionTimeRef),
+                        _formatTimeString(reportItem?.transactionTime),
                       ),
                     ],
                   ),
@@ -121,18 +122,18 @@ class _MaintenanceChangeProductListDetailPageState
                   _buildDataRow('Plant', reportItem!.plant),
                   _buildDataRow(
                     'First Product',
-                    reportItem!.firstProductRef ?? '',
+                    reportItem!.firstProduct ?? '',
                   ),
                   _buildDataRow(
                     'Next Product',
-                    reportItem!.nextProductRef ?? '',
+                    reportItem!.nextProduct ?? '',
                   ),
-                  _buildDataRow('Work Center', reportItem!.workCenterRef ?? ''),
+                  _buildDataRow('Work Center', reportItem!.workCenter ?? ''),
                 ]),
 
                 _buildSection('Change Product Checklist', [
-                  if (reportItem!.workCenterRef == 'REF-150' ||
-                      reportItem!.workCenterRef == 'REF-02') ...[
+                  if (reportItem!.workCenter == 'REF-150' ||
+                      reportItem!.workCenter == 'REF-02') ...[
                     Column(
                       children: [
                         Row(
@@ -449,7 +450,15 @@ class _MaintenanceChangeProductListDetailPageState
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
         if (reportItem?.preparedStatus == null)
-          IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
+          IconButton(onPressed: () async {
+            Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => MaintenanceChangeProductEditPage(id: widget.id),
+            ),
+          );
+          }, icon: const Icon(Icons.edit)),
         if (reportItem?.preparedStatus == null)
           IconButton(
             onPressed: () async => _showDeleteConfirmationDialog(context),
