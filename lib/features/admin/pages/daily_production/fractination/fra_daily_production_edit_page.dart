@@ -6,6 +6,7 @@ import 'package:intl/intl.dart'; // Added DateFormat import
 
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/data/remote/master/product_entity.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_olein_solein_sstearin.dart';
@@ -22,6 +23,7 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -440,9 +442,9 @@ class _FraDailyProductionEditPageState
             const SizedBox(height: 8),
 
             // === Oil Type Dropdown (RM) ===
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   // Return a disabled dropdown with a loading indicator or message
                   return DropdownButtonFormField<String>(
                     value: null,
@@ -468,7 +470,7 @@ class _FraDailyProductionEditPageState
                   );
                 }
 
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.productFractionationList.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -492,21 +494,34 @@ class _FraDailyProductionEditPageState
                     ),
                   );
                 }
-                final List<MasterValueEntity> oilTypeLists =
-                    provider.oilTypeLists;
+                final List<ProductEntity> oilTypeLists =
+                    provider.productFractionationList;
 
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
                       oilTypeLists.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                          value: oil.id,
+                          child: Text(
+                            "${oil.rawMaterial}",
+                            style: TextStyle(fontSize: 14),
+                          ),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilBp =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
                     });
                   },
                   decoration: InputDecoration(
@@ -762,10 +777,10 @@ class _FraDailyProductionEditPageState
 
     // Set dropdown and simple state values
     selectedMachine = entity.workCenter?.trim();
-    selectedOilRm = entity.oilTypeRm?.trim();
-    selectedOilFg = entity.oilTypeFgs?.trim(); // Added
-    selectedOilBp = entity.oilTypeFgh?.trim(); // Added
-    selectedTransactionDate = entity.transactionDate ?? DateTime.now(); // Added
+    selectedOilRm = entity.oilTypeRmId;
+    selectedOilFg = entity.oilTypeFgsId;
+    selectedOilBp = entity.oilTypeFghId;
+    selectedTransactionDate = entity.transactionDate ?? DateTime.now();
 
     // --- Section 1: RBDPO/ROL/RPS Data ---
     // Note: cpoTank is missing in the entity for Section 1, using oilTypeRmFromTank
@@ -1007,7 +1022,7 @@ class _FraDailyProductionEditPageState
         shift: _getShiftBasedOnTimeAndDate(postingDate).toString(),
 
         // Section 1: RBDPO/ROL/RPS
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmNo: _parseInt(no1Controller.text),
         oilTypeRmCr: _parseInt(cr1Controller.text),
         oilTypeRmFromTank: selected1Tank,
@@ -1018,7 +1033,7 @@ class _FraDailyProductionEditPageState
         oilTypeRmTotal: _parseInt(flowmeter1TotalController.text),
 
         // Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN
-        oilTypeFgs: selectedOilFg,
+        oilTypeFgsId: selectedOilFg,
         oilTypeFgsNo: _parseInt(no2Controller.text),
         oilTypeFgsCr: _parseInt(cr2Controller.text),
         oilTypeFgsAwalJam: selectedTime2Awal,
@@ -1029,7 +1044,7 @@ class _FraDailyProductionEditPageState
         oilTypeFgsToTank: selected2Tank,
 
         // Section 3: STEARIN/PMF/HARD STEARIN
-        oilTypeFgh: selectedOilBp,
+        oilTypeFghId: selectedOilBp,
         oilTypeFghNo: _parseInt(no3Controller.text),
         oilTypeFghAwalJam: selectedTime3Awal,
         oilTypeFghAwalFlowmeter: _parseDouble(flowmeter3AwalController),

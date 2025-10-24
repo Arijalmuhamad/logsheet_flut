@@ -28,6 +28,9 @@ class PretreatmentBleachingFiltrationEntity {
   /// PreTreatment Oil Type
   final String? oilType;
 
+  /// PreTreatment Oil Type ID
+  final String? oilTypeId;
+
   /// PreTreatment Fit 001 (CPO) - Tph
   final double? ptFit001;
 
@@ -145,7 +148,9 @@ class PretreatmentBleachingFiltrationEntity {
     required this.time,
     required this.shift,
 
-    required this.oilType,
+    this.oilType,
+    required this.oilTypeId,
+
     required this.ptFit001,
     required this.ptE001aInlet,
     required this.ptF0012,
@@ -242,8 +247,8 @@ class PretreatmentBleachingFiltrationEntity {
       refineryMachine: map['refinery_machine'] as String?,
       time: parseTime(map['time']),
       shift: parseInt(map['shift']),
-
       oilType: map['oil_type'] as String?,
+      oilTypeId: map['oil_type_id'] as String?,
       ptFit001: tryParseDouble(map['pt_fit001']),
       ptE001aInlet: tryParseDouble(map['pt_e001a_inlet']),
       ptF0012: tryParseDouble(map['pt_f0012']),
@@ -313,8 +318,7 @@ class PretreatmentBleachingFiltrationEntity {
       'refinery_machine': refineryMachine,
       'time': formatTime(time),
       'shift': shift,
-
-      'oil_type': oilType,
+      'oil_type': oilTypeId,
       'pt_fit001': ptFit001,
       'pt_e001a_inlet': ptE001aInlet,
       'pt_f0012': ptF0012,

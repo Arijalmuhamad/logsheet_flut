@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
-import 'package:logsheet_app/features/admin/widgets/custom_hour_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +56,7 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Consumer<ValueProvider>(
+        child: Consumer<ProductProvider>(
           builder: (context, provider, child) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,26 +71,19 @@ class FraSectionOleinSoleinSstearin extends StatelessWidget {
                 //   value: selectedOil,
                 //   onChanged: onOilFgChanged,
                 // ),
-                DropdownButtonFormField<MasterValueEntity>(
-                  value:
-                      selectedOil != null &&
-                              provider.oilTypeLists.any(
-                                (oil) => oil.code == selectedOil,
-                              )
-                          ? provider.oilTypeLists.firstWhere(
-                            (oil) => oil.code == selectedOil,
-                          )
-                          : null,
+                DropdownButtonFormField<String>(
+                  value: selectedOil,
+                  isExpanded: true,
                   items:
-                      provider.oilTypeLists.map((oil) {
-                        return DropdownMenuItem<MasterValueEntity>(
-                          value: oil,
-                          child: Text(" ${oil.name}"),
+                      provider.productFractionationList.map((oil) {
+                        return DropdownMenuItem<String>(
+                          value: oil.id,
+                          child: Text(oil.finishGood ?? 'N/A'),
                         );
                       }).toList(),
                   onChanged: (value) {
                     if (value != null) {
-                      onOilFgChanged(value.code); // simpan code-nya saja
+                      onOilFgChanged(value); // simpan code-nya saja
                     }
                   },
                   decoration: InputDecoration(

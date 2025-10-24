@@ -104,11 +104,11 @@ class _LogsheetPretreatmentBleachingFiltrationListPageState
     return Consumer<PretreatmentBleachingFiltrationProvider>(
       builder: (context, provider, child) {
         List<PretreatmentBleachingFiltrationEntity> filteredList =
-            provider.pretreatmentList
-                .where(
-                  (e) => e.preparedStatus == null && e.checkedStatus == null,
-                )
-                .toList();
+            provider.pretreatmentList;
+        // .where(
+        //   (e) => e.preparedStatus == null && e.checkedStatus == null,
+        // )
+        // .toList();
         if (provider.isLoading) {
           return Center(child: CircularProgressIndicator());
         }

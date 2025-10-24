@@ -11,6 +11,7 @@ import 'package:logsheet_app/data/repositories/maintenance/maintenance_lamps_and
 import 'package:logsheet_app/data/repositories/master/business_unit_repository.dart';
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
 import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
+import 'package:logsheet_app/data/repositories/master/product_repository.dart';
 import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
 import 'package:logsheet_app/data/repositories/quality_report/quality_report_qc_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
@@ -25,6 +26,7 @@ import 'package:logsheet_app/data/services/maintenance/maintenance_lamps_and_gla
 import 'package:logsheet_app/data/services/master/business_unit_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
+import 'package:logsheet_app/data/services/master/product_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
@@ -40,6 +42,7 @@ import 'package:logsheet_app/providers/maintenance/maintenance_lamps_and_glass_p
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
@@ -69,6 +72,10 @@ void main() async {
         Provider<ValueMySQLService>(create: (context) => ValueMySQLService()),
         // Provide PlantMySQL Service
         Provider<PlantMySQLService>(create: (context) => PlantMySQLService()),
+        // Provide ProductMySQL Service
+        Provider<ProductMySQLService>(
+          create: (context) => ProductMySQLService(),
+        ),
         // Provide Quality Report QC MySQL Service
         Provider<QualityReportQCMySQLService>(
           create: (context) => QualityReportQCMySQLService(),
@@ -130,6 +137,12 @@ void main() async {
         Provider<PlantRepository>(
           create:
               (context) => PlantRepository(context.read<PlantMySQLService>()),
+        ),
+        // Provide Product Repository
+        Provider<ProductRepository>(
+          create:
+              (context) =>
+                  ProductRepository(context.read<ProductMySQLService>()),
         ),
         // Provide Quality Report QC Repository
         Provider<QualityReportQCRepository>(
@@ -215,6 +228,11 @@ void main() async {
         // Provide Plant Provider
         ChangeNotifierProvider(
           create: (context) => PlantProvider(context.read<PlantRepository>()),
+        ),
+        // Provide Product Provider
+        ChangeNotifierProvider(
+          create:
+              (context) => ProductProvider(context.read<ProductRepository>()),
         ),
         // Provide Quality Report QC Provider
         ChangeNotifierProvider(

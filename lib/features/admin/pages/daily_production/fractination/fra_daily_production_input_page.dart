@@ -21,6 +21,7 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -276,10 +277,13 @@ class _DailyProductionFractionPageState
   void initState() {
     super.initState();
     final valueProvider = context.read<ValueProvider>();
-    if (valueProvider.tankSourceList.isEmpty) {
+    final productProvider = context.read<ProductProvider>();
+
+    if (valueProvider.tankSourceList.isEmpty ||
+        productProvider.productFractionationList.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await valueProvider.fetchAllInitialData();
-        oilLists = valueProvider.oilTypeLists;
+        await productProvider.fetchProducts();
         tankLists = valueProvider.tankSourceList;
       });
     }
@@ -414,7 +418,7 @@ class _DailyProductionFractionPageState
                         onPressed: () async {
                           await context
                               .read<ValueProvider>()
-                              .fetchWorkCenterLists();
+                              .fetchWorkCenterFractLists();
                         },
                       ),
                     ),
@@ -485,9 +489,9 @@ class _DailyProductionFractionPageState
             const SizedBox(height: 8),
 
             // Oil Type Dropdown
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   // Return a disabled dropdown with a loading indicator or message
                   return DropdownButtonFormField<String>(
                     value: null,
@@ -513,7 +517,10 @@ class _DailyProductionFractionPageState
                   );
                 }
 
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.productFractionationList.isEmpty) {
+                  log(
+                    "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
+                  );
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -530,25 +537,41 @@ class _DailyProductionFractionPageState
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: () {
-                          context.read<ValueProvider>().fetchOilTypes();
+                        onPressed: () async {
+                          await provider.fetchProducts();
                         },
                       ),
                     ),
                   );
                 }
+                log(
+                  "FRACTIONATION LIST LENGTH: ${provider.productFractionationList.length}",
+                );
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.productFractionationList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                          value: oil.id,
+                          child: Text(
+                            oil.rawMaterial!,
+                            style: TextStyle(fontSize: 14),
+                          ),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilBp =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
                     });
                   },
                   decoration: InputDecoration(
@@ -942,7 +965,7 @@ class _DailyProductionFractionPageState
         workCenter: selectedWorkCenter,
         shift: getShiftBasedOnTimeAndDate(postingDate).toString(),
         // cpoTank: selected1Tank,
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmNo: parseInt(no1Controller.text),
         oilTypeRmCr: parseInt(cr1Controller.text),
         oilTypeRmFromTank: selected1Tank,
@@ -951,7 +974,7 @@ class _DailyProductionFractionPageState
         oilTypeRmAkhirJam: selectedTime1Akhir,
         oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
         oilTypeRmTotal: parseInt(flowmeter1TotalController.text),
-        oilTypeFgs: selectedOilFg,
+        oilTypeFgsId: selectedOilFg,
         oilTypeFgsNo: parseInt(no2Controller.text),
         oilTypeFgsCr: parseInt(cr2Controller.text),
         oilTypeFgsAwalJam: selectedTime2Awal,
@@ -960,7 +983,7 @@ class _DailyProductionFractionPageState
         oilTypeFgsAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
         oilTypeFgsTotal: parseInt(flowmeter2TotalController.text),
         oilTypeFgsToTank: selected2Tank,
-        oilTypeFgh: selectedOilBp,
+        oilTypeFghId: selectedOilBp,
         oilTypeFghNo: parseInt(no3Controller.text),
         oilTypeFghAwalJam: selectedTime3Awal,
         oilTypeFghAwalFlowmeter: parseDouble(flowmeter3AwalController),

@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-// Simple mock model to simulate your report data
-class ReportEntity {
-  final int id;
-  final String checkedStatus;
-  final DateTime? transactionDate;
-
-  ReportEntity({
-    required this.id,
-    required this.checkedStatus,
-    this.transactionDate,
-  });
-}
+import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
+import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class MaintenanceChangeProductApprovalDetailPage extends StatefulWidget {
-  const MaintenanceChangeProductApprovalDetailPage({super.key});
+  String id;
+
+  MaintenanceChangeProductApprovalDetailPage({super.key, required this.id});
 
   @override
   State<MaintenanceChangeProductApprovalDetailPage> createState() =>
@@ -24,123 +22,228 @@ class MaintenanceChangeProductApprovalDetailPage extends StatefulWidget {
 
 class _MaintenanceChangeProductApprovalDetailPageState
     extends State<MaintenanceChangeProductApprovalDetailPage> {
-  // ✅ Define your reportEntities list here (no constructor required)
-  final List<ReportEntity> reportEntities = [
-    ReportEntity(
-      id: 101,
-      checkedStatus: "Approved",
-      transactionDate: DateTime.now().subtract(const Duration(minutes: 10)),
-    ),
-    ReportEntity(
-      id: 102,
-      checkedStatus: "Rejected",
-      transactionDate: DateTime.now().subtract(const Duration(minutes: 30)),
-    ),
-    ReportEntity(
-      id: 103,
-      checkedStatus: "Pending",
-      transactionDate: DateTime.now(),
-    ),
-  ];
+  MaintenanceChangeProductChecklistReportEntity? approvalItem;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final item = context
+          .read<ChangeProductChecklistProvider>()
+          .uniqueApprovalList
+          .firstWhere((element) => element.id == widget.id);
+
+      setState(() {
+        approvalItem = item;
+      });
+      await context.read<ChangeProductChecklistProvider>().getLangkahKerja();
+
+      final changeProductChecklistProvider =
+          context.read<ChangeProductChecklistProvider>();
+
+      changeProductChecklistProvider.prepopulateReportDetailListForDetail(
+        widget.id,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Approve Detail')),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView.builder(
-          itemCount: reportEntities.length,
-          itemBuilder: (context, index) {
-            final report = reportEntities[index];
-            final isApproved = report.checkedStatus == "Approved";
-            final isRejected = report.checkedStatus == "Rejected";
-            final transactionTime = report.transactionDate != null
-                ? DateFormat('HH:mm').format(report.transactionDate!)
-                : 'N/A';
+    if (approvalItem == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 4.0),
-              child: ListTile(
-                title: Text('Time: $transactionTime'),
-                subtitle: Text('Ticket ID: ${report.id}'),
-                trailing: Icon(
-                  isApproved
-                      ? Icons.check_circle_rounded
-                      : isRejected
-                          ? Icons.cancel_rounded
-                          : Icons.keyboard_arrow_right_rounded,
-                  color: isApproved
-                      ? Colors.green
-                      : isRejected
-                          ? Colors.red
-                          : Colors.grey,
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final changeProductChecklistProvider =
+        context.watch<ChangeProductChecklistProvider>();
+    final user = context.read<UserProvider>();
+    String _isNull(double? value) {
+      if (value == null) {
+        return '-';
+      } else {
+        return value.toString();
+      }
+    }
+
+    return context.watch<ChangeProductChecklistProvider>().isLoadingDelete
+        ? const Center(child: CircularProgressIndicator())
+        : SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(
+              top: 16,
+              bottom: 36,
+              right: 16,
+              left: 16,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFAB2F2B),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildInfoCard(
+                        'Tanggal',
+                        _formatDateString(approvalItem?.transactionDate),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildInfoCard(
+                        'Waktu',
+                        _formatTimeString(approvalItem?.transactionTime),
+                      ),
+                    ],
+                  ),
                 ),
-                onTap: () {
-                  _buildBottomSheet(context, report);
-                },
+
+                _buildSection('General Information', [
+                  _buildDataRow('ID', approvalItem?.id ?? ''),
+                  _buildDataRow('Company', approvalItem!.company),
+                  _buildDataRow('Plant', approvalItem!.plant),
+                  _buildDataRow(
+                    'First Product',
+                    approvalItem!.firstProduct ?? '',
+                  ),
+                  _buildDataRow(
+                    'Next Product',
+                    approvalItem!.nextProduct ?? '',
+                  ),
+                  _buildDataRow('Work Center', approvalItem!.workCenter ?? ''),
+                  _buildDataRow(
+                    'Approved/Rejected By',
+                    approvalItem!.checkedBy ?? '',
+                  ),
+                  _buildDataRow(
+                    'Checked Date',
+                    approvalItem!.checkedDate ?? '',
+                  ),
+                  _buildDataRow(
+                    'Checked Status',
+                    approvalItem!.checkedStatus ?? '',
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        );
+  }
+
+  Widget _buildDataRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF655F5B),
+                fontWeight: FontWeight.w600,
               ),
-            );
-          },
+            ),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(color: Colors.black54)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFAB2F2B),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: title == "Shift" || title == "Jam" ? 24 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _buildBottomSheet(BuildContext context, ReportEntity report) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Ticket ID: ${report.id}",
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+  Widget _buildSection(String title, List<Widget> children) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Color(0xFF655F5B),
               ),
-              const SizedBox(height: 8),
-              Text("Status: ${report.checkedStatus}"),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Approved")),
-                      );
-                    },
-                    icon: const Icon(Icons.check_rounded),
-                    label: const Text("Approve"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Rejected")),
-                      );
-                    },
-                    icon: const Icon(Icons.close_rounded),
-                    label: const Text("Reject"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      ),
     );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      title: const Text(
+        'Change Product Detail',
+        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.black),
+    );
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd MMMM yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
+  }
+
+  String _formatTimeString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    try {
+      final dt = DateFormat("HH:mm:ss").parse(s);
+      return DateFormat("HH:mm").format(dt); // hasil: 08:00
+    } catch (e) {
+      return s; // fallback jika parsing gagal
+    }
   }
 }

@@ -995,65 +995,67 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
             ],
           ),
-          ExpansionTile(
-            leading: const Icon(
-              Icons.change_circle_outlined,
-              color: Color(0xFF655F5B),
-            ),
-            title: Text(
-              'Change Product Checklist\n(${formChangeProductChecklist?.code})',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
+          if (AppRoles.qualityControlAccess.contains(userRole)) ...[
+            ExpansionTile(
+              leading: const Icon(
+                Icons.change_circle_outlined,
+                color: Color(0xFF655F5B),
               ),
-            ),
-            childrenPadding: const EdgeInsets.only(left: 20.0),
-            iconColor: const Color(0xFFAB2F2B),
-            collapsedIconColor: Colors.grey,
-            children: [
-              // Show Approval only to Managers and Leads (you can adjust roles here)
-              if (AppRoles.managerProd.contains(userRole))
+              title: Text(
+                'Change Product Checklist\n(${formChangeProductChecklist?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Show Approval only to Managers and Leads (you can adjust roles here)
+                if (AppRoles.managerProd.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.input_rounded,
+                    title: 'List',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MaintenanceChangeProductListPage(),
+                        ),
+                      );
+                    },
+                  ),
+
                 _buildDrawerItem(
-                  icon: Icons.input_rounded,
-                  title: 'List',
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Report',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder:
-                            (_) => MaintenanceChangeProductListPage(),
+                            (_) => MaintenanceChangeProductReportListPage(),
                       ),
                     );
                   },
                 ),
 
-              _buildDrawerItem(
-                icon: Icons.receipt_long_outlined,
-                title: 'Report',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceChangeProductPageReportlist(),
-                    ),
-                  );
-                },
-              ),
-
-              _buildDrawerItem(
-                icon: Icons.check_circle_outline,
-                title: 'Approval',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MaintenanceChangeProductApprovalPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+                _buildDrawerItem(
+                  icon: Icons.check_circle_outline,
+                  title: 'Approval',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceChangeProductApprovalPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
 
           const Divider(height: 1),
           ListTile(

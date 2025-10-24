@@ -59,6 +59,10 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   List<MaintenanceChangeProductChecklistReportEntity> get approvalList =>
       _approvalList;
 
+  List<MaintenanceChangeProductChecklistReportEntity> _uniqueApprovalList = [];
+  List<MaintenanceChangeProductChecklistReportEntity> get uniqueApprovalList =>
+      _uniqueApprovalList;
+
   String? _latestId;
   String? get latestId => _latestId;
 
@@ -369,12 +373,38 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     }
   }
 
+  // Future<void> getAllApprovalHeaderAndDetail() async {
+  //   _setLoading(true);
+  //   _setErrorMessage(null);
+
+  //   try {
+  //     _approvalList = await _repository.getAllApprovalHeaderAndDetail();
+  //     notifyListeners();
+
+  //     log('Approval List Length: ${_approvalList.length}');
+  //   } catch (e) {
+  //     _setErrorMessage("$e");
+  //   } finally {
+  //     _setLoading(false);
+  //   }
+  // }
   Future<void> getAllApprovalHeaderAndDetail() async {
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
       _approvalList = await _repository.getAllApprovalHeaderAndDetail();
+
+      final uniqueData =
+          <String, MaintenanceChangeProductChecklistReportEntity>{};
+
+      for (var item in _approvalList) {
+        if (!uniqueData.containsKey(item.id)) {
+          uniqueData[item.id] = item;
+        }
+      }
+
+      _uniqueApprovalList = uniqueData.values.toList();
       notifyListeners();
 
       log('Approval List Length: ${_approvalList.length}');
@@ -469,12 +499,13 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   void prepopulateReportDetailListForDetail(String idHdr) {
     _reportDetailList.clear();
 
-    final _selectedReportList = _reportList.where((report) => report.id == idHdr).toList();
+    final _selectedReportList =
+        _reportList.where((report) => report.id == idHdr).toList();
 
     for (var reportItem in _selectedReportList) {
       final detailItem = MaintenanceChangeProductChecklistDetailEntity(
         id: reportItem.detailId,
-        idHdr: idHdr, 
+        idHdr: idHdr,
         checkItem: reportItem.checkItem,
         statusItem: reportItem.statusItem,
       );

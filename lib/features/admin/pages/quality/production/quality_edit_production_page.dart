@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -101,7 +102,7 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
     qualityReportRefDao = QualityReportRefineryDao(db);
 
     // Initialize dropdown values from the report
-    selectedOilType = widget.report.oilType;
+    selectedOilType = widget.report.oilTypeId;
     selectedWorkCenter = widget.report.workCenter;
     selectedTankSource = widget.report.rmTankSource;
     selectedBpToTankGroup = widget.report.bpToTank;
@@ -245,7 +246,7 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
         transactionDate: widget.report.transactionDate,
         postingDate: widget.report.postingDate,
         workCenter: selectedWorkCenter,
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         time: time,
         shift: getShiftBasedOnDate(time),
         rmFlowRate: parseDouble(rmFlowrateController),
@@ -474,11 +475,11 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
       case 2:
         final finishedGoods =
             context
-                .read<ValueProvider>()
-                .oilTypeLists
-                .where((element) => element.code == selectedOilType)
+                .read<ProductProvider>()
+                .productRefineryList
+                .where((element) => element.id == selectedOilType)
                 .toList();
-        return 'Finished Goods (${finishedGoods[0].outputOilType})';
+        return 'Finished Goods (${finishedGoods[0].rawMaterial})';
       case 3:
         return 'By Product';
       case 4:
@@ -865,12 +866,6 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final finishedGoods =
-    //     context
-    //         .read<ValueProvider>()
-    //         .oilTypeLists
-    //         .where((element) => element.code == widget.report.oilType)
-    //         .toList();
     return Scaffold(
       backgroundColor: backgroundGrey,
       appBar: buildAppBar(),
@@ -924,16 +919,16 @@ class _QualityEditProductionPageState extends State<QualityEditProductionPage> {
               ),
               const SizedBox(height: 8),
               // Oil Type Dropdown
-              Consumer<ValueProvider>(
+              Consumer<ProductProvider>(
                 builder: (context, provider, child) {
                   return DropdownButtonFormField<String>(
                     value: selectedOilType,
                     items:
-                        provider.oilTypeLists.map((oil) {
+                        provider.productRefineryList.map((oil) {
                           return DropdownMenuItem<String>(
-                            value: oil.code,
+                            value: oil.id,
                             child: Text(
-                              "${oil.code} - ${oil.name}",
+                              "${oil.rawMaterial}",
                               style: const TextStyle(fontSize: 14),
                             ),
                           );

@@ -216,16 +216,21 @@ class QualityReportProductionProvider with ChangeNotifier {
     String username,
     String role,
     String plantCode,
-    UserEntity currentUser,
-  ) async {
+    UserEntity currentUser, {
+    bool isEditFromQc = false,
+  }) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
       log('Updating report...');
-      final result = await _repository.updateReportTicket(report, currentUser);
+      final result = await _repository.updateReportTicket(
+        report,
+        currentUser,
+        isEditFromQc: isEditFromQc,
+      );
       log(result.toString());
       fetchAllTickets(null, null, username, role, plantCode);
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 100));
       _setLoading(false);
       return result;
     } catch (e) {

@@ -91,28 +91,129 @@ class PretreatmentBleachingFiltrationMySQLService {
         case 'LEAD' || 'LEAD_PROD':
           // Query untuk Shift Leader: Hanya bisa melihat logsheet dari shift yang dipegangnya.
           baseQuery = """
-          SELECT
-            t.*
-          FROM
-            t_pretreatment_bleaching_filtration t
-          JOIN
-            m_roles_shift_prepared rs ON t.shift = rs.shift_code
+          SELECT 
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.refinery_machine,
+            a.time,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.shift,
+            a.pt_fit001,
+            a.pt_e001a_inlet,
+            a.pt_f0012,
+            a.pt_h3po4,
+            a.pt_be,
+            a.bl_vacum,
+            a.bl_t_inlet,
+            a.bl_t_b602,
+            a.bl_spurge,
+            a.p_a,
+            a.p_b,
+            a.p_c,
+            a.fn_f601,
+            a.fn_f602,
+            a.fn_f603,
+            a.fb_604a,
+            a.fb_604b,
+            a.fb_604c,
+            a.fc_605a,
+            a.fc_605b,
+            a.clarity,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM 
+            t_pretreatment_bleaching_filtration AS a
+          JOIN 
+            m_product AS b 
+          ON 
+            a.oil_type = b.id
           WHERE
-            rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode  AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (t.flag IS NULL OR t.flag = 'T')
+            a.plant = :plantCode AND a.posting_date >= CURRENT_DATE - INTERVAL '30' DAY AND (a.flag IS NULL OR a.flag = 'T')
         """;
-          params["username"] = username;
-          params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
 
         case 'OPR' || 'OPR_PROD':
           // Query untuk Operator: Dapat melihat semua logsheet di plant-nya.
           baseQuery = """
-          SELECT
-            *
-          FROM
-            t_pretreatment_bleaching_filtration
-          WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')
+          SELECT 
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.refinery_machine,
+            a.time,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.shift,
+            a.pt_fit001,
+            a.pt_e001a_inlet,
+            a.pt_f0012,
+            a.pt_h3po4,
+            a.pt_be,
+            a.bl_vacum,
+            a.bl_t_inlet,
+            a.bl_t_b602,
+            a.bl_spurge,
+            a.p_a,
+            a.p_b,
+            a.p_c,
+            a.fn_f601,
+            a.fn_f602,
+            a.fn_f603,
+            a.fb_604a,
+            a.fb_604b,
+            a.fb_604c,
+            a.fc_605a,
+            a.fc_605b,
+            a.clarity,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM 
+            t_pretreatment_bleaching_filtration AS a
+          JOIN 
+            m_product AS b 
+          ON 
+            a.oil_type = b.id
+          WHERE 
+            a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         """;
           params["plantCode"] = plantCode;
           break;
@@ -120,12 +221,64 @@ class PretreatmentBleachingFiltrationMySQLService {
         case 'MGR' || 'MGR_PROD':
           // Query untuk Manager: Hanya bisa melihat logsheet yang statusnya sudah 'Approved' oleh Shift Leader.
           baseQuery = """
-          SELECT
-            *
-          FROM
-            t_pretreatment_bleaching_filtration
+          SELECT 
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.refinery_machine,
+            a.time,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.shift,
+            a.pt_fit001,
+            a.pt_e001a_inlet,
+            a.pt_f0012,
+            a.pt_h3po4,
+            a.pt_be,
+            a.bl_vacum,
+            a.bl_t_inlet,
+            a.bl_t_b602,
+            a.bl_spurge,
+            a.p_a,
+            a.p_b,
+            a.p_c,
+            a.fn_f601,
+            a.fn_f602,
+            a.fn_f603,
+            a.fb_604a,
+            a.fb_604b,
+            a.fb_604c,
+            a.fc_605a,
+            a.fc_605b,
+            a.clarity,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM 
+            t_pretreatment_bleaching_filtration AS a
+          JOIN 
+            m_product AS b 
+          ON 
+            a.oil_type = b.id
           WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
+            a.prepared_status = :status AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') 
         """;
           params["status"] = "Approved";
           params["plantCode"] = plantCode;
@@ -133,8 +286,67 @@ class PretreatmentBleachingFiltrationMySQLService {
 
         case 'ADM':
           // Query untuk Admin: Dapat melihat semua logsheet di plant-nya.
-          baseQuery =
-              "SELECT * FROM t_pretreatment_bleaching_filtration WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
+          baseQuery = """
+          SELECT 
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.refinery_machine,
+            a.time,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.shift,
+            a.pt_fit001,
+            a.pt_e001a_inlet,
+            a.pt_f0012,
+            a.pt_h3po4,
+            a.pt_be,
+            a.bl_vacum,
+            a.bl_t_inlet,
+            a.bl_t_b602,
+            a.bl_spurge,
+            a.p_a,
+            a.p_b,
+            a.p_c,
+            a.fn_f601,
+            a.fn_f602,
+            a.fn_f603,
+            a.fb_604a,
+            a.fb_604b,
+            a.fb_604c,
+            a.fc_605a,
+            a.fc_605b,
+            a.clarity,
+            a.remarks,
+            a.flag,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM 
+            t_pretreatment_bleaching_filtration AS a
+          JOIN 
+            m_product AS b 
+          ON 
+            a.oil_type = b.id    
+          WHERE 
+            a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
+              
+          """;
           params["plantCode"] = plantCode;
           break;
 
@@ -146,19 +358,19 @@ class PretreatmentBleachingFiltrationMySQLService {
       // 2. Add date and time filters dynamically
       if (dateFilter != null) {
         // Menggunakan DATE() untuk membandingkan hanya bagian tanggal dari kolom transaction_date
-        baseQuery += " AND DATE(t.transaction_date) = :transactionDate";
+        baseQuery += " AND DATE(a.transaction_date) = :transactionDate";
         params["transactionDate"] = DateFormat('yyyy-MM-dd').format(dateFilter);
       }
       if (time != null) {
-        baseQuery += " AND t.time = :time";
+        baseQuery += " AND a.time = :time";
         params["time"] = time;
       }
 
       // 3. Add the ORDER BY clause for consistent sorting
       if (role == 'LEAD') {
-        baseQuery += " ORDER BY t.transaction_date DESC, t.time DESC";
+        baseQuery += " ORDER BY a.transaction_date DESC, a.time DESC";
       } else {
-        baseQuery += " ORDER BY transaction_date DESC, time ASC";
+        baseQuery += " ORDER BY a.transaction_date DESC, a.time ASC";
       }
 
       final IResultSet result = await connection!.execute(baseQuery, params);
@@ -490,8 +702,66 @@ class PretreatmentBleachingFiltrationMySQLService {
         return [];
       }
       connection = connResult.connection;
-      String query =
-          "SELECT * FROM t_pretreatment_bleaching_filtration WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+      String query = """
+        SELECT 
+          a.id,
+          a.company,
+          a.plant,
+          a.transaction_date,
+          a.posting_date,
+          a.refinery_machine,
+          a.time,
+          a.oil_type AS oil_type_id,
+          b.raw_material AS oil_type,
+          a.shift,
+          a.pt_fit001,
+          a.pt_e001a_inlet,
+          a.pt_f0012,
+          a.pt_h3po4,
+          a.pt_be,
+          a.bl_vacum,
+          a.bl_t_inlet,
+          a.bl_t_b602,
+          a.bl_spurge,
+          a.p_a,
+          a.p_b,
+          a.p_c,
+          a.fn_f601,
+          a.fn_f602,
+          a.fn_f603,
+          a.fb_604a,
+          a.fb_604b,
+          a.fb_604c,
+          a.fc_605a,
+          a.fc_605b,
+          a.clarity,
+          a.remarks,
+          a.flag,
+          a.entry_by,
+          a.entry_date,
+          a.prepared_by,
+          a.prepared_date,
+          a.prepared_status,
+          a.prepared_status_remarks,
+          a.checked_by,
+          a.checked_date,
+          a.checked_status,
+          a.checked_status_remarks,
+          a.updated_by,
+          a.updated_date,
+          a.form_no,
+          a.date_issued,
+          a.revision_no,
+          a.revision_date
+        FROM 
+          t_pretreatment_bleaching_filtration AS a
+        JOIN 
+          m_product AS b 
+        ON 
+          a.oil_type = b.id
+        WHERE 
+          DATE(posting_date) = :dateFilter AND plant = :plantCode
+        """;
 
       dateFilter ??= DateTime.now();
 
@@ -499,6 +769,7 @@ class PretreatmentBleachingFiltrationMySQLService {
         "dateFilter": DateFormat('yyyy-MM-dd').format(dateFilter),
         "plantCode": plantCode,
       };
+
       log("Params: $params");
 
       if (shift != null && shift != "All") {

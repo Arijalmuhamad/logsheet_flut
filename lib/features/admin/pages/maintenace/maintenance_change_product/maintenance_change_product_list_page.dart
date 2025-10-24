@@ -48,8 +48,7 @@ class _MaintenanceChangeProductListPageState
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => MaintenanceChangeProductInputPage(),
+              builder: (context) => MaintenanceChangeProductInputPage(),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page
@@ -256,7 +255,7 @@ class _MaintenanceChangeProductListPageState
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    "$date",
+                    "${_formatDateString(date)}",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),
@@ -313,5 +312,15 @@ class _MaintenanceChangeProductListPageState
       print("Error parsing date: $e");
       return null;
     }
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd MMMM yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
   }
 }
