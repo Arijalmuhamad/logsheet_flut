@@ -128,6 +128,7 @@ class _MaintenanceChangeProductListPageState
                           time: item.transactionTime,
                           workCenter: item.workCenter ?? '',
                           entryBy: item.entryBy ?? '',
+                        
                         );
                       },
                     );
@@ -188,6 +189,7 @@ class _MaintenanceChangeProductListPageState
     required String time,
     required String workCenter,
     required String entryBy,
+
   }) {
     return InkWell(
       onTap: () {
@@ -229,17 +231,7 @@ class _MaintenanceChangeProductListPageState
                       horizontal: 10,
                       vertical: 4,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "Fill With Status",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    
                   ),
                 ],
               ),
@@ -318,7 +310,7 @@ class _MaintenanceChangeProductListPageState
     if (s == null || s.isEmpty) return '-';
     final dt = DateTime.tryParse(s);
     if (dt != null) {
-      return DateFormat('dd MMMM yyyy').format(dt);
+      return DateFormat('dd-MM-yyyy').format(dt);
     }
     // If parsing fails, return the original string as a fallback
     return s;

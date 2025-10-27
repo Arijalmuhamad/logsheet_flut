@@ -65,6 +65,8 @@ class _MaintenanceChangeProductApprovalPageState
                       workCenter: item.workCenter ?? '',
                       statusText:
                           item.checkedStatus ?? item.preparedStatus ?? '',
+                      firstProduct: item.firstProduct ?? '',
+                      nextProduct: item.nextProduct ?? '',
                     );
                   },
                 ),
@@ -91,6 +93,8 @@ class _MaintenanceChangeProductApprovalPageState
     required String date,
     required String workCenter,
     required String statusText,
+    required String firstProduct,
+    required String nextProduct,
     IconData? icon,
     Color? iconColor,
     Color? cardColor,
@@ -165,6 +169,10 @@ class _MaintenanceChangeProductApprovalPageState
                       'Work Center: $workCenter',
                       style: const TextStyle(fontSize: 14),
                     ),
+                    Text('First Product: $firstProduct',
+                        style: const TextStyle(fontSize: 14)),
+                         Text('Next Product: $nextProduct',
+                        style: const TextStyle(fontSize: 14)),
                     const SizedBox(height: 4),
                     Text(
                       'Status: $statusText',

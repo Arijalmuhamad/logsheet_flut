@@ -49,8 +49,7 @@ class _MaintenanceChangeProductReportListPageState
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => MaintenanceChangeProductInputPage(),
+              builder: (context) => MaintenanceChangeProductInputPage(),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page
@@ -130,6 +129,7 @@ class _MaintenanceChangeProductReportListPageState
                           time: item.transactionTime,
                           workCenter: item.workCenter ?? '',
                           entryBy: item.entryBy ?? '',
+                          checkedStatus: item.checkedStatus ?? '',
                         );
                       },
                     );
@@ -190,6 +190,7 @@ class _MaintenanceChangeProductReportListPageState
     required String time,
     required String workCenter,
     required String entryBy,
+    required String checkedStatus,
   }) {
     return InkWell(
       onTap: () {
@@ -197,7 +198,8 @@ class _MaintenanceChangeProductReportListPageState
           context,
           MaterialPageRoute(
             builder:
-                (context) => MaintenanceChangeProductReportListDetailPage(id: id),
+                (context) =>
+                    MaintenanceChangeProductReportListDetailPage(id: id),
           ),
         ).then((_) {
           // Refresh the list when returning from the detail page
@@ -236,7 +238,9 @@ class _MaintenanceChangeProductReportListPageState
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      "Fill With Status",
+                      (checkedStatus != null && checkedStatus.isNotEmpty && checkedStatus != "")
+                          ? checkedStatus
+                          : 'Not Prepared',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -257,7 +261,7 @@ class _MaintenanceChangeProductReportListPageState
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    "$date",
+                    "${_formatDateString(date)}",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),
@@ -314,5 +318,15 @@ class _MaintenanceChangeProductReportListPageState
       print("Error parsing date: $e");
       return null;
     }
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd-MM-yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
   }
 }
