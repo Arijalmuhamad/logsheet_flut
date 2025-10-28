@@ -719,7 +719,7 @@ class _FiltrationPerformInputPageState
                   isLoading
                       ? null
                       : () async {
-                        await _save();
+                        await _save(context);
                         Future.delayed(Duration(milliseconds: 300));
                         if (!context.mounted) return;
                         Navigator.of(context).pop();
@@ -785,7 +785,7 @@ class _FiltrationPerformInputPageState
     return ticketPrefix + lastDigit;
   }
 
-  Future<void> _save() async {
+  Future<void> _save(BuildContext context) async {
     log("Save button logsheet pretreatment clicked");
     final provider = context.read<PretreatmentBleachingFiltrationProvider>();
     final userProvider = context.read<UserProvider>();

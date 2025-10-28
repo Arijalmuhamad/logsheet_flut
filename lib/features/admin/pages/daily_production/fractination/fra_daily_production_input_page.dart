@@ -305,16 +305,12 @@ class _DailyProductionFractionPageState
     BuildContext context, {
     required Future<void> Function() onConfirm,
   }) async {
-    bool isLoading =
-        Provider.of<DailyProductionFractionationProvider>(
-          context,
-          listen: false,
-        ).isLoading;
-
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
+        bool isLoading =
+            context.watch<DailyProductionFractionationProvider>().isLoading;
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
@@ -330,19 +326,23 @@ class _DailyProductionFractionPageState
                           },
                   child: const Text("Cancel"),
                 ),
-                isLoading
-                    ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : TextButton(
-                      onPressed: () async {
-                        await onConfirm();
-                        if (context.mounted) Navigator.of(context).pop();
-                      },
-                      child: const Text("Yes"),
-                    ),
+                TextButton(
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            await onConfirm();
+                            if (context.mounted) Navigator.of(context).pop();
+                          },
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text("Yes"),
+                ),
               ],
             );
           },

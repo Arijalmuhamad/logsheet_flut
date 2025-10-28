@@ -739,8 +739,8 @@ class _UserHomePageState extends State<UserHomePage> {
                 Icons.article_rounded,
                 color: Color(0xFF655F5B),
               ),
-              title: const Text(
-                'Refinery',
+              title: Text(
+                'Refinery\n(${formDailyProductionRefinery?.name}(A))',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -753,7 +753,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 // Manager-only Approval item
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionRefinery?.name})',
+                  title: 'List (${formDailyProductionRefinery?.name}(A))',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -769,7 +769,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (AppRoles.productionManagerApproval.contains(userRole)) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDailyProductionRefinery?.name})',
+                    title: 'Approval (${formDailyProductionRefinery?.name}(A))',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -783,7 +783,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDailyProductionRefinery?.name})',
+                  title: 'Reports (${formDailyProductionRefinery?.name}(A))',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -804,8 +804,8 @@ class _UserHomePageState extends State<UserHomePage> {
                 Icons.article_rounded,
                 color: Color(0xFF655F5B),
               ),
-              title: const Text(
-                'Fractionation',
+              title: Text(
+                'Fractionation\n(${formDailyProductionFractionation?.name}(B))',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -818,7 +818,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 // Manager-only Approval item
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionFractionation?.name})',
+                  title: 'List (${formDailyProductionFractionation?.name}(B))',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -835,7 +835,7 @@ class _UserHomePageState extends State<UserHomePage> {
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
                     title:
-                        'Approval (${formDailyProductionFractionation?.name})',
+                        'Approval (${formDailyProductionFractionation?.name}(B))',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -850,7 +850,8 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDailyProductionFractionation?.name})',
+                  title:
+                      'Reports (${formDailyProductionFractionation?.name}(B))',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1013,7 +1014,8 @@ class _UserHomePageState extends State<UserHomePage> {
               collapsedIconColor: Colors.grey,
               children: [
                 // Show Approval only to Managers and Leads (you can adjust roles here)
-                if (AppRoles.managerProd.contains(userRole) || AppRoles.leadProd.contains(userRole))
+                if (AppRoles.managerProd.contains(userRole) ||
+                    AppRoles.leadProd.contains(userRole))
                   _buildDrawerItem(
                     icon: Icons.input_rounded,
                     title: 'List',
