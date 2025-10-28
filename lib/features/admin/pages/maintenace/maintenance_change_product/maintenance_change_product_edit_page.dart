@@ -62,7 +62,6 @@ class _MaintenanceChangeProductEditPageState
   }
 
   Future<void> _initializePage() async {
-    // Pastikan initState berjalan setelah build context siap
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final changeProductChecklistProvider =
           context.read<ChangeProductChecklistProvider>();
@@ -73,14 +72,12 @@ class _MaintenanceChangeProductEditPageState
       setState(() => isLoading = true);
 
       try {
-        // --- Fetch semua data yang dibutuhkan ---
         await changeProductChecklistProvider.getLangkahKerja();
         await valueProvider.fetchWorkCenterLists();
         await valueProvider.fetchWorkCenterFractLists();
         await changeProductChecklistProvider.fetchLatestId(plant?.code ?? "");
         await productProvider.fetchProducts();
 
-        // --- Ambil report berdasarkan ID dari widget ---
         final item = changeProductChecklistProvider.uniqueReportList.firstWhere(
           (element) => element.id == widget.id,
         );
@@ -88,36 +85,51 @@ class _MaintenanceChangeProductEditPageState
         final reportItem = item;
         log("Report Item workCenter: ${reportItem.workCenter}");
 
-        // --- Siapkan data produk (produk awal & selanjutnya) ---
-        firstProducts =
-            productProvider.productList
-                .map((product) => product.rawMaterial ?? '-')
-                .toSet()
-                .toList();
-        nextProducts = List.from(firstProducts);
-
-        // --- Pilih daftar work center sesuai lokasi ---
-        if (selectedPlant == 'Refinery') {
-          workCenterList = valueProvider.workCenterLists;
-        } else if (selectedPlant == 'Fractination') {
-          workCenterList = valueProvider.workCenterFractLists;
-        }
-
-        // --- Set lokasi semua field berdasarkan reportItem ---
-
+        // Tentukan Plant berdasar Work Center
         if (reportItem.workCenter == 'REF-01' ||
             reportItem.workCenter == 'REF-02') {
           selectedPlant = 'Refinery';
+          workCenterList = valueProvider.workCenterLists;
+
+          // ambil produk untuk refinery
+          var refineryFirstProductsList =
+              productProvider.productRefineryList
+                  .map((product) => product.rawMaterial ?? '-')
+                  .toSet()
+                  .toList();
+          // var refineryNextProductsList =
+          //     productProvider.productRefineryList
+          //         .map((product) => product.finishGood ?? '-')
+          //         .toSet()
+          //         .toList();
+
+          firstProducts = refineryFirstProductsList;
+          nextProducts = List.from(firstProducts);
         } else {
           selectedPlant = 'Fractination';
+          workCenterList = valueProvider.workCenterFractLists;
+
+          // ambil produk untuk fractination
+          var fractionationFirstProductsList =
+              productProvider.productFractionationList
+                  .map((product) => product.rawMaterial ?? '-')
+                  .toSet()
+                  .toList();
+          // var fractionationNextProductsList =
+          //     productProvider.productFractionationList
+          //         .map((product) => product.finishGood ?? '-')
+          //         .toSet()
+          //         .toList();
+
+          firstProducts = fractionationFirstProductsList;
+          nextProducts = List.from(firstProducts);
         }
 
+        // isi field berdasarkan data report
         selectedWorkCenter = reportItem.workCenter;
-
         dateEntryController.text = _formatDateString(
           reportItem.transactionDate ?? '',
         );
-
         if (reportItem.transactionTime != null &&
             reportItem.transactionTime!.isNotEmpty) {
           final parts = reportItem.transactionTime!.split(':');
@@ -128,26 +140,24 @@ class _MaintenanceChangeProductEditPageState
 
         selectedFirstProduct = reportItem.firstProduct ?? '';
         selectedNextProduct = reportItem.nextProduct ?? '';
-
         remarkController.text = reportItem.remarks ?? '';
 
-        // --- Ambil form aktif ---
         form = context.read<DataFormNoProvider>().dataFormNoList.firstWhere(
           (form) =>
               form.isMenu == "Change_Product_Checklist" && form.isActive == "T",
         );
 
-        // --- 7️⃣ Logging hasil untuk memastikan ---
         log("Selected location: $selectedPlant");
         log("Selected workCenter: $selectedWorkCenter");
-        log("Work center list length: ${workCenterList.length}");
+        log("Selected firstProduct: $selectedFirstProduct");
+        log("Selected nextProduct: $selectedNextProduct");
+        log("First products length: ${firstProducts.length}");
+        log("Next products length: ${nextProducts.length}");
       } catch (e, st) {
         log("Error in _initializePage: $e");
         log(st.toString());
       } finally {
-        if (mounted) {
-          setState(() => isLoading = false);
-        }
+        if (mounted) setState(() => isLoading = false);
       }
     });
   }
@@ -280,7 +290,7 @@ class _MaintenanceChangeProductEditPageState
                                 ),
                               );
                             } else {
-                              if (selectedWorkCenter == "Refinery") {
+                              if (selectedPlant == "Refinery") {
                                 return DropdownButtonFormField(
                                   value: selectedWorkCenter,
                                   items:
@@ -779,6 +789,8 @@ class _MaintenanceChangeProductEditPageState
     final details =
         context.read<ChangeProductChecklistProvider>().reportDetailList;
 
+    final user = context.read<UserProvider>();
+
     var isSuccess = context
         .read<ChangeProductChecklistProvider>()
         .updateChangeProductChecklist(
@@ -788,6 +800,8 @@ class _MaintenanceChangeProductEditPageState
           workCenter: selectedWorkCenter ?? '',
           checkDate: DateTime.now(),
           remarks: remarkController.text,
+          updatedBy: user.currentUser?.username ?? '',
+          updatedAt: DateTime.now(),
           details: details,
         );
     return isSuccess;

@@ -40,32 +40,7 @@ class _MaintenanceChangeProductReportListPageState
   @override
   Widget build(BuildContext context) {
     final username = context.read<UserProvider>().currentUser?.username;
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          log("Tombol Tambah Change Product Ditekan");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MaintenanceChangeProductInputPage(),
-            ),
-          ).then((_) async {
-            // Refresh the list when returning from the detail page
-            if (!mounted) return;
-            final formatted = parseDateTimeForQuery(dateEntryController.text);
-            await context
-                .read<ChangeProductChecklistProvider>()
-                .getAllChangeProductFromDate(formatted ?? '');
-          });
-        },
-        label: const Text("Tambah Change Product"),
-        icon: Icon(Icons.add),
-        backgroundColor: Color(0xFFB91C1C),
-        foregroundColor: Colors.white,
-      ),
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody());
   }
 
   AppBar _buildAppBar() {
@@ -123,12 +98,14 @@ class _MaintenanceChangeProductReportListPageState
                       itemCount: reportList.length,
                       itemBuilder: (context, index) {
                         final item = reportList[index];
+                      
                         return _changeProductsCardItem(
                           id: item.id,
                           date: item.transactionDate,
                           time: item.transactionTime,
                           workCenter: item.workCenter ?? '',
                           entryBy: item.entryBy ?? '',
+                          preparedStatus: item.preparedStatus?? '',
                           checkedStatus: item.checkedStatus ?? '',
                         );
                       },
@@ -191,7 +168,24 @@ class _MaintenanceChangeProductReportListPageState
     required String workCenter,
     required String entryBy,
     required String checkedStatus,
+    required String preparedStatus,
+    Color? badgeColor,
+    String? showedStatus,
   }) {
+
+    if (preparedStatus == "Approved" && checkedStatus == "Approved") {
+      badgeColor = Colors.green;
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || checkedStatus == "Rejected") {
+      badgeColor = Colors.red;
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      badgeColor = Colors.orange;
+      showedStatus = "Prepared";
+    } else if (preparedStatus == ''){
+      badgeColor = Colors.blue;
+      showedStatus = "Submitted";
+    }
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -234,13 +228,11 @@ class _MaintenanceChangeProductReportListPageState
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: badgeColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      (checkedStatus != null && checkedStatus.isNotEmpty && checkedStatus != "")
-                          ? checkedStatus
-                          : 'Not Prepared',
+                      '$showedStatus',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -329,4 +321,6 @@ class _MaintenanceChangeProductReportListPageState
     // If parsing fails, return the original string as a fallback
     return s;
   }
+
+ 
 }

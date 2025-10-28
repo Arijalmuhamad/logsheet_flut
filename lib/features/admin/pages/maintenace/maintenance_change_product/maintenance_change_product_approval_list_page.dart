@@ -33,10 +33,6 @@ class _MaintenanceChangeProductApprovalPageState
     });
   }
 
-  // Dummy data setup
-  late List<String> groupKeys;
-  late Map<String, List<ReportEntity>> groupedReports;
-
   @override
   Widget build(BuildContext context) {
     final changeProductChecklistProvider =
@@ -63,8 +59,8 @@ class _MaintenanceChangeProductApprovalPageState
                       id: item.id ?? '',
                       date: item.checkedDate ?? item.preparedDate ?? '',
                       workCenter: item.workCenter ?? '',
-                      statusText:
-                          item.checkedStatus ?? item.preparedStatus ?? '',
+                      preparedStatus: item.preparedStatus ?? '',
+                      checkedStatus: item.checkedStatus ?? '',
                       firstProduct: item.firstProduct ?? '',
                       nextProduct: item.nextProduct ?? '',
                     );
@@ -88,30 +84,42 @@ class _MaintenanceChangeProductApprovalPageState
     ],
   );
 
+  
+
   Widget _approvalCardItem({
     required String id,
     required String date,
     required String workCenter,
-    required String statusText,
+    required String? preparedStatus,
+    required String? checkedStatus,
     required String firstProduct,
     required String nextProduct,
     IconData? icon,
     Color? iconColor,
     Color? cardColor,
+    String? showedStatus,
   }) {
     // Tentukan warna dan ikon berdasarkan status
-    if (statusText.toLowerCase() == "approved") {
+    if (preparedStatus == "Approved" && checkedStatus == "Approved") {
       icon = Icons.check_circle;
       iconColor = Colors.green;
       cardColor = Colors.green[50];
-    } else if (statusText.toLowerCase() == "rejected") {
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || checkedStatus == "Rejected") {
       icon = Icons.cancel;
       iconColor = Colors.red;
       cardColor = Colors.red[50];
-    } else {
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
       icon = Icons.hourglass_empty;
       iconColor = Colors.orange;
       cardColor = Colors.orange[50];
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      icon = Icons.hourglass_empty;
+      iconColor = Colors.blue;
+      cardColor = Colors.blue[50];
+      showedStatus = "Submitted";
     }
 
     return Card(
@@ -122,27 +130,14 @@ class _MaintenanceChangeProductApprovalPageState
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          if (statusText.toLowerCase() == "approved") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        MaintenanceChangeProductApprovalDetailPage(id: id),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  statusText.toLowerCase() == "rejected"
-                      ? 'Laporan ini telah ditolak.'
-                      : 'Laporan belum siap untuk approval.',
-                ),
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      MaintenanceChangeProductApprovalDetailPage(id: id),
+            ),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -169,13 +164,18 @@ class _MaintenanceChangeProductApprovalPageState
                       'Work Center: $workCenter',
                       style: const TextStyle(fontSize: 14),
                     ),
-                    Text('First Product: $firstProduct',
-                        style: const TextStyle(fontSize: 14)),
-                         Text('Next Product: $nextProduct',
-                        style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 4),
                     Text(
-                      'Status: $statusText',
+                      'First Product: $firstProduct',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'Next Product: $nextProduct',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+
+                    Text(
+                      'Status: $showedStatus',
                       style: TextStyle(
                         fontSize: 14,
                         color: iconColor,

@@ -127,6 +127,226 @@ class _MaintenanceChangeProductApprovalDetailPageState
                     approvalItem!.checkedStatus ?? '',
                   ),
                 ]),
+                _buildSection('Change Product Checklist', [
+                  if (approvalItem!.workCenter == 'REF-150' ||
+                      approvalItem!.workCenter == 'REF-02') ...[
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pre-Treatment Section',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount:
+                              changeProductChecklistProvider
+                                  .langkahKerjaPreTreatmentList
+                                  .length,
+                          itemBuilder: (context, index) {
+                            final item =
+                                changeProductChecklistProvider
+                                    .langkahKerjaPreTreatmentList[index];
+
+                            final detailIndex = changeProductChecklistProvider
+                                .reportDetailList
+                                .indexWhere(
+                                  (detail) => detail.checkItem == item.code,
+                                );
+
+                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                            final isChecked =
+                                detailIndex != -1
+                                    ? changeProductChecklistProvider
+                                            .reportDetailList[detailIndex]
+                                            .statusItem ==
+                                        "T"
+                                    : false;
+
+                            return CustomStatelessChecklistItemRow(
+                              number: index + 1,
+                              description: item.name ?? '',
+                              value: isChecked,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16.0),
+                        Divider(
+                          height: 0.0,
+                          thickness: 1,
+                          endIndent: 0,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bleacher Section',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount:
+                              changeProductChecklistProvider
+                                  .langkahKerjaBleacherList
+                                  .length,
+                          itemBuilder: (context, index) {
+                            final item =
+                                changeProductChecklistProvider
+                                    .langkahKerjaBleacherList[index];
+
+                            final detailIndex = changeProductChecklistProvider
+                                .reportDetailList
+                                .indexWhere(
+                                  (detail) => detail.checkItem == item.code,
+                                );
+
+                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                            final isChecked =
+                                detailIndex != -1
+                                    ? changeProductChecklistProvider
+                                            .reportDetailList[detailIndex]
+                                            .statusItem ==
+                                        "T"
+                                    : false;
+
+                            return CustomStatelessChecklistItemRow(
+                              number: index + 1,
+                              description: item.name ?? '',
+                              value: isChecked,
+                            );
+                          },
+                        ),
+                        SizedBox(height: 16.0),
+
+                        const SizedBox(height: 16.0),
+                        Divider(
+                          height: 0.0,
+                          thickness: 1,
+                          endIndent: 0,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Deodorization Section',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount:
+                              changeProductChecklistProvider
+                                  .langkahKerjaDeodorizationList
+                                  .length,
+                          itemBuilder: (context, index) {
+                            final item =
+                                changeProductChecklistProvider
+                                    .langkahKerjaDeodorizationList[index];
+
+                            final detailIndex = changeProductChecklistProvider
+                                .reportDetailList
+                                .indexWhere(
+                                  (detail) => detail.checkItem == item.code,
+                                );
+
+                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                            final isChecked =
+                                detailIndex != -1
+                                    ? changeProductChecklistProvider
+                                            .reportDetailList[detailIndex]
+                                            .statusItem ==
+                                        "T"
+                                    : false;
+
+                            return CustomStatelessChecklistItemRow(
+                              number: index + 1,
+                              description: item.name ?? '',
+                              value: isChecked,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Fractionation Section',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount:
+                              changeProductChecklistProvider
+                                  .langkahKerjaFractionationList
+                                  .length,
+                          itemBuilder: (context, index) {
+                            final item =
+                                changeProductChecklistProvider
+                                    .langkahKerjaFractionationList[index];
+
+                            final detailIndex = changeProductChecklistProvider
+                                .reportDetailList
+                                .indexWhere(
+                                  (detail) => detail.checkItem == item.code,
+                                );
+
+                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                            final isChecked =
+                                detailIndex != -1
+                                    ? changeProductChecklistProvider
+                                            .reportDetailList[detailIndex]
+                                            .statusItem ==
+                                        "T"
+                                    : false;
+
+                            return CustomStatelessChecklistItemRow(
+                              number: index + 1,
+                              description: item.name ?? '',
+                              value: isChecked,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ]),
               ],
             ),
           ),

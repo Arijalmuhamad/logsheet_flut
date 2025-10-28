@@ -293,6 +293,8 @@ class ChangeProductChecklistMySQLService {
     required String workCenter,
     required DateTime checkDate,
     required String remarks,
+    required String updatedBy,
+    required DateTime updatedAt,
     required List<MaintenanceChangeProductChecklistDetailEntity> details,
   }) async {
     MySQLConnection? connection;
@@ -307,7 +309,7 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection!;
 
       final sqlHeader =
-          "UPDATE $changeProductChecklistHeader SET company = :company, plant =:plant, work_center = :work_center, checked_date = :check_date, remarks = :remarks WHERE id = :id";
+          "UPDATE $changeProductChecklistHeader SET company = :company, plant =:plant, work_center = :work_center, checked_date = :check_date, remarks = :remarks, updated_by = :updated_by, updated_date = :updated_date WHERE id = :id";
       final paramsHeader = {
         "id": id,
         "company": company,
@@ -315,6 +317,8 @@ class ChangeProductChecklistMySQLService {
         "work_center": workCenter,
         "check_date": checkDate,
         "remarks": remarks,
+        "updated_by": updatedBy,
+        "updated_date": updatedAt,
       };
 
       final sqlDetail =
@@ -479,7 +483,7 @@ class ChangeProductChecklistMySQLService {
     required String approvedBy,
     required String status,
     required String role,
-    String? remark,
+    String? remarks,
   }) async {
     MySQLConnection? connection;
     try {
@@ -495,7 +499,7 @@ class ChangeProductChecklistMySQLService {
         "approvedBy": approvedBy,
         "approvedDate": DateTime.now(),
         "status": status,
-        "remark": remark,
+        "remark": remarks,
       };
 
       if (AppRoles.leadProd.contains(role)) {
@@ -561,18 +565,18 @@ class ChangeProductChecklistMySQLService {
       }
       connection = connResult.connection;
       // final result = await connection!.execute("""
-      //     SELECT 
-      //         h.id, 
-      //         h.company, 
-      //         h.plant, 
-      //         h.transaction_date, 
+      //     SELECT
+      //         h.id,
+      //         h.company,
+      //         h.plant,
+      //         h.transaction_date,
       //         h.transaction_time,
       //         h.first_product AS first_product_id,
       //         p1.raw_material AS first_product,
       //         h.next_product AS next_product_id,
       //         p2.raw_material AS next_product,
-      //         h.work_center, 
-      //         h.remarks, 
+      //         h.work_center,
+      //         h.remarks,
       //         h.flag,
       //         h.entry_by,
       //         h.entry_date,
@@ -590,23 +594,23 @@ class ChangeProductChecklistMySQLService {
       //         h.date_issued,
       //         h.revision_no,
       //         h.revision_date,
-      //         d.id AS detail_id, 
-      //         d.check_item, 
-      //         d.status_item 
-      //     FROM 
+      //         d.id AS detail_id,
+      //         d.check_item,
+      //         d.status_item
+      //     FROM
       //         t_change_product_checklist h
-      //     INNER JOIN 
-      //         t_change_product_checklist_detail d 
+      //     INNER JOIN
+      //         t_change_product_checklist_detail d
       //         ON h.id = d.id_hdr
-      //     LEFT JOIN 
-      //         m_product p1 
+      //     LEFT JOIN
+      //         m_product p1
       //         ON h.first_product = p1.id
-      //     LEFT JOIN 
-      //         m_product p2 
+      //     LEFT JOIN
+      //         m_product p2
       //         ON h.next_product = p2.id
-      //     WHERE 
+      //     WHERE
       //         DATE(h.transaction_date) = :date AND  h.prepared_status IS NOT NULL AND h.checked_status IS NULL
-      //     ORDER BY 
+      //     ORDER BY
       //         h.id ASC;
       //   """);
       final result = await connection!.execute("""

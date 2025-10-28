@@ -279,6 +279,8 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     required String workCenter,
     required DateTime checkDate,
     required String remarks,
+    required String updatedBy,
+    required DateTime updatedAt,
     required List<MaintenanceChangeProductChecklistDetailEntity> details,
   }) async {
     _setLoadingEdit(true);
@@ -292,6 +294,8 @@ class ChangeProductChecklistProvider with ChangeNotifier {
         workCenter: workCenter,
         checkDate: checkDate,
         remarks: remarks,
+        updatedBy: updatedBy,
+        updatedAt: updatedAt,
         details: details,
       );
 
@@ -347,6 +351,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     required String approvedBy,
     required String status,
     required String role,
+    String? remarks,
   }) async {
     _setLoadingApproval(true);
     _setErrorMessage(null);
@@ -356,6 +361,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
         approvedBy: approvedBy,
         status: status,
         role: role,
+        remarks: remarks
       );
 
       if (result) {

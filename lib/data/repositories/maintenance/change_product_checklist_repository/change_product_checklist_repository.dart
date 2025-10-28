@@ -69,6 +69,8 @@ class ChangeProductChecklistRepository {
     required String workCenter,
     required DateTime checkDate,
     required String remarks,
+    required String updatedBy,
+    required DateTime updatedAt,
     required List<MaintenanceChangeProductChecklistDetailEntity> details,
   }) async {
     return await _mySQLService.updateChangeProduct(
@@ -78,6 +80,8 @@ class ChangeProductChecklistRepository {
       workCenter: workCenter,
       checkDate: checkDate,
       remarks: remarks,
+      updatedBy: updatedBy,
+      updatedAt: updatedAt,
       details: details,
     );
   }
@@ -95,12 +99,14 @@ class ChangeProductChecklistRepository {
     required String approvedBy,
     required String status,
     required String role,
+    String? remarks,
   }) async {
     return await _mySQLService.updateApproveRejectToHeader(
       id: id,
       approvedBy: approvedBy,
       status: status,
       role: role,
+      remarks: remarks
     );
   }
 

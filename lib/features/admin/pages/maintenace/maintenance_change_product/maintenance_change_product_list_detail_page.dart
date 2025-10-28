@@ -4,6 +4,7 @@ import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
@@ -23,6 +24,7 @@ class MaintenanceChangeProductListDetailPage extends StatefulWidget {
 class _MaintenanceChangeProductListDetailPageState
     extends State<MaintenanceChangeProductListDetailPage> {
   MaintenanceChangeProductChecklistReportEntity? reportItem;
+  final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -52,7 +54,20 @@ class _MaintenanceChangeProductListDetailPageState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: Consumer<ChangeProductChecklistProvider>(
+        builder: (
+          BuildContext context,
+          ChangeProductChecklistProvider value,
+          Widget? child,
+        ) {
+          return (value.isLoadingApproval)
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(context);
+        },
+      ),
+    );
   }
 
   Widget _buildBody(BuildContext context) {
@@ -353,84 +368,224 @@ class _MaintenanceChangeProductListDetailPageState
                     ),
                   ],
                 ]),
-
-                // if (AppRoles.leadProd.contains(user.currentUser?.role))
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 8.0,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            // Action when button is pressed
-                            bool isSuccess =
-                                await _approveRejectChangeProductChecklist(
-                                  "Approved",
-                                );
-                            if (isSuccess) {
-                              showSnackBar(
-                                "Berhasil Approve Checklist",
-                                context,
-                              );
-                              Navigator.of(context).pop();
-                            } else {
-                              showSnackBar(
-                                "Gagal Approve Checklist",
-                                context,
-                              );
-                            }
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              const Text('Approve'),
-                              Icon(Icons.check),
-                            ],
-                          ),
-                        ),
+                _buildSection('Approval Actions', [
+                  if (reportItem?.preparedStatus == "Approved" &&
+                      reportItem?.checkedStatus == "Approved") ...[
+                    Text(
+                      "Checklist Approved",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
                       ),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 8.0,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            // Action when button is pressed
-                             bool isSuccess =
-                                await _approveRejectChangeProductChecklist(
-                                  "Rejected",
-                                );
-                            if (isSuccess) {
-                              showSnackBar(
-                                "Berhasil Reject Checklist",
-                                context,
-                              );
-                              Navigator.of(context).pop();
-                            } else {
-                              showSnackBar(
-                                "Gagal Reject Checklist",
-                                context,
-                              );
-                            }
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [const Text('Reject'), Icon(Icons.close)],
-                          ),
-                        ),
+                  ] else if (reportItem?.preparedStatus == "Rejected" ||
+                      reportItem?.checkedStatus == "Rejected") ...[
+                    Text(
+                      "Checklist Rejected",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
                       ),
                     ),
+                  ] else if (AppRoles.leadProd.contains(
+                    user.currentUser?.role,
+                  )) ...[
+                    if (reportItem?.preparedStatus == null) ...[
+                      CustomRemarkField(controller: remarkController),
+                      const SizedBox(height: 12),
+                      Text('Prepared Status:'),
+                      SizedBox(height: 8.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 8.0,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  bool isSuccess =
+                                      await _approveRejectChangeProductChecklist(
+                                        "Rejected",
+                                      );
+                                  if (isSuccess) {
+                                    showSnackBar(
+                                      "Berhasil Reject Checklist",
+                                      context,
+                                    );
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    showSnackBar(
+                                      "Gagal Reject Checklist",
+                                      context,
+                                    );
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: const [
+                                    Text('Reject'),
+                                    Icon(Icons.close),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 8.0,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  bool isSuccess =
+                                      await _approveRejectChangeProductChecklist(
+                                        "Approved",
+                                      );
+                                  if (isSuccess) {
+                                    showSnackBar(
+                                      "Berhasil Approve Checklist",
+                                      context,
+                                    );
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    showSnackBar(
+                                      "Gagal Approve Checklist",
+                                      context,
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: const [
+                                    Text('Approve'),
+                                    Icon(Icons.check),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else if (reportItem?.preparedStatus != null &&
+                        reportItem?.checkedStatus == null) ...[
+                      Text(
+                        "Waiting Apprvoal From Manager Productions...",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
+                  ] else if (AppRoles.managerProd.contains(
+                    user.currentUser?.role,
+                  )) ...[
+                    // 👉 tambahkan widget khusus untuk role manager di sini, misalnya:
+                    if (reportItem?.preparedStatus == "Approved" &&
+                        reportItem?.checkedStatus == null) ...[
+                      CustomRemarkField(controller: remarkController),
+                      const SizedBox(height: 12),
+                      Text('Checked Status:'),
+                      SizedBox(height: 8.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 8.0,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  bool isSuccess =
+                                      await _approveRejectChangeProductChecklist(
+                                        "Rejected",
+                                      );
+                                  if (isSuccess) {
+                                    showSnackBar(
+                                      "Berhasil Reject Checklist",
+                                      context,
+                                    );
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    showSnackBar(
+                                      "Gagal Reject Checklist",
+                                      context,
+                                    );
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: const [
+                                    Text('Reject'),
+                                    Icon(Icons.close),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 8.0,
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  bool isSuccess =
+                                      await _approveRejectChangeProductChecklist(
+                                        "Approved",
+                                      );
+                                  if (isSuccess) {
+                                    showSnackBar(
+                                      "Berhasil Approve Checklist",
+                                      context,
+                                    );
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    showSnackBar(
+                                      "Gagal Approve Checklist",
+                                      context,
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: const [
+                                    Text('Approve'),
+                                    Icon(Icons.check),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      Text(
+                        "Waiting Approval From Lead Production...",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ],
                   ],
-                ),
+                ]),
               ],
             ),
           ),
@@ -634,6 +789,7 @@ class _MaintenanceChangeProductListDetailPageState
           approvedBy: user.currentUser!.username,
           status: status,
           role: user.currentUser!.role,
+          remarks: remarkController.text
         );
     return isSuccess;
   }

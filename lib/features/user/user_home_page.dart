@@ -335,7 +335,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.14"), Text("Build 2025-10-17")],
+              children: [Text("Version 1.0.15"), Text("Build 2025-10-27")],
             ),
           ],
         ),
@@ -995,7 +995,7 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
             ],
           ),
-          if (AppRoles.qualityControlAccess.contains(userRole)) ...[
+          if (AppRoles.productionQualityAccess.contains(userRole)) ...[
             ExpansionTile(
               leading: const Icon(
                 Icons.change_circle_outlined,
@@ -1013,7 +1013,7 @@ class _UserHomePageState extends State<UserHomePage> {
               collapsedIconColor: Colors.grey,
               children: [
                 // Show Approval only to Managers and Leads (you can adjust roles here)
-                if (AppRoles.managerProd.contains(userRole))
+                if (AppRoles.managerProd.contains(userRole) || AppRoles.leadProd.contains(userRole))
                   _buildDrawerItem(
                     icon: Icons.input_rounded,
                     title: 'List',
