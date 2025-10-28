@@ -1,15 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
+import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
 class ReportEntity {
   final String preparedStatus;
   final String checkedStatus;
 
-  ReportEntity({
-    required this.preparedStatus,
-    required this.checkedStatus,
-  });
+  ReportEntity({required this.preparedStatus, required this.checkedStatus});
 }
 
 class MaintenanceChangeProductApprovalPage extends StatefulWidget {
@@ -22,154 +23,172 @@ class MaintenanceChangeProductApprovalPage extends StatefulWidget {
 
 class _MaintenanceChangeProductApprovalPageState
     extends State<MaintenanceChangeProductApprovalPage> {
-  // Dummy data setup
-  late List<String> groupKeys;
-  late Map<String, List<ReportEntity>> groupedReports;
-
   @override
-  void initState() {
+  initState() {
     super.initState();
-
-    // Simulated group keys: "date|workCenter"
-    groupKeys = [
-      '2025-10-21|WC-1001',
-      '2025-10-21|WC-1002',
-      '2025-10-20|WC-1003',
-      '2025-10-19|WC-1004',
-    ];
-
-    // Dummy grouped reports for each key
-    groupedReports = {
-      // Ready for approval (all preparedStatus = Approved)
-      '2025-10-21|WC-1001': [
-        ReportEntity(preparedStatus: "Approved", checkedStatus: ""),
-        ReportEntity(preparedStatus: "Approved", checkedStatus: ""),
-      ],
-
-      // Approved (all checkedStatus = Approved)
-      '2025-10-21|WC-1002': [
-        ReportEntity(preparedStatus: "Approved", checkedStatus: "Approved"),
-      ],
-
-      // Rejected (any checkedStatus = Rejected)
-      '2025-10-20|WC-1003': [
-        ReportEntity(preparedStatus: "Approved", checkedStatus: "Rejected"),
-      ],
-
-      // Not ready (not all preparedStatus = Approved)
-      '2025-10-19|WC-1004': [
-        ReportEntity(preparedStatus: "Pending", checkedStatus: ""),
-      ],
-    };
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context
+          .read<ChangeProductChecklistProvider>()
+          .getAllApprovalHeaderAndDetail();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final changeProductChecklistProvider =
+        context.watch<ChangeProductChecklistProvider>();
+
+    final isLoading = changeProductChecklistProvider.isLoading;
+    final approvalList = changeProductChecklistProvider.uniqueApprovalList;
+
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: ListView.builder(
-          itemCount: groupKeys.length,
-          itemBuilder: (context, index) {
-            final compositeKey = groupKeys[index];
-            final reportsForGroup = groupedReports[compositeKey];
-
-            if (reportsForGroup == null || reportsForGroup.isEmpty) {
-              return const SizedBox.shrink();
-            }
-
-            final keyParts = compositeKey.split('|');
-            final date = keyParts[0];
-            final workCenter = keyParts[1];
-
-            bool isReadyForApproval = reportsForGroup.isNotEmpty &&
-                reportsForGroup.every((r) => r.preparedStatus == "Approved");
-
-            final bool isApprovedForDay =
-                reportsForGroup.every((r) => r.checkedStatus == 'Approved');
-            final bool isRejectedForDay =
-                reportsForGroup.any((r) => r.checkedStatus == 'Rejected');
-
-            Color cardColor = Colors.white;
-            IconData icon = Icons.hourglass_bottom_rounded;
-            Color iconColor = Colors.grey[700]!;
-            String statusText = 'Belum ada ticket';
-
-            if (isReadyForApproval) {
-              cardColor = Colors.white;
-              icon = Icons.pending_rounded;
-              iconColor = Colors.blue;
-              statusText = 'Pending Approval';
-            }
-
-            if (isApprovedForDay) {
-              cardColor = Colors.green[50]!;
-              icon = Icons.check_circle_rounded;
-              iconColor = Colors.green;
-              statusText = 'Approved';
-            } else if (isRejectedForDay) {
-              cardColor = Colors.red[50]!;
-              icon = Icons.cancel_rounded;
-              iconColor = Colors.red;
-              statusText = 'Rejected';
-            }
-
-            return Card(
-              color: cardColor,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  leading: Icon(icon, color: iconColor),
-                  title: Text(
-                    'Date: $date',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'Work Center: $workCenter\nStatus: $statusText',
-                    style: TextStyle(color: iconColor, height: 1.4),
-                  ),
-                  onTap: isReadyForApproval
-                      ? () {
-                          // For UI testing only
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MaintenanceChangeProductApprovalDetailPage(),
-                            ),
-                          );
-                        }
-                      : () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Laporan belum siap untuk approval.',
-                              ),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+      body:
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : approvalList.isEmpty
+              ? const Center(child: Text("No Data Available"))
+              : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: ListView.builder(
+                  itemCount: approvalList.length,
+                  itemBuilder: (context, index) {
+                    final item = approvalList[index];
+                    log("item.transactionDate: ${item.transactionDate}");
+                    return _approvalCardItem(
+                      id: item.id ?? '',
+                      date: item.checkedDate ?? item.preparedDate ?? '',
+                      workCenter: item.workCenter ?? '',
+                      preparedStatus: item.preparedStatus ?? '',
+                      checkedStatus: item.checkedStatus ?? '',
+                      firstProduct: item.firstProduct ?? '',
+                      nextProduct: item.nextProduct ?? '',
+                    );
+                  },
                 ),
               ),
-            );
-          },
-        ),
-      ),
     );
   }
 
   AppBar _buildAppBar() => AppBar(
-        title: const Text("Change Product Approval"),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Refresh clicked")),
-              );
-            },
-            icon: const Icon(Icons.replay_rounded),
+    title: const Text("Change Product Approval"),
+    actions: [
+      IconButton(
+        onPressed: () async {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Refresh clicked")));
+        },
+        icon: const Icon(Icons.replay_rounded),
+      ),
+    ],
+  );
+
+  
+
+  Widget _approvalCardItem({
+    required String id,
+    required String date,
+    required String workCenter,
+    required String? preparedStatus,
+    required String? checkedStatus,
+    required String firstProduct,
+    required String nextProduct,
+    IconData? icon,
+    Color? iconColor,
+    Color? cardColor,
+    String? showedStatus,
+  }) {
+    // Tentukan warna dan ikon berdasarkan status
+    if (preparedStatus == "Approved" && checkedStatus == "Approved") {
+      icon = Icons.check_circle;
+      iconColor = Colors.green;
+      cardColor = Colors.green[50];
+      showedStatus = "Approved";
+    } else if (preparedStatus == "Rejected" || checkedStatus == "Rejected") {
+      icon = Icons.cancel;
+      iconColor = Colors.red;
+      cardColor = Colors.red[50];
+      showedStatus = "Rejected";
+    } else if (preparedStatus != '') {
+      icon = Icons.hourglass_empty;
+      iconColor = Colors.orange;
+      cardColor = Colors.orange[50];
+      showedStatus = "Prepared";
+    } else if (preparedStatus == '') {
+      icon = Icons.hourglass_empty;
+      iconColor = Colors.blue;
+      cardColor = Colors.blue[50];
+      showedStatus = "Submitted";
+    }
+
+    return Card(
+      color: cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      elevation: 2,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      MaintenanceChangeProductApprovalDetailPage(id: id),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: iconColor, size: 36),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      id,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Date: $date', style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Work Center: $workCenter',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'First Product: $firstProduct',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'Next Product: $nextProduct',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+
+                    Text(
+                      'Status: $showedStatus',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: iconColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      );
+        ),
+      ),
+    );
+  }
 }

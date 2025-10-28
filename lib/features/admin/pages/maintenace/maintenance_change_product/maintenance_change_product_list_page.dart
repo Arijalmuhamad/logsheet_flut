@@ -48,10 +48,7 @@ class _MaintenanceChangeProductListPageState
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) => MaintenanceChangeProductInputPage(
-                    userName: username ?? "",
-                  ),
+              builder: (context) => MaintenanceChangeProductInputPage(),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page
@@ -100,36 +97,44 @@ class _MaintenanceChangeProductListPageState
   Widget _buildBody() {
     final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
+
+    final isLoading = changeProductChecklistProvider.isLoading;
+    final reportList = changeProductChecklistProvider.uniqueReportList;
+
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
       children: [
         _buildFilterSection(context),
         Expanded(
           child: Card(
             child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child:
-                  (context.watch<ChangeProductChecklistProvider>().isLoading)
-                      ? Center(child: CircularProgressIndicator())
-                      : ListView.builder(
-                        itemCount:
-                            changeProductChecklistProvider
-                                .uniqueReportList
-                                .length,
-                        itemBuilder: (context, index) {
-                          final reportItem =
-                              changeProductChecklistProvider.uniqueReportList;
-                          return _changeProductsCardItem(
-                            id: reportItem[index].id,
-                            date: reportItem[index].transactionDateRef,
-                            time: reportItem[index].transactionTimeRef,
-                            workCenter: reportItem[index].workCenterRef ?? '',
-                            entryBy: reportItem[index].entryBy ?? '',
-                          );
-                        },
-                      ),
+              padding: const EdgeInsets.all(8.0),
+              child: Builder(
+                builder: (context) {
+                  if (isLoading) {
+                    // 🔹 Tampilkan indikator loading
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (reportList.isEmpty) {
+                    // 🔹 Tampilkan teks jika tidak ada data
+                    return const Center(child: Text("No Data Available"));
+                  } else {
+                    // 🔹 Tampilkan list jika ada data
+                    return ListView.builder(
+                      itemCount: reportList.length,
+                      itemBuilder: (context, index) {
+                        final item = reportList[index];
+                        return _changeProductsCardItem(
+                          id: item.id,
+                          date: item.transactionDate,
+                          time: item.transactionTime,
+                          workCenter: item.workCenter ?? '',
+                          entryBy: item.entryBy ?? '',
+                        
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -161,7 +166,6 @@ class _MaintenanceChangeProductListPageState
                     .read<ChangeProductChecklistProvider>()
                     .getAllChangeProductFromDate(formattedDate);
               }
-              
             },
             icon: const Icon(Icons.search),
             label: const Text('Cari'),
@@ -185,6 +189,7 @@ class _MaintenanceChangeProductListPageState
     required String time,
     required String workCenter,
     required String entryBy,
+
   }) {
     return InkWell(
       onTap: () {
@@ -226,17 +231,7 @@ class _MaintenanceChangeProductListPageState
                       horizontal: 10,
                       vertical: 4,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "Fill With Status",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    
                   ),
                 ],
               ),
@@ -252,7 +247,7 @@ class _MaintenanceChangeProductListPageState
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    "$date",
+                    "${_formatDateString(date)}",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),
@@ -309,5 +304,15 @@ class _MaintenanceChangeProductListPageState
       print("Error parsing date: $e");
       return null;
     }
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd-MM-yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
   }
 }

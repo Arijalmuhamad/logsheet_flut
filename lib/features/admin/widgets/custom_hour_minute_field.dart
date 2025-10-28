@@ -4,12 +4,14 @@ class CustomHourMinuteField extends StatelessWidget {
   final TimeOfDay? selectedTime;
   final VoidCallback onTap;
   final String hint;
+  final bool isDisabled;
 
   const CustomHourMinuteField({
     super.key,
     required this.selectedTime,
     required this.onTap,
     this.hint = "Pilih Jam Input",
+    this.isDisabled = false,
   });
 
   @override
@@ -21,7 +23,7 @@ class CustomHourMinuteField extends StatelessWidget {
     }
 
     return InkWell(
-      onTap: onTap,
+      onTap: (isDisabled) ? null : onTap,
       child: InputDecorator(
         isFocused: false,
         isEmpty: selectedTime == null,
