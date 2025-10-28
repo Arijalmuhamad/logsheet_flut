@@ -639,7 +639,7 @@ class _DeodorizingFiltrationInputPageState
                   isLoading
                       ? null
                       : () async {
-                        await _save();
+                        await _save(context);
                         Future.delayed(Duration(milliseconds: 300));
                         if (!context.mounted) return;
                         Navigator.of(context).pop();
@@ -647,14 +647,13 @@ class _DeodorizingFiltrationInputPageState
 
               child: Consumer<DeodorizingFiltrationProvider>(
                 builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const SizedBox(
-                      width: 6,
-                      height: 6,
-                      child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  }
-                  return const Text("Ya");
+                  return provider.isLoading
+                      ? SizedBox(
+                        width: 6,
+                        height: 6,
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                      : Text("Ya");
                 },
               ),
             ),
@@ -706,7 +705,7 @@ class _DeodorizingFiltrationInputPageState
     return ticketPrefix + lastDigit;
   }
 
-  Future<void> _save() async {
+  Future<void> _save(BuildContext context) async {
     final provider = context.read<DeodorizingFiltrationProvider>();
     final userProvider = context.read<UserProvider>();
     final buProvider = context.read<BusinessUnitProvider>();

@@ -12,7 +12,7 @@ getMySQLConnection() async {
     log('Reusing existing MySQL connection');
     return (connection: _connection, error: null);
   }
-  final isAWS = "T"; // "T" if use aws RDS
+  final isAWS = "F"; // "T" if use aws RDS
   final MySQLConnection? conn;
   if (isAWS == "T") {
     conn = await MySQLConnection.createConnection(
