@@ -1,25 +1,25 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_detail_entity.dart';
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_entity.dart';
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_production_checklist_header_entity.dart';
-import 'package:logsheet_app/data/services/maintenance/change_product_checklist/change_product_checklist_mysql_service.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_detail_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_header_entity.dart';
+import 'package:logsheet_app/data/services/maintenance/start_up_produksi_checklist/start_up_produksi_checklist_mysql_service.dart';
 
-class ChangeProductChecklistRepository {
-  final ChangeProductChecklistMySQLService _mySQLService;
+class StartUpProduksiChecklistRepository {
+  final StartUpProduksiChecklistMySQLService _mySQLService;
 
-  ChangeProductChecklistRepository(this._mySQLService);
+  StartUpProduksiChecklistRepository(this._mySQLService);
 
-  Future<List<MaintenanceChangeProductChecklistEntity>>
+  Future<List<MaintenanceStartUpProduksiChecklistEntity>>
   getLangkahKerja() async {
     final List<Map<String, dynamic>> langkahKerja =
         await _mySQLService.getLangkahKerja();
 
-    final List<MaintenanceChangeProductChecklistEntity> mapToList =
+    final List<MaintenanceStartUpProduksiChecklistEntity> mapToList =
         langkahKerja
             .map(
-              (maps) => MaintenanceChangeProductChecklistEntity.fromMap(maps),
+              (maps) => MaintenanceStartUpProduksiChecklistEntity.fromMap(maps),
             )
             .toList();
 
@@ -28,18 +28,18 @@ class ChangeProductChecklistRepository {
     return mapToList;
   }
 
-  Future<List<MaintenanceChangeProductChecklistReportEntity>>
-  getAllChangeProductFromDate(String date, String role) async {
+  Future<List<MaintenanceStartUpProduksiChecklistReportEntity>>
+  getAllReportsFromDate(String date, String role) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllChangeProductFromDate(date, role);
+        .getAllReportsFromDate(date, role);
 
     log('converting to list...');
 
-    final List<MaintenanceChangeProductChecklistReportEntity> mapToList =
+    final List<MaintenanceStartUpProduksiChecklistReportEntity> mapToList =
         reportsData
             .map(
               (maps) =>
-                  MaintenanceChangeProductChecklistReportEntity.fromMap(maps),
+                  MaintenanceStartUpProduksiChecklistReportEntity.fromMap(maps),
             )
             .toList();
 
@@ -48,21 +48,21 @@ class ChangeProductChecklistRepository {
     return mapToList;
   }
 
-  Future<bool> insertChangeProductChecklist({
-    required MaintenanceChangeProductionChecklistHeaderEntity header,
-    required List<MaintenanceChangeProductChecklistDetailEntity> details,
+  Future<bool> insertReportsChecklist({
+    required MaintenanceStartUpProduksiHeaderEntity header,
+    required List<MaintenanceStartUpProduksiChecklistDetailEntity> details,
   }) async {
-    return await _mySQLService.insertChangeProductChecklist(
+    return await _mySQLService.insertReportChecklist(
       header: header,
       details: details,
     );
   }
 
-  Future<bool> deleteChangeProductChecklist(String id) async {
-    return await _mySQLService.deleteChangeProductChecklist(id);
+  Future<bool> deleteReportChecklist(String id) async {
+    return await _mySQLService.deleteReportChecklist(id);
   }
 
-  Future<bool> updateChangeProduct({
+  Future<bool> updateReportChecklist({
     required String id,
     required String company,
     required String plant,
@@ -71,9 +71,9 @@ class ChangeProductChecklistRepository {
     required String remarks,
     required String updatedBy,
     required DateTime updatedAt,
-    required List<MaintenanceChangeProductChecklistDetailEntity> details,
+    required List<MaintenanceStartUpProduksiChecklistDetailEntity> details,
   }) async {
-    return await _mySQLService.updateChangeProduct(
+    return await _mySQLService.updateReport(
       id: id,
       company: company,
       plant: plant,
@@ -110,18 +110,18 @@ class ChangeProductChecklistRepository {
     );
   }
 
-  Future<List<MaintenanceChangeProductChecklistReportEntity>>
+  Future<List<MaintenanceStartUpProduksiChecklistReportEntity>>
   getAllApprovalHeaderAndDetail() async {
     final List<Map<String, dynamic>> reportsData =
         await _mySQLService.getAllApprovalHeaderAndDetail();
 
     log('converting to list...');
 
-    final List<MaintenanceChangeProductChecklistReportEntity> mapToList =
+    final List<MaintenanceStartUpProduksiChecklistReportEntity> mapToList =
         reportsData
             .map(
               (maps) =>
-                  MaintenanceChangeProductChecklistReportEntity.fromMap(maps),
+                  MaintenanceStartUpProduksiChecklistReportEntity.fromMap(maps),
             )
             .toList();
 
