@@ -661,8 +661,8 @@ class ChangeProductChecklistMySQLService {
       //     LEFT JOIN
       //         m_product p2
       //         ON h.next_product = p2.id
-      //     WHERE
-      //         DATE(h.transaction_date) = :date AND  h.prepared_status IS NOT NULL AND h.checked_status IS NULL
+      //       WHERE 
+              // h.prepared_status IS NOT NULL OR h.checked_status IS NOT NULL
       //     ORDER BY
       //         h.id ASC;
       //   """);
@@ -710,8 +710,6 @@ class ChangeProductChecklistMySQLService {
           LEFT JOIN 
               m_product p2 
               ON h.next_product = p2.id
-          WHERE 
-              h.prepared_status IS NOT NULL OR h.checked_status IS NOT NULL
           ORDER BY 
               h.id ASC;
         """);

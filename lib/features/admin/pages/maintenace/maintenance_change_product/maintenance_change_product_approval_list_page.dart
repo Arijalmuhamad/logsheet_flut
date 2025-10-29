@@ -57,7 +57,7 @@ class _MaintenanceChangeProductApprovalPageState
                     log("item.transactionDate: ${item.transactionDate}");
                     return _approvalCardItem(
                       id: item.id ?? '',
-                      date: item.checkedDate ?? item.preparedDate ?? '',
+                      date: item.transactionDate??'',
                       workCenter: item.workCenter ?? '',
                       preparedStatus: item.preparedStatus ?? '',
                       checkedStatus: item.checkedStatus ?? '',
@@ -115,7 +115,7 @@ class _MaintenanceChangeProductApprovalPageState
       iconColor = Colors.orange;
       cardColor = Colors.orange[50];
       showedStatus = "Prepared";
-    } else if (preparedStatus == '') {
+    } else if (preparedStatus == '' && checkedStatus == '') {
       icon = Icons.hourglass_empty;
       iconColor = Colors.blue;
       cardColor = Colors.blue[50];

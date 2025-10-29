@@ -121,22 +121,13 @@ class _MaintenanceChangeProductApprovalDetailPageState
               _buildDataRow('First Product', approvalItem!.firstProduct ?? ''),
               _buildDataRow('Next Product', approvalItem!.nextProduct ?? ''),
               _buildDataRow('Work Center', approvalItem!.workCenter ?? ''),
-               _buildDataRow(
-                'Prepared By',
-                approvalItem!.preparedBy ?? '',
-              ),
-              _buildDataRow(
-                'Prepared Date',
-                approvalItem!.preparedDate ?? '',
-              ),
+              _buildDataRow('Prepared By', approvalItem!.preparedBy ?? ''),
+              _buildDataRow('Prepared Date', approvalItem!.preparedDate ?? ''),
               _buildDataRow(
                 'Prepared Status',
                 approvalItem!.preparedStatus ?? '',
               ),
-              _buildDataRow(
-                'Checked By',
-                approvalItem!.checkedBy ?? '-',
-              ),
+              _buildDataRow('Checked By', approvalItem!.checkedBy ?? '-'),
               _buildDataRow('Checked Date', approvalItem!.checkedDate ?? '-'),
               _buildDataRow(
                 'Checked Status',
@@ -373,7 +364,6 @@ class _MaintenanceChangeProductApprovalDetailPageState
                     color: Colors.green,
                   ),
                 ),
-                
               ] else if (approvalItem?.preparedStatus == "Rejected" ||
                   approvalItem?.checkedStatus == "Rejected") ...[
                 Text(
@@ -383,15 +373,12 @@ class _MaintenanceChangeProductApprovalDetailPageState
                     color: Colors.red,
                   ),
                 ),
-                
-              ]else if (AppRoles.managerProd.contains(
+              ] else if (AppRoles.managerProd.contains(
                 user.currentUser?.role,
               )) ...[
                 // 👉 tambahkan widget khusus untuk role manager di sini, misalnya:
                 if (approvalItem?.preparedStatus == "Approved" &&
                     approvalItem?.checkedStatus == null) ...[
-                  CustomRemarkField(controller: remarkController),
-                  const SizedBox(height: 12),
                   Text('Checked Status:'),
                   SizedBox(height: 8.0),
                   Row(
@@ -405,19 +392,7 @@ class _MaintenanceChangeProductApprovalDetailPageState
                           ),
                           child: ElevatedButton(
                             onPressed: () async {
-                              bool isSuccess =
-                                  await _approveRejectChangeProductChecklist(
-                                    "Rejected",
-                                  );
-                              if (isSuccess) {
-                                showSnackBar(
-                                  "Berhasil Reject Checklist",
-                                  context,
-                                );
-                                Navigator.of(context).pop();
-                              } else {
-                                showSnackBar("Gagal Reject Checklist", context);
-                              }
+                              _showRejectBottomSheet(context);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -473,7 +448,15 @@ class _MaintenanceChangeProductApprovalDetailPageState
               ] else if (AppRoles.leadProd.contains(
                 user.currentUser?.role,
               )) ...[
-                if (approvalItem?.checkedStatus == null) ...[
+                if (approvalItem?.preparedStatus == null) ...[
+                  Text(
+                    "Waiting Apprvoal From Leader Productions...",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ] else if (approvalItem?.checkedStatus == null) ...[
                   Text(
                     "Waiting Apprvoal From Manager Productions...",
                     style: TextStyle(
@@ -617,5 +600,93 @@ class _MaintenanceChangeProductApprovalDetailPageState
           remarks: remarkController.text,
         );
     return isSuccess;
+  }
+
+  void _showRejectBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 20,
+            right: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                'Reject Checklist',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.red[800],
+                ),
+              ),
+              const SizedBox(height: 12),
+              CustomRemarkField(controller: remarkController),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (remarkController.text.isEmpty) {
+                          showSnackBar(
+                            "Harap isi remark sebelum reject",
+                            context,
+                          );
+                          return;
+                        }
+
+                        bool isSuccess =
+                            await _approveRejectChangeProductChecklist(
+                              "Rejected",
+                            );
+                        if (isSuccess) {
+                          Navigator.of(context).pop(); // Tutup bottom sheet
+                          showSnackBar("Berhasil Reject Checklist", context);
+                          Navigator.of(
+                            context,
+                          ).pop(); // Kembali ke halaman sebelumnya
+                        } else {
+                          showSnackBar("Gagal Reject Checklist", context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[700],
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'Confirm Reject',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
