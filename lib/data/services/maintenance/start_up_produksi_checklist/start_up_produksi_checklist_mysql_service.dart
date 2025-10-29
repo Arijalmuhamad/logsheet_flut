@@ -2,25 +2,25 @@ import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_detail_entity.dart';
-import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_production_checklist_header_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_detail_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_header_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
-class ChangeProductChecklistMySQLService {
-  final String langkahKerjaTable = "m_langkahkerja";
-  final String changeProductChecklistHeader = "t_change_product_checklist";
-  final String changeProductChecklistDetail =
-      "t_change_product_checklist_detail";
+class StartUpProduksiChecklistMySQLService {
+  final String langahKerjaStartUpTable = "m_langkahkerja_startup";
+  final String startUpProduksiChecklistHeader = "t_startup_produksi_checklist";
+  final String startUpProduksiChecklistDetail =
+      "t_startup_produksi_checklist_detail";
 
-  /// Fetches all active "langkah kerja" (work steps) from the database.
+  /// Fetches all active "langkah kerja start up produksi" (work steps) from the database.
   ///
-  /// This method connects to the MySQL database, queries the `m_langkahkerja` table
+  /// This method connects to the MySQL database, queries the `m_langkahkerja_startup` table
   /// for entries where `isactive` is 'T' (true), and returns them as a list of
   /// maps. Each map represents a row from the database.
   ///
   /// Returns:
   /// - A `Future<List<Map<String, dynamic>>>` containing a list of maps,
-  ///   where each map is a row from the `m_langkahkerja` table.
+  ///   where each map is a row from the `m_langkahkerja_startup` table.
   /// - An empty list if there's an error during connection or fetching,
   ///   or if no active "langkah kerja" are found.
   ///
@@ -36,7 +36,7 @@ class ChangeProductChecklistMySQLService {
       }
       connection = connResult.connection;
       final String sql =
-          "SELECT * FROM $langkahKerjaTable WHERE isactive = :isactive";
+          "SELECT * FROM $langahKerjaStartUpTable WHERE isactive = :isactive";
       final Map<String, String> parameter = {"isactive": "T"};
 
       final result = await connection!.execute(sql, parameter);
@@ -57,8 +57,8 @@ class ChangeProductChecklistMySQLService {
 
   /// Fetches all change product checklist records for a specific date.
   ///
-  /// This method connects to the MySQL database, queries the `t_change_product_checklist`
-  /// and `t_change_product_checklist_detail` tables, joining them to retrieve
+  /// This method connects to the MySQL database, queries the `t_startup_produksi_checklist`
+  /// and `t_startup_produksi_checklist_detail` tables, joining them to retrieve
   /// header and detail information for records matching the provided `date`.
   ///
   /// Parameters:
@@ -71,7 +71,7 @@ class ChangeProductChecklistMySQLService {
   ///   or if no records are found for the specified date.
   ///
   /// Errors are logged to the console.
-  Future<List<Map<String, dynamic>>> getAllChangeProductFromDate(
+  Future<List<Map<String, dynamic>>> getAllReportsFromDate(
     String date,
     String role,
   ) async {
@@ -81,7 +81,7 @@ class ChangeProductChecklistMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for getAllChangeProductFromDate.');
+        log('Failed to get MySQL connection for getAllReportsFromDate.');
         return [];
       }
       connection = connResult.connection;
@@ -94,10 +94,8 @@ class ChangeProductChecklistMySQLService {
           h.plant, 
           h.transaction_date, 
           h.transaction_time,
-          h.first_product AS first_product_id,
-          p1.raw_material AS first_product,
-          h.next_product AS next_product_id,
-          p2.raw_material AS next_product,
+          h.product AS product_id,
+          p1.raw_material AS product,
           h.work_center, 
           h.remarks, 
           h.flag,
@@ -144,10 +142,8 @@ class ChangeProductChecklistMySQLService {
           h.plant, 
           h.transaction_date, 
           h.transaction_time,
-          h.first_product AS first_product_id,
-          p1.raw_material AS first_product,
-          h.next_product AS next_product_id,
-          p2.raw_material AS next_product,
+          h.product AS product_id,
+          p1.raw_material AS product,
           h.work_center, 
           h.remarks, 
           h.flag,
@@ -189,11 +185,11 @@ class ChangeProductChecklistMySQLService {
       }
       final result = await connection!.execute(query, {"date": date});
       log(
-        'Fetched ${result.rows.length} Change Product Checklists for date $date.',
+        'Fetched ${result.rows.length} Start Up Produksi Checklists for date $date.',
       );
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching all Change Product Checklists based on date: $e');
+      log('Error fetching all Start Up Produksi Checklists based on date: $e');
       return [];
     } finally {
       try {
@@ -205,29 +201,31 @@ class ChangeProductChecklistMySQLService {
     }
   }
 
-  /// Inserts a change product checklist (header and details) within a single database transaction.
+  /// Inserts a Start Up Produksi Checklist (header and details) within a single database transaction.
   ///
   /// This method ensures that both the header and its corresponding detail records are
   /// inserted successfully. If any part of the operation fails, the entire transaction
   /// is rolled back, preventing orphaned header records.
   ///
   /// Parameters:
-  /// - [header]: The [MaintenanceChangeProductionChecklistHeaderEntity] object for the header.
-  /// - [details]: A list of [MaintenanceChangeProductChecklistDetailEntity] objects for the details.
+  /// - [header]: The [MaintenanceStartUpProduksiHeaderEntity] object for the header.
+  /// - [details]: A list of [MaintenanceStartUpProduksiChecklistDetailEntity] objects for the details.
   ///
   /// Returns:
   /// - A `Future<bool>` which is `true` if the entire transaction was successful, `false` otherwise.
   ///
   /// Errors are logged to the console.
-  Future<bool> insertChangeProductChecklist({
-    required MaintenanceChangeProductionChecklistHeaderEntity header,
-    required List<MaintenanceChangeProductChecklistDetailEntity> details,
+  Future<bool> insertReportChecklist({
+    required MaintenanceStartUpProduksiHeaderEntity header,
+    required List<MaintenanceStartUpProduksiChecklistDetailEntity> details,
   }) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for insertChangeProductChecklist.');
+        log(
+          'Failed to get MySQL connection for insertStartUpProduksiChecklist.',
+        );
         return false;
       }
       connection = connResult.connection!;
@@ -247,7 +245,7 @@ class ChangeProductChecklistMySQLService {
         });
 
         final String headerSql =
-            'INSERT INTO $changeProductChecklistHeader (${headerColumns.join(', ')}) VALUES (${headerParams.join(', ')})';
+            'INSERT INTO $startUpProduksiChecklistHeader (${headerColumns.join(', ')}) VALUES (${headerParams.join(', ')})';
         await connection!.execute(headerSql, headerSqlParams);
 
         // 2. Insert the Details (if any)
@@ -260,15 +258,17 @@ class ChangeProductChecklistMySQLService {
               .join(', ');
 
           final String detailSql =
-              "INSERT INTO $changeProductChecklistDetail (`id`, `id_hdr`, `check_item`, `status_item`) VALUES $values";
+              "INSERT INTO $startUpProduksiChecklistDetail (`id`, `id_hdr`, `check_item`, `status_item`) VALUES $values";
           await connection.execute(detailSql);
         }
       });
 
-      log('Successfully inserted change product checklist with transaction.');
+      log(
+        'Successfully inserted start up produksi checklist with transaction.',
+      );
       return true;
     } catch (e) {
-      log('Error during change product checklist transaction: $e');
+      log('Error during start up produksi checklist transaction: $e');
       return false;
     } finally {
       await closeMySQLConnection(connection);
@@ -287,7 +287,7 @@ class ChangeProductChecklistMySQLService {
   /// - A `Future<bool>` which is `true` if the update was successful (i.e., one or more rows were affected), `false` otherwise.
   ///
   /// Errors are logged to the console.
-  Future<bool> deleteChangeProductChecklist(String id) async {
+  Future<bool> deleteReportChecklist(String id) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -298,17 +298,17 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection!;
 
       final String sql =
-          "UPDATE $changeProductChecklistHeader SET flag = 'D' WHERE id = :id";
+          "UPDATE $startUpProduksiChecklistHeader SET flag = 'D' WHERE id = :id";
       final Map<String, String> params = {"id": id};
 
       final result = await connection.execute(sql, params);
 
       log(
-        'Successfully updated flag to "D" for change product checklist with ID: $id',
+        'Successfully updated flag to "D" for start up produksi checklist with ID: $id',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error deleting change product checklist (updating flag): $e');
+      log('Error deleting start up produksi checklist (updating flag): $e');
       return false;
     } finally {
       try {
@@ -320,7 +320,7 @@ class ChangeProductChecklistMySQLService {
     }
   }
 
-  /// Updates an existing change product checklist (header and details) within a single database transaction.
+  /// Updates an existing start up produksi checklist (header and details) within a single database transaction.
   ///
   /// This method ensures that both the header and its corresponding detail records are
   /// updated successfully. If any part of the operation fails, the entire transaction
@@ -333,13 +333,13 @@ class ChangeProductChecklistMySQLService {
   /// - [workCenter]: The updated work center reference.
   /// - [checkDate]: The updated check date.
   /// - [remarks]: The updated remarks.
-  /// - [details]: A list of [MaintenanceChangeProductChecklistDetailEntity] objects for the updated details.
+  /// - [details]: A list of [MaintenanceStartUpProduksiChecklistDetailEntity] objects for the updated details.
   ///
   /// Returns:
   /// - A `Future<bool>` which is `true` if the entire transaction was successful, `false` otherwise.
   ///
   /// Errors are logged to the console.
-  Future<bool> updateChangeProduct({
+  Future<bool> updateReport({
     required String id,
     required String company,
     required String plant,
@@ -348,7 +348,7 @@ class ChangeProductChecklistMySQLService {
     required String remarks,
     required String updatedBy,
     required DateTime updatedAt,
-    required List<MaintenanceChangeProductChecklistDetailEntity> details,
+    required List<MaintenanceStartUpProduksiChecklistDetailEntity> details,
   }) async {
     MySQLConnection? connection;
 
@@ -362,7 +362,7 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection!;
 
       final sqlHeader =
-          "UPDATE $changeProductChecklistHeader SET company = :company, plant =:plant, work_center = :work_center, checked_date = :check_date, remarks = :remarks, updated_by = :updated_by, updated_date = :updated_date WHERE id = :id";
+          "UPDATE $startUpProduksiChecklistHeader SET company = :company, plant =:plant, work_center = :work_center, checked_date = :check_date, remarks = :remarks, updated_by = :updated_by, updated_date = :updated_date WHERE id = :id";
       final paramsHeader = {
         "id": id,
         "company": company,
@@ -375,7 +375,7 @@ class ChangeProductChecklistMySQLService {
       };
 
       final sqlDetail =
-          "DELETE FROM $changeProductChecklistDetail WHERE id_hdr = :id_hdr";
+          "DELETE FROM $startUpProduksiChecklistDetail WHERE id_hdr = :id_hdr";
 
       final paramsDetail = {"id_hdr": id};
 
@@ -396,7 +396,7 @@ class ChangeProductChecklistMySQLService {
               .join(', ');
 
           final String sql =
-              "INSERT INTO $changeProductChecklistDetail VALUES $values";
+              "INSERT INTO $startUpProduksiChecklistDetail VALUES $values";
 
           await connection.execute(sql);
         }
@@ -416,7 +416,7 @@ class ChangeProductChecklistMySQLService {
     }
   }
 
-  /// Fetches the latest ID for a change product checklist based on the plant code.
+  /// Fetches the latest ID for a start up produksi checklist based on the plant code.
   ///
   /// This method connects to the MySQL database and queries the `m_controlnumber` table
   /// to construct the latest ID using `prefix`, `plantid`, `accountingyear`, and `autonumber`.
@@ -440,7 +440,7 @@ class ChangeProductChecklistMySQLService {
 
       connection = connResult.connection!;
       final result = await connection.execute(
-        "SELECT concat(prefix,plantid,accountingyear,autonumber) as id FROM m_controlnumber WHERE plantid = :plant AND prefix = 'CPC'",
+        "SELECT concat(prefix,plantid,accountingyear,autonumber) as id FROM m_controlnumber WHERE plantid = :plant AND prefix = 'SPC'",
         {"plant": plantCode},
       );
 
@@ -492,7 +492,7 @@ class ChangeProductChecklistMySQLService {
       connection = connResult.connection!;
 
       final sql =
-          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'CPC'";
+          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'SPC'";
       final params = {"autonumber": newAutoNumber, "plantid": plantCode};
 
       final result = await connection.execute(sql, params);
@@ -513,7 +513,7 @@ class ChangeProductChecklistMySQLService {
     }
   }
 
-  /// Updates the approval/rejection status for a change product checklist header.
+  /// Updates the approval/rejection status for a start up produksi checklist header.
   ///
   /// This method allows different roles (LEAD, MGR) to update specific fields
   /// related to the approval process.
@@ -557,13 +557,13 @@ class ChangeProductChecklistMySQLService {
 
       if (AppRoles.leadProd.contains(role)) {
         query = """
-          UPDATE $changeProductChecklistHeader
+          UPDATE $startUpProduksiChecklistHeader
           SET prepared_status = :status, prepared_by = :approvedBy, prepared_date = :approvedDate, prepared_status_remarks = :remark
           WHERE id = :id
         """;
       } else if (AppRoles.managerProd.contains(role)) {
         query = """
-          UPDATE $changeProductChecklistHeader
+          UPDATE $startUpProduksiChecklistHeader
           SET checked_status = :status, checked_by = :approvedBy, checked_date = :approvedDate, checked_status_remarks = :remark
           WHERE id = :id
         """;
@@ -575,11 +575,11 @@ class ChangeProductChecklistMySQLService {
       final result = await connection.execute(query, params);
 
       log(
-        'Successfully updated approval status for Change Product Checklist ID: $id by $approvedBy ($role) with status: $status',
+        'Successfully updated approval status for start up produksi Checklist ID: $id by $approvedBy ($role) with status: $status',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error updating approval status for Change Product Checklist: $e');
+      log('Error updating approval status for start up produksi Checklist: $e');
       return false;
     } finally {
       try {
@@ -591,10 +591,10 @@ class ChangeProductChecklistMySQLService {
     }
   }
 
-  /// Fetches all change product checklist records that are awaiting approval.
+  /// Fetches all start up produksi checklist records that are awaiting approval.
   ///
-  /// This method connects to the MySQL database, queries the `t_change_product_checklist`
-  /// and `t_change_product_checklist_detail` tables, joining them to retrieve
+  /// This method connects to the MySQL database, queries the `t_startup_produksi_checklist`
+  /// and `t_startup_produksi_checklist_detail` tables, joining them to retrieve
   /// header and detail information for records where `prepared_status` is not NULL
   /// (meaning it has been prepared/approved by a lead) and `checked_status` is NULL
   /// (meaning it is awaiting manager approval).
@@ -673,10 +673,8 @@ class ChangeProductChecklistMySQLService {
               h.plant, 
               h.transaction_date, 
               h.transaction_time,
-              h.first_product AS first_product_id,
-              p1.raw_material AS first_product,
-              h.next_product AS next_product_id,
-              p2.raw_material AS next_product,
+              h.product AS product_id,
+              p1.raw_material AS product,
               h.work_center, 
               h.remarks, 
               h.flag,
@@ -707,18 +705,15 @@ class ChangeProductChecklistMySQLService {
           LEFT JOIN 
               m_product p1 
               ON h.first_product = p1.id
-          LEFT JOIN 
-              m_product p2 
-              ON h.next_product = p2.id
           ORDER BY 
               h.id ASC;
         """);
       log(
-        'Fetched ${result.rows.length} Change Product Checklists for approval.',
+        'Fetched ${result.rows.length} start up produksi Checklists for approval.',
       );
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
-      log('Error fetching Change Product Checklists for approval: $e');
+      log('Error fetching start up produksi Checklists for approval: $e');
       return [];
     } finally {
       try {

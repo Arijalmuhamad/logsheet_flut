@@ -223,10 +223,10 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   }
 
   Future<void> clearUniqueReportList() async {
-     _setLoading(true);
-     _uniqueReportList.clear();
-     notifyListeners();
-     _setLoading(false);
+    _setLoading(true);
+    _uniqueReportList.clear();
+    notifyListeners();
+    _setLoading(false);
   }
 
   Future<bool> insertChangeProductChecklist({
@@ -369,7 +369,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
         approvedBy: approvedBy,
         status: status,
         role: role,
-        remarks: remarks
+        remarks: remarks,
       );
 
       if (result) {
@@ -511,7 +511,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   }
 
   void prepopulateReportDetailListForDetail(String idHdr) {
-    _setLoading (true);
+    _setLoading(true);
     _reportDetailList.clear();
 
     final _selectedReportList =
@@ -526,7 +526,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
       );
       _reportDetailList.add(detailItem);
     }
-    _setLoading (false);
+    _setLoading(false);
     notifyListeners();
   }
 

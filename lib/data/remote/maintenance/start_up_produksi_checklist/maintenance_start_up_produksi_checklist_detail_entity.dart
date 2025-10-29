@@ -1,20 +1,20 @@
-class MaintenanceChangeProductChecklistDetailEntity {
+class MaintenanceStartUpProduksiChecklistDetailEntity {
   final String id;
   String idHdr;
   final String checkItem;
   final String statusItem;
 
-  MaintenanceChangeProductChecklistDetailEntity({
+  MaintenanceStartUpProduksiChecklistDetailEntity({
     required this.id,
     required this.idHdr,
     required this.checkItem,
     required this.statusItem,
   });
 
-  factory MaintenanceChangeProductChecklistDetailEntity.fromMap(
+  factory MaintenanceStartUpProduksiChecklistDetailEntity.fromMap(
     Map<String, dynamic> map,
   ) {
-    return MaintenanceChangeProductChecklistDetailEntity(
+    return MaintenanceStartUpProduksiChecklistDetailEntity(
       id: map['id'],
       idHdr: map['id_hdr'],
       checkItem: map['check_item'],
@@ -31,13 +31,13 @@ class MaintenanceChangeProductChecklistDetailEntity {
     };
   }
 
-  MaintenanceChangeProductChecklistDetailEntity copyWith({
+  MaintenanceStartUpProduksiChecklistDetailEntity copyWith({
     String? id,
     String? idHdr,
     String? checkItem,
     String? statusItem,
   }) {
-    return MaintenanceChangeProductChecklistDetailEntity(
+    return MaintenanceStartUpProduksiChecklistDetailEntity(
       id: id ?? this.id,
       idHdr: idHdr ?? this.idHdr,
       checkItem: checkItem ?? this.checkItem,
