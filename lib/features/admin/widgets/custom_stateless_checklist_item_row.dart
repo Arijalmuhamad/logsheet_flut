@@ -51,14 +51,11 @@ class CustomStatelessChecklistItemRow extends StatelessWidget {
                         color: Color(0xFF6D5294),
                         size: 20,
                       )
-                    : const Text(
-                        "-",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Color(0xFF999999),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    : const Icon(
+                        Icons.close,
+                        color: Color(0xFF6D5294),
+                        size: 20,
+                      )
               ),
             ),
           ],

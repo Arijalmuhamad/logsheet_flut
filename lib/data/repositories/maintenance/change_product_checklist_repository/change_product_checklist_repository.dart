@@ -29,9 +29,9 @@ class ChangeProductChecklistRepository {
   }
 
   Future<List<MaintenanceChangeProductChecklistReportEntity>>
-  getAllChangeProductFromDate(String date) async {
+  getAllChangeProductFromDate(String date, String role) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllChangeProductFromDate(date);
+        .getAllChangeProductFromDate(date, role);
 
     log('converting to list...');
 

@@ -102,494 +102,403 @@ class _MaintenanceChangeProductListDetailPageState
       }
     }
 
-    return context.watch<ChangeProductChecklistProvider>().isLoadingDelete
-        ? const Center(child: CircularProgressIndicator())
-        : SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(
-              top: 16,
-              bottom: 36,
-              right: 16,
-              left: 16,
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFAB2F2B),
-                    borderRadius: BorderRadius.circular(16),
+    if (changeProductChecklistProvider.isLoading ||
+        changeProductChecklistProvider.isLoadingDelete) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(
+          top: 16,
+          bottom: 36,
+          right: 16,
+          left: 16,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFAB2F2B),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildInfoCard(
+                    'Tanggal',
+                    _formatDateString(reportItem?.transactionDate),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildInfoCard(
-                        'Tanggal',
-                        _formatDateString(reportItem?.transactionDate),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildInfoCard(
-                        'Waktu',
-                        _formatTimeString(reportItem?.transactionTime),
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  _buildInfoCard(
+                    'Waktu',
+                    _formatTimeString(reportItem?.transactionTime),
+                  ),
+                ],
+              ),
+            ),
+
+            _buildSection('General Information', [
+              _buildDataRow('Ticket ID', reportItem?.id ?? ''),
+              _buildDataRow('Company', reportItem!.company),
+              _buildDataRow('Plant', reportItem!.plant),
+              _buildDataRow('First Product', reportItem!.firstProduct ?? ''),
+              _buildDataRow('Next Product', reportItem!.nextProduct ?? ''),
+              _buildDataRow('Work Center', reportItem!.workCenter ?? ''),
+            ]),
+
+            _buildSection('Change Product Checklist', [
+              if (reportItem!.workCenter == 'REF-150' ||
+                  reportItem!.workCenter == 'REF-02') ...[
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pre-Treatment Section',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          changeProductChecklistProvider
+                              .langkahKerjaPreTreatmentList
+                              .length,
+                      itemBuilder: (context, index) {
+                        final item =
+                            changeProductChecklistProvider
+                                .langkahKerjaPreTreatmentList[index];
+
+                        final detailIndex = changeProductChecklistProvider
+                            .reportDetailList
+                            .indexWhere(
+                              (detail) => detail.checkItem == item.code,
+                            );
+
+                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                        final isChecked =
+                            detailIndex != -1
+                                ? changeProductChecklistProvider
+                                        .reportDetailList[detailIndex]
+                                        .statusItem ==
+                                    "T"
+                                : false;
+
+                        return CustomStatelessChecklistItemRow(
+                          number: index + 1,
+                          description: item.name ?? '',
+                          value: isChecked,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16.0),
+                    Divider(
+                      height: 0.0,
+                      thickness: 1,
+                      endIndent: 0,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bleacher Section',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          changeProductChecklistProvider
+                              .langkahKerjaBleacherList
+                              .length,
+                      itemBuilder: (context, index) {
+                        final item =
+                            changeProductChecklistProvider
+                                .langkahKerjaBleacherList[index];
+
+                        final detailIndex = changeProductChecklistProvider
+                            .reportDetailList
+                            .indexWhere(
+                              (detail) => detail.checkItem == item.code,
+                            );
+
+                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                        final isChecked =
+                            detailIndex != -1
+                                ? changeProductChecklistProvider
+                                        .reportDetailList[detailIndex]
+                                        .statusItem ==
+                                    "T"
+                                : false;
+
+                        return CustomStatelessChecklistItemRow(
+                          number: index + 1,
+                          description: item.name ?? '',
+                          value: isChecked,
+                        );
+                      },
+                    ),
+                    SizedBox(height: 16.0),
+
+                    const SizedBox(height: 16.0),
+                    Divider(
+                      height: 0.0,
+                      thickness: 1,
+                      endIndent: 0,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Deodorization Section',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          changeProductChecklistProvider
+                              .langkahKerjaDeodorizationList
+                              .length,
+                      itemBuilder: (context, index) {
+                        final item =
+                            changeProductChecklistProvider
+                                .langkahKerjaDeodorizationList[index];
+
+                        final detailIndex = changeProductChecklistProvider
+                            .reportDetailList
+                            .indexWhere(
+                              (detail) => detail.checkItem == item.code,
+                            );
+
+                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                        final isChecked =
+                            detailIndex != -1
+                                ? changeProductChecklistProvider
+                                        .reportDetailList[detailIndex]
+                                        .statusItem ==
+                                    "T"
+                                : false;
+
+                        return CustomStatelessChecklistItemRow(
+                          number: index + 1,
+                          description: item.name ?? '',
+                          value: isChecked,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Fractionation Section',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount:
+                          changeProductChecklistProvider
+                              .langkahKerjaFractionationList
+                              .length,
+                      itemBuilder: (context, index) {
+                        final item =
+                            changeProductChecklistProvider
+                                .langkahKerjaFractionationList[index];
+
+                        final detailIndex = changeProductChecklistProvider
+                            .reportDetailList
+                            .indexWhere(
+                              (detail) => detail.checkItem == item.code,
+                            );
+
+                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
+                        final isChecked =
+                            detailIndex != -1
+                                ? changeProductChecklistProvider
+                                        .reportDetailList[detailIndex]
+                                        .statusItem ==
+                                    "T"
+                                : false;
+
+                        return CustomStatelessChecklistItemRow(
+                          number: index + 1,
+                          description: item.name ?? '',
+                          value: isChecked,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ]),
+
+            _buildSection('Approval Actions', [
+              if (reportItem?.preparedStatus == "Approved" &&
+                  reportItem?.checkedStatus == "Approved") ...[
+                Text(
+                  "Checklist Approved",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
                   ),
                 ),
-
-                _buildSection('General Information', [
-                  _buildDataRow('Ticket ID', reportItem?.id ?? ''),
-                  _buildDataRow('Company', reportItem!.company),
-                  _buildDataRow('Plant', reportItem!.plant),
-                  _buildDataRow(
-                    'First Product',
-                    reportItem!.firstProduct ?? '',
+              ] else if (reportItem?.preparedStatus == "Rejected" ||
+                  reportItem?.checkedStatus == "Rejected") ...[
+                Text(
+                  "Checklist Rejected",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
                   ),
-                  _buildDataRow('Next Product', reportItem!.nextProduct ?? ''),
-                  _buildDataRow('Work Center', reportItem!.workCenter ?? ''),
-                ]),
-
-                _buildSection('Change Product Checklist', [
-                  if (reportItem!.workCenter == 'REF-150' ||
-                      reportItem!.workCenter == 'REF-02') ...[
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Pre-Treatment Section',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount:
-                              changeProductChecklistProvider
-                                  .langkahKerjaPreTreatmentList
-                                  .length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                changeProductChecklistProvider
-                                    .langkahKerjaPreTreatmentList[index];
-
-                            final detailIndex = changeProductChecklistProvider
-                                .reportDetailList
-                                .indexWhere(
-                                  (detail) => detail.checkItem == item.code,
+                ),
+              ] else if (AppRoles.leadProd.contains(
+                user.currentUser?.role,
+              )) ...[
+                if (reportItem?.preparedStatus == null) ...[
+                  CustomRemarkField(controller: remarkController),
+                  const SizedBox(height: 12),
+                  Text('Prepared Status:'),
+                  SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 8.0,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              bool isSuccess =
+                                  await _approveRejectChangeProductChecklist(
+                                    "Rejected",
+                                  );
+                              if (isSuccess) {
+                                showSnackBar(
+                                  "Berhasil Reject Checklist",
+                                  context,
                                 );
-
-                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                            final isChecked =
-                                detailIndex != -1
-                                    ? changeProductChecklistProvider
-                                            .reportDetailList[detailIndex]
-                                            .statusItem ==
-                                        "T"
-                                    : false;
-
-                            return CustomStatelessChecklistItemRow(
-                              number: index + 1,
-                              description: item.name ?? '',
-                              value: isChecked,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16.0),
-                        Divider(
-                          height: 0.0,
-                          thickness: 1,
-                          endIndent: 0,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 16.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Bleacher Section',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount:
-                              changeProductChecklistProvider
-                                  .langkahKerjaBleacherList
-                                  .length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                changeProductChecklistProvider
-                                    .langkahKerjaBleacherList[index];
-
-                            final detailIndex = changeProductChecklistProvider
-                                .reportDetailList
-                                .indexWhere(
-                                  (detail) => detail.checkItem == item.code,
-                                );
-
-                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                            final isChecked =
-                                detailIndex != -1
-                                    ? changeProductChecklistProvider
-                                            .reportDetailList[detailIndex]
-                                            .statusItem ==
-                                        "T"
-                                    : false;
-
-                            return CustomStatelessChecklistItemRow(
-                              number: index + 1,
-                              description: item.name ?? '',
-                              value: isChecked,
-                            );
-                          },
-                        ),
-                        SizedBox(height: 16.0),
-
-                        const SizedBox(height: 16.0),
-                        Divider(
-                          height: 0.0,
-                          thickness: 1,
-                          endIndent: 0,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 16.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Deodorization Section',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount:
-                              changeProductChecklistProvider
-                                  .langkahKerjaDeodorizationList
-                                  .length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                changeProductChecklistProvider
-                                    .langkahKerjaDeodorizationList[index];
-
-                            final detailIndex = changeProductChecklistProvider
-                                .reportDetailList
-                                .indexWhere(
-                                  (detail) => detail.checkItem == item.code,
-                                );
-
-                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                            final isChecked =
-                                detailIndex != -1
-                                    ? changeProductChecklistProvider
-                                            .reportDetailList[detailIndex]
-                                            .statusItem ==
-                                        "T"
-                                    : false;
-
-                            return CustomStatelessChecklistItemRow(
-                              number: index + 1,
-                              description: item.name ?? '',
-                              value: isChecked,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Fractionation Section',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount:
-                              changeProductChecklistProvider
-                                  .langkahKerjaFractionationList
-                                  .length,
-                          itemBuilder: (context, index) {
-                            final item =
-                                changeProductChecklistProvider
-                                    .langkahKerjaFractionationList[index];
-
-                            final detailIndex = changeProductChecklistProvider
-                                .reportDetailList
-                                .indexWhere(
-                                  (detail) => detail.checkItem == item.code,
-                                );
-
-                            // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                            final isChecked =
-                                detailIndex != -1
-                                    ? changeProductChecklistProvider
-                                            .reportDetailList[detailIndex]
-                                            .statusItem ==
-                                        "T"
-                                    : false;
-
-                            return CustomStatelessChecklistItemRow(
-                              number: index + 1,
-                              description: item.name ?? '',
-                              value: isChecked,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ]),
-                _buildSection('Approval Actions', [
-                  if (reportItem?.preparedStatus == "Approved" &&
-                      reportItem?.checkedStatus == "Approved") ...[
-                    Text(
-                      "Checklist Approved",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ] else if (reportItem?.preparedStatus == "Rejected" ||
-                      reportItem?.checkedStatus == "Rejected") ...[
-                    Text(
-                      "Checklist Rejected",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ] else if (AppRoles.leadProd.contains(
-                    user.currentUser?.role,
-                  )) ...[
-                    if (reportItem?.preparedStatus == null) ...[
-                      CustomRemarkField(controller: remarkController),
-                      const SizedBox(height: 12),
-                      Text('Prepared Status:'),
-                      SizedBox(height: 8.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 8.0,
-                              ),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  bool isSuccess =
-                                      await _approveRejectChangeProductChecklist(
-                                        "Rejected",
-                                      );
-                                  if (isSuccess) {
-                                    showSnackBar(
-                                      "Berhasil Reject Checklist",
-                                      context,
-                                    );
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    showSnackBar(
-                                      "Gagal Reject Checklist",
-                                      context,
-                                    );
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: const [
-                                    Text('Reject'),
-                                    Icon(Icons.close),
-                                  ],
-                                ),
-                              ),
+                                Navigator.of(context).pop();
+                              } else {
+                                showSnackBar("Gagal Reject Checklist", context);
+                              }
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: const [
+                                Text('Reject'),
+                                Icon(Icons.close),
+                              ],
                             ),
                           ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 8.0,
-                              ),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  bool isSuccess =
-                                      await _approveRejectChangeProductChecklist(
-                                        "Approved",
-                                      );
-                                  if (isSuccess) {
-                                    showSnackBar(
-                                      "Berhasil Approve Checklist",
-                                      context,
-                                    );
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    showSnackBar(
-                                      "Gagal Approve Checklist",
-                                      context,
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: const [
-                                    Text('Approve'),
-                                    Icon(Icons.check),
-                                  ],
-                                ),
-                              ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 8.0,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              bool isSuccess =
+                                  await _approveRejectChangeProductChecklist(
+                                    "Approved",
+                                  );
+                              if (isSuccess) {
+                                showSnackBar(
+                                  "Berhasil Approve Checklist",
+                                  context,
+                                );
+                                Navigator.of(context).pop();
+                              } else {
+                                showSnackBar(
+                                  "Gagal Approve Checklist",
+                                  context,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: const [
+                                Text('Approve'),
+                                Icon(Icons.check),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ] else if (reportItem?.preparedStatus != null &&
-                        reportItem?.checkedStatus == null) ...[
-                      Text(
-                        "Waiting Apprvoal From Manager Productions...",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
                         ),
                       ),
                     ],
-                  ] else if (AppRoles.managerProd.contains(
-                    user.currentUser?.role,
-                  )) ...[
-                    // 👉 tambahkan widget khusus untuk role manager di sini, misalnya:
-                    if (reportItem?.preparedStatus == "Approved" &&
-                        reportItem?.checkedStatus == null) ...[
-                      CustomRemarkField(controller: remarkController),
-                      const SizedBox(height: 12),
-                      Text('Checked Status:'),
-                      SizedBox(height: 8.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 8.0,
-                              ),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  bool isSuccess =
-                                      await _approveRejectChangeProductChecklist(
-                                        "Rejected",
-                                      );
-                                  if (isSuccess) {
-                                    showSnackBar(
-                                      "Berhasil Reject Checklist",
-                                      context,
-                                    );
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    showSnackBar(
-                                      "Gagal Reject Checklist",
-                                      context,
-                                    );
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: const [
-                                    Text('Reject'),
-                                    Icon(Icons.close),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 8.0,
-                              ),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  bool isSuccess =
-                                      await _approveRejectChangeProductChecklist(
-                                        "Approved",
-                                      );
-                                  if (isSuccess) {
-                                    showSnackBar(
-                                      "Berhasil Approve Checklist",
-                                      context,
-                                    );
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    showSnackBar(
-                                      "Gagal Approve Checklist",
-                                      context,
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: const [
-                                    Text('Approve'),
-                                    Icon(Icons.check),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ] else ...[
-                      Text(
-                        "Waiting Approval From Lead Production...",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ],
-                ]),
-              ],
-            ),
-          ),
-        );
+                  ),
+                ] else if (reportItem?.preparedStatus != null &&
+                    reportItem?.checkedStatus == null) ...[
+                  Text(
+                    "Waiting Apprvoal From Manager Productions...",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ] 
+              else if (AppRoles.managerProd.contains(
+                user.currentUser?.role,
+              )) ...[
+                if(reportItem?.preparedStatus == null)...[
+                  Text(
+                    "Waiting Apprvoal From Leader Productions...",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ]
+              ]
+            ]),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildDataRow(String label, String value) {
@@ -789,7 +698,7 @@ class _MaintenanceChangeProductListDetailPageState
           approvedBy: user.currentUser!.username,
           status: status,
           role: user.currentUser!.role,
-          remarks: remarkController.text
+          remarks: remarkController.text,
         );
     return isSuccess;
   }

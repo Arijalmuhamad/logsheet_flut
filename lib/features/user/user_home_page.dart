@@ -335,7 +335,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.15"), Text("Build 2025-10-27")],
+              children: [Text("Version 1.0.15"), Text("Build 2025-10-28")],
             ),
           ],
         ),

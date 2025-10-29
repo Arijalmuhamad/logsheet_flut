@@ -49,11 +49,11 @@ class _MaintenanceChangeProductInputPageState
   String? selectedWorkCenter;
   int? selectedHour;
 
-  List<MasterValueEntity> workCenterList = [];
+  // List<MasterValueEntity> workCenterList = [];
 
-  List<String> firstProducts = [];
-  List<String> nextProducts = [];
-  List<ProductEntity> productList = [];
+  // List<String> firstProducts = [];
+  // List<String> nextProducts = [];
+  // List<ProductEntity> productList = [];
   final List<String> plants = ['Refinery', 'Fractination'];
 
   @override
@@ -128,6 +128,30 @@ class _MaintenanceChangeProductInputPageState
     final valueProvider = context.read<ValueProvider>();
     final productProvider = context.read<ProductProvider>();
 
+    // 🔹 PINDANKAN LOGIKA KE SINI 🔹
+    // Deklarasikan dan isi list di sini, di dalam build method
+    List<MasterValueEntity> workCenterList = [];
+    List<String> firstProducts = [];
+    List<String> nextProducts = [];
+
+    if (selectedPlant == 'Refinery') {
+      workCenterList = valueProvider.workCenterLists;
+      firstProducts =
+          productProvider.productRefineryList
+              .map((p) => p.rawMaterial ?? '-')
+              .toSet()
+              .toList();
+      nextProducts = List.from(firstProducts);
+    } else if (selectedPlant == 'Fractination') {
+      workCenterList = valueProvider.workCenterFractLists;
+      firstProducts =
+          productProvider.productFractionationList
+              .map((p) => p.rawMaterial ?? '-')
+              .toSet()
+              .toList();
+      nextProducts = List.from(firstProducts);
+    }
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -157,42 +181,8 @@ class _MaintenanceChangeProductInputPageState
                     setState(() {
                       selectedPlant = value;
                       selectedWorkCenter = null;
-
-                      if (value == 'Refinery') {
-                        workCenterList = valueProvider.workCenterLists;
-                        var refineryFirstProductsList =
-                            productProvider.productRefineryList
-                                .map((product) => product.rawMaterial ?? '-')
-                                .toSet()
-                                .toList();
-                        // var refineryNextProductsList =
-                        //     productProvider.productRefineryList
-                        //         .map((product) => product.finishGood ?? '-')
-                        //         .toSet()
-                        //         .toList();
-                        firstProducts.clear();
-                        nextProducts.clear();
-                        firstProducts = refineryFirstProductsList;
-                        nextProducts = List.from(firstProducts);
-                      } else if (value == 'Fractination') {
-                        workCenterList = valueProvider.workCenterFractLists;
-                        var fractionationFirstProductsList =
-                            productProvider.productFractionationList
-                                .map((product) => product.rawMaterial ?? '-')
-                                .toSet()
-                                .toList();
-                        // var fractionationNextProductsList =
-                        //     productProvider.productFractionationList
-                        //         .map((product) => product.finishGood ?? '-')
-                        //         .toSet()
-                        //         .toList();
-                        firstProducts.clear();
-                        nextProducts.clear();
-                        firstProducts = fractionationFirstProductsList;
-                        nextProducts = List.from(firstProducts);
-                      }
-
-                      debugPrint("Updated workCenterList: $workCenterList");
+                      selectedFirstProduct = null;
+                      selectedNextProduct = null;
                     });
                   },
                 ),
@@ -266,8 +256,8 @@ class _MaintenanceChangeProductInputPageState
 
                 const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
+                  key: ValueKey('first-$selectedPlant'),
                   hint: 'Pilih Produk Awal',
-
                   prefixIcon: PrefixIconHelper.get('factory'),
                   stringItems: firstProducts,
                   value: selectedFirstProduct,
@@ -276,6 +266,7 @@ class _MaintenanceChangeProductInputPageState
                 ),
                 const SizedBox(height: 16),
                 CustomDropdown.fromStringItems(
+                  key: ValueKey('next-$selectedPlant'),
                   hint: 'Pilih Produk Selanjutnya',
                   prefixIcon: PrefixIconHelper.get('factory'),
                   stringItems: nextProducts,
@@ -586,7 +577,21 @@ class _MaintenanceChangeProductInputPageState
                             ? Center(child: CircularProgressIndicator())
                             : CustomSaveButton(
                               onPressed: () async {
-                                bool isSuccess = await _insertCheckList();
+                                // Validate required fields before submitting
+                                if (selectedPlant == null ||
+                                    selectedWorkCenter == null ||
+                                    selectedFirstProduct == null ||
+                                    selectedNextProduct == null ||
+                                    selectedHour == null ||
+                                    dateEntryController.text.isEmpty) {
+                                  showSnackBar(
+                                    "Silakan lengkapi semua field sebelum submit",
+                                    context,
+                                  );
+                                  return;
+                                }
+
+                                final bool isSuccess = await _insertCheckList();
                                 if (isSuccess) {
                                   showSnackBar(
                                     "Berhasil menyimpan data checklist",
@@ -613,6 +618,8 @@ class _MaintenanceChangeProductInputPageState
   }
 
   DateTime? parseDateFormatFromController(String? selectedDate) {
+    final date = DateTime.now();
+
     if (selectedDate == null || selectedDate.isEmpty) return null;
     try {
       // UI format = "dd-MM-yyyy"
@@ -620,7 +627,17 @@ class _MaintenanceChangeProductInputPageState
       final dateTime = inputFormat.parse(selectedDate);
 
       // langsung return objek DateTime (bukan String)
-      return dateTime;
+
+      final combinedDateTime = DateTime(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        date.hour,
+        date.minute,
+        date.second,
+      );
+
+      return combinedDateTime;
     } catch (e) {
       log('Date parse error: $e');
       return null;

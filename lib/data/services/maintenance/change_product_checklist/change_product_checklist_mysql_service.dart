@@ -73,9 +73,11 @@ class ChangeProductChecklistMySQLService {
   /// Errors are logged to the console.
   Future<List<Map<String, dynamic>>> getAllChangeProductFromDate(
     String date,
+    String role,
   ) async {
     MySQLConnection? connection;
 
+    log('$date');
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
@@ -83,8 +85,9 @@ class ChangeProductChecklistMySQLService {
         return [];
       }
       connection = connResult.connection;
-      final result = await connection!.execute(
-        """
+      String query = "";
+      if (AppRoles.leadProd.contains(role)) {
+        query = """
           SELECT 
           h.id, 
           h.company, 
@@ -129,12 +132,62 @@ class ChangeProductChecklistMySQLService {
           m_product p2 
           ON h.next_product = p2.id
       WHERE 
-          DATE(h.transaction_date) = :date
+          DATE(h.transaction_date) = :date AND  h.prepared_status IS NULL
       ORDER BY 
           h.id ASC;
-        """,
-        {"date": date},
-      );
+        """;
+      } else {
+        query = """
+          SELECT 
+          h.id, 
+          h.company, 
+          h.plant, 
+          h.transaction_date, 
+          h.transaction_time,
+          h.first_product AS first_product_id,
+          p1.raw_material AS first_product,
+          h.next_product AS next_product_id,
+          p2.raw_material AS next_product,
+          h.work_center, 
+          h.remarks, 
+          h.flag,
+          h.entry_by,
+          h.entry_date,
+          h.prepared_by,
+          h.prepared_date,
+          h.prepared_status,
+          h.prepared_status_remarks,
+          h.checked_by,
+          h.checked_date,
+          h.checked_status,
+          h.checked_status_remarks,
+          h.updated_by,
+          h.updated_date,
+          h.form_no,
+          h.date_issued,
+          h.revision_no,
+          h.revision_date,
+          d.id AS detail_id, 
+          d.check_item, 
+          d.status_item 
+      FROM 
+          t_change_product_checklist h
+      INNER JOIN 
+          t_change_product_checklist_detail d 
+          ON h.id = d.id_hdr
+      LEFT JOIN 
+          m_product p1 
+          ON h.first_product = p1.id
+      LEFT JOIN 
+          m_product p2 
+          ON h.next_product = p2.id
+      WHERE 
+         DATE(h.transaction_date) = :date
+      ORDER BY 
+          h.id ASC;
+        """;
+      }
+      final result = await connection!.execute(query, {"date": date});
       log(
         'Fetched ${result.rows.length} Change Product Checklists for date $date.',
       );

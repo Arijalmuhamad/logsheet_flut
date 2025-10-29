@@ -137,7 +137,13 @@ class _MaintenanceChangeProductApprovalPageState
                   (context) =>
                       MaintenanceChangeProductApprovalDetailPage(id: id),
             ),
-          );
+          ).then((_) async {
+            // Refresh the list when returning from the detail page
+            if (!mounted) return;
+            await context
+                .read<ChangeProductChecklistProvider>()
+                .getAllApprovalHeaderAndDetail();
+          });
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
