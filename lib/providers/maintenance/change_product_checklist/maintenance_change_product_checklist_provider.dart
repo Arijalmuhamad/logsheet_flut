@@ -193,18 +193,19 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   //   }
   // }
 
-  Future<void> getAllChangeProductFromDate(String date) async {
+  Future<void> getAllChangeProductFromDate(String date, String role) async {
     _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      _reportList = await _repository.getAllChangeProductFromDate(date);
+      _reportList.clear();
+      _reportList = await _repository.getAllChangeProductFromDate(date, role);
 
       final uniqueData =
           <String, MaintenanceChangeProductChecklistReportEntity>{};
 
       for (var item in _reportList) {
-        if (!uniqueData.containsKey(item.id) && item.flag != 'D') {
+        if (!uniqueData.containsKey(item.id) && item.flag == 'T') {
           uniqueData[item.id] = item;
         }
       }
@@ -219,6 +220,13 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  Future<void> clearUniqueReportList() async {
+     _setLoading(true);
+     _uniqueReportList.clear();
+     notifyListeners();
+     _setLoading(false);
   }
 
   Future<bool> insertChangeProductChecklist({
@@ -399,6 +407,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
     _setErrorMessage(null);
 
     try {
+      _approvalList.clear();
       _approvalList = await _repository.getAllApprovalHeaderAndDetail();
 
       final uniqueData =
@@ -409,7 +418,6 @@ class ChangeProductChecklistProvider with ChangeNotifier {
           uniqueData[item.id] = item;
         }
       }
-
       _uniqueApprovalList = uniqueData.values.toList();
       notifyListeners();
 
@@ -503,6 +511,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
   }
 
   void prepopulateReportDetailListForDetail(String idHdr) {
+    _setLoading (true);
     _reportDetailList.clear();
 
     final _selectedReportList =
@@ -517,6 +526,7 @@ class ChangeProductChecklistProvider with ChangeNotifier {
       );
       _reportDetailList.add(detailItem);
     }
+    _setLoading (false);
     notifyListeners();
   }
 

@@ -57,7 +57,7 @@ class _MaintenanceChangeProductApprovalPageState
                     log("item.transactionDate: ${item.transactionDate}");
                     return _approvalCardItem(
                       id: item.id ?? '',
-                      date: item.checkedDate ?? item.preparedDate ?? '',
+                      date: item.transactionDate??'',
                       workCenter: item.workCenter ?? '',
                       preparedStatus: item.preparedStatus ?? '',
                       checkedStatus: item.checkedStatus ?? '',
@@ -115,7 +115,7 @@ class _MaintenanceChangeProductApprovalPageState
       iconColor = Colors.orange;
       cardColor = Colors.orange[50];
       showedStatus = "Prepared";
-    } else if (preparedStatus == '') {
+    } else if (preparedStatus == '' && checkedStatus == '') {
       icon = Icons.hourglass_empty;
       iconColor = Colors.blue;
       cardColor = Colors.blue[50];
@@ -137,7 +137,13 @@ class _MaintenanceChangeProductApprovalPageState
                   (context) =>
                       MaintenanceChangeProductApprovalDetailPage(id: id),
             ),
-          );
+          ).then((_) async {
+            // Refresh the list when returning from the detail page
+            if (!mounted) return;
+            await context
+                .read<ChangeProductChecklistProvider>()
+                .getAllApprovalHeaderAndDetail();
+          });
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),

@@ -28,20 +28,21 @@ class _MaintenanceChangeProductListPageState
   final TextEditingController dateEntryController = TextEditingController();
 
   initState() {
-    // super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-    //   await context
-    //       .read<ChangeProductChecklistProvider>()
-    //       .getAllChangeProductFromDate(date);
-    // });
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context
+          .read<ChangeProductChecklistProvider>()
+          .clearUniqueReportList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final username = context.read<UserProvider>().currentUser?.username;
+    final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
+      appBar: _buildAppBar(userRole ?? ''),
+      body: _buildBody(userRole ?? ''),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           log("Tombol Tambah Change Product Ditekan");
@@ -56,7 +57,7 @@ class _MaintenanceChangeProductListPageState
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             await context
                 .read<ChangeProductChecklistProvider>()
-                .getAllChangeProductFromDate(formatted ?? '');
+                .getAllChangeProductFromDate(formatted ?? '', userRole ?? '');
           });
         },
         label: const Text("Tambah Change Product"),
@@ -67,7 +68,7 @@ class _MaintenanceChangeProductListPageState
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(String role) {
     formData =
         context
             .read<DataFormNoProvider>()
@@ -77,33 +78,41 @@ class _MaintenanceChangeProductListPageState
     return AppBar(
       title: Text("Change Product (${formData!.code})"),
       actions: [
-        context.watch<ChangeProductChecklistProvider>().isLoading
-            ? CircularProgressIndicator()
-            : IconButton(
-              onPressed: () async {},
-              icon: Consumer<ChangeProductChecklistProvider>(
-                builder: (context, provider, child) {
-                  if (provider.isLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  return const Icon(Icons.replay);
-                },
-              ),
-            ),
+        Consumer<ChangeProductChecklistProvider>(
+          builder: (
+            BuildContext context,
+            ChangeProductChecklistProvider provider,
+            Widget? child,
+          ) {
+            return (provider.isLoading)
+                ? CircularProgressIndicator()
+                : IconButton(
+                  onPressed: () async {
+                    await provider.getAllChangeProductFromDate(
+                      parseDateTimeForQuery(dateEntryController.text) ?? '',
+                      role,
+                    );
+                  },
+                  icon: Icon(Icons.replay),
+                );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(String role) {
     final changeProductChecklistProvider =
         context.watch<ChangeProductChecklistProvider>();
 
     final isLoading = changeProductChecklistProvider.isLoading;
-    final reportList = changeProductChecklistProvider.uniqueReportList;
+    final reportList = changeProductChecklistProvider.uniqueReportList
+    .where((item) => item.preparedStatus == null)
+    .toList();
 
     return Column(
       children: [
-        _buildFilterSection(context),
+        _buildFilterSection(context, role),
         Expanded(
           child: Card(
             child: Padding(
@@ -128,7 +137,7 @@ class _MaintenanceChangeProductListPageState
                           time: item.transactionTime,
                           workCenter: item.workCenter ?? '',
                           entryBy: item.entryBy ?? '',
-                        
+                          role: role,
                         );
                       },
                     );
@@ -142,7 +151,7 @@ class _MaintenanceChangeProductListPageState
     );
   }
 
-  Widget _buildFilterSection(BuildContext context) {
+  Widget _buildFilterSection(BuildContext context, String role) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Row(
@@ -164,7 +173,7 @@ class _MaintenanceChangeProductListPageState
               if (formattedDate != null) {
                 await context
                     .read<ChangeProductChecklistProvider>()
-                    .getAllChangeProductFromDate(formattedDate);
+                    .getAllChangeProductFromDate(formattedDate, role);
               }
             },
             icon: const Icon(Icons.search),
@@ -189,7 +198,7 @@ class _MaintenanceChangeProductListPageState
     required String time,
     required String workCenter,
     required String entryBy,
-
+    String? role,
   }) {
     return InkWell(
       onTap: () {
@@ -205,7 +214,7 @@ class _MaintenanceChangeProductListPageState
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<ChangeProductChecklistProvider>()
-              .getAllChangeProductFromDate(formatted ?? '');
+              .getAllChangeProductFromDate(formatted ?? '', role ?? '');
         });
       },
       child: Card(
@@ -231,7 +240,6 @@ class _MaintenanceChangeProductListPageState
                       horizontal: 10,
                       vertical: 4,
                     ),
-                    
                   ),
                 ],
               ),
@@ -298,7 +306,7 @@ class _MaintenanceChangeProductListPageState
       final dateTime = inputFormat.parse(selectedDate);
 
       // Step 2: Ubah ke format yang diinginkan
-      final outputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.SSS');
+      final outputFormat = DateFormat('yyyy-MM-dd');
       return outputFormat.format(dateTime);
     } catch (e) {
       print("Error parsing date: $e");
