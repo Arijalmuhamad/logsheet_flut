@@ -28,6 +28,9 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_report_list_production_page.dart';
@@ -61,7 +64,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formDailyProductionRefinery,
       formDryFractionation,
       formChecklistLampsAndGlassControl,
-      formChangeProductChecklist;
+      formChangeProductChecklist,
+      formStartupProductChecklist;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -256,6 +260,17 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
     formChangeProductChecklist =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Change_Product_Checklist" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formStartupProductChecklist =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
@@ -1013,10 +1028,11 @@ class _UserHomePageState extends State<UserHomePage> {
               collapsedIconColor: Colors.grey,
               children: [
                 // Show Approval only to Managers and Leads (you can adjust roles here)
-                if (AppRoles.managerProd.contains(userRole) || AppRoles.leadProd.contains(userRole))
+                if (AppRoles.managerProd.contains(userRole) ||
+                    AppRoles.leadProd.contains(userRole))
                   _buildDrawerItem(
-                    icon: Icons.input_rounded,
-                    title: 'List',
+                    icon: Icons.list_alt,
+                    title: 'List (${formChangeProductChecklist?.code})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -1029,7 +1045,7 @@ class _UserHomePageState extends State<UserHomePage> {
 
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Report',
+                  title: 'Report (${formChangeProductChecklist?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1043,12 +1059,13 @@ class _UserHomePageState extends State<UserHomePage> {
 
                 _buildDrawerItem(
                   icon: Icons.check_circle_outline,
-                  title: 'Approval',
+                  title: 'Approval (${formChangeProductChecklist?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => MaintenanceChangeProductApprovalPage(),
+                        builder:
+                            (_) => MaintenanceChangeProductApprovalListPage(),
                       ),
                     );
                   },
@@ -1056,6 +1073,68 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
+
+          ExpansionTile(
+            leading: const Icon(
+              Icons.arrow_circle_up_rounded,
+              color: Color(0xFF655F5B),
+            ),
+            title: Text(
+              'StartUp Product Checklist',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: [
+              // Show Approval only to Managers and Leads (you can adjust roles here)
+              if (AppRoles.managerProd.contains(userRole) ||
+                  AppRoles.leadProd.contains(userRole))
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceStartupProductionListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceStartupProductionReportListPage(),
+                    ),
+                  );
+                },
+              ),
+
+              _buildDrawerItem(
+                icon: Icons.check_circle_outline,
+                title: 'Approval',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceStartupProductionApprovalListPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
 
           const Divider(height: 1),
           ListTile(
