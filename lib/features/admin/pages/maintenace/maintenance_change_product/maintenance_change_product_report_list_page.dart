@@ -55,7 +55,7 @@ class _MaintenanceChangeProductReportListPageState
             .where((form) => form.isMenu == "Change_Product_Checklist")
             .first;
     return AppBar(
-      title: Text("Change Product (${formData!.code})"),
+      title: Text("Report List (${formData!.code})"),
       actions: [
         Consumer<ChangeProductChecklistProvider>(
           builder: (

@@ -26,16 +26,16 @@ import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
-class MaintenanceChangeProductInputPage extends StatefulWidget {
-  const MaintenanceChangeProductInputPage({super.key});
+class MaintenanceStartupProductionInputPage extends StatefulWidget {
+  const MaintenanceStartupProductionInputPage({super.key});
 
   @override
-  State<MaintenanceChangeProductInputPage> createState() =>
-      _MaintenanceChangeProductInputPageState();
+  State<MaintenanceStartupProductionInputPage> createState() =>
+      _MaintenanceStartupProductionInputPageState();
 }
 
-class _MaintenanceChangeProductInputPageState
-    extends State<MaintenanceChangeProductInputPage> {
+class _MaintenanceStartupProductionInputPageState
+    extends State<MaintenanceStartupProductionInputPage> {
   bool isLoading = false;
 
   DataFormNoEntity? form;
@@ -153,7 +153,7 @@ class _MaintenanceChangeProductInputPageState
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text("Change Product (F/RFA-015)"),
+        title: const Text("Startup Product (F/RFA-015)"),
         actions: [
           IconButton(
             onPressed: () async {
@@ -296,7 +296,7 @@ class _MaintenanceChangeProductInputPageState
                       children: [
                         CustomDropdown.fromStringItems(
                           key: ValueKey('first-$selectedPlant'),
-                          hint: 'Pilih Produk Awal',
+                          hint: 'Pilih Produk',
                           prefixIcon: PrefixIconHelper.get('factory'),
                           // 3. Gunakan list dinamis yang baru kita buat
                           stringItems: dynamicProductList,
@@ -306,18 +306,8 @@ class _MaintenanceChangeProductInputPageState
                                   setState(() => selectedFirstProduct = value),
                         ),
                         // Ganti jadi 16.0 agar konsisten
-                        const SizedBox(height: 16.0),
-                        CustomDropdown.fromStringItems(
-                          key: ValueKey('next-$selectedPlant'),
-                          hint: 'Pilih Produk Selanjutnya',
-                          prefixIcon: PrefixIconHelper.get('factory'),
-                          // 3. Gunakan list dinamis yang baru kita buat
-                          stringItems: dynamicProductList,
-                          value: selectedNextProduct,
-                          onChanged: (value) {
-                            setState(() => selectedNextProduct = value);
-                          },
-                        ),
+                   
+                       
                       ],
                     );
                   },

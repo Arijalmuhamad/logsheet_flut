@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_detail_page.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
@@ -15,16 +16,16 @@ class ReportEntity {
   ReportEntity({required this.preparedStatus, required this.checkedStatus});
 }
 
-class MaintenanceChangeProductApprovalListPage extends StatefulWidget {
-  const MaintenanceChangeProductApprovalListPage({super.key});
+class MaintenanceStartupProductionApprovalListPage extends StatefulWidget {
+  const MaintenanceStartupProductionApprovalListPage({super.key});
 
   @override
-  State<MaintenanceChangeProductApprovalListPage> createState() =>
-      _MaintenanceChangeProductApprovalListPageState();
+  State<MaintenanceStartupProductionApprovalListPage> createState() =>
+      _MaintenanceStartupProductionApprovalListPageState();
 }
 
-class _MaintenanceChangeProductApprovalListPageState
-    extends State<MaintenanceChangeProductApprovalListPage> {
+class _MaintenanceStartupProductionApprovalListPageState
+    extends State<MaintenanceStartupProductionApprovalListPage> {
   DataFormNoEntity? formData;
   @override
   initState() {
@@ -93,7 +94,7 @@ class _MaintenanceChangeProductApprovalListPageState
                 ? CircularProgressIndicator()
                 : IconButton(
                   onPressed: () async {
-                   await provider.getAllApprovalHeaderAndDetail();
+                    await provider.getAllApprovalHeaderAndDetail();
                   },
                   icon: Icon(Icons.replay),
                 );
@@ -152,7 +153,7 @@ class _MaintenanceChangeProductApprovalListPageState
             MaterialPageRoute(
               builder:
                   (context) =>
-                      MaintenanceChangeProductApprovalDetailPage(id: id),
+                      MaintenanceStartupProductionApprovalDetailPage(id: id),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page
