@@ -350,7 +350,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.15"), Text("Build 2025-10-28")],
+              children: [Text("Version 1.0.15"), Text("Build 2025-10-30")],
             ),
           ],
         ),
@@ -1029,20 +1029,18 @@ class _UserHomePageState extends State<UserHomePage> {
               collapsedIconColor: Colors.grey,
               children: [
                 // Show Approval only to Managers and Leads (you can adjust roles here)
-                if (AppRoles.managerProd.contains(userRole) ||
-                    AppRoles.leadProd.contains(userRole))
-                  _buildDrawerItem(
-                    icon: Icons.list_alt,
-                    title: 'List (${formChangeProductChecklist?.code})',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MaintenanceChangeProductListPage(),
-                        ),
-                      );
-                    },
-                  ),
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List (${formChangeProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceChangeProductListPage(),
+                      ),
+                    );
+                  },
+                ),
 
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
@@ -1057,20 +1055,20 @@ class _UserHomePageState extends State<UserHomePage> {
                     );
                   },
                 ),
-
-                _buildDrawerItem(
-                  icon: Icons.check_circle_outline,
-                  title: 'Approval (${formChangeProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => MaintenanceChangeProductApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
+                if (AppRoles.managerProd.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formChangeProductChecklist?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => MaintenanceChangeProductApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ],
@@ -1091,21 +1089,18 @@ class _UserHomePageState extends State<UserHomePage> {
             iconColor: const Color(0xFFAB2F2B),
             collapsedIconColor: Colors.grey,
             children: [
-              // Show Approval only to Managers and Leads (you can adjust roles here)
-              if (AppRoles.managerProd.contains(userRole) ||
-                  AppRoles.leadProd.contains(userRole))
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'List',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MaintenanceStartupProductionListPage(),
-                      ),
-                    );
-                  },
-                ),
+              _buildDrawerItem(
+                icon: Icons.list_alt,
+                title: 'List',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceStartupProductionListPage(),
+                    ),
+                  );
+                },
+              ),
 
               _buildDrawerItem(
                 icon: Icons.receipt_long_outlined,
@@ -1120,20 +1115,21 @@ class _UserHomePageState extends State<UserHomePage> {
                   );
                 },
               ),
-
-              _buildDrawerItem(
-                icon: Icons.check_circle_outline,
-                title: 'Approval',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => MaintenanceStartupProductionApprovalListPage(),
-                    ),
-                  );
-                },
-              ),
+              if (AppRoles.managerProd.contains(userRole))
+                _buildDrawerItem(
+                  icon: Icons.check_circle_outline,
+                  title: 'Approval',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                MaintenanceStartupProductionApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
 

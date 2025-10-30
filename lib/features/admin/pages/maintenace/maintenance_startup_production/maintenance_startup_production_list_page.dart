@@ -10,6 +10,7 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
@@ -33,7 +34,7 @@ class _MaintenanceStartupProductionListPageState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context
-          .read<ChangeProductChecklistProvider>()
+          .read<MaintenanceStartUpProduksiChecklistProvider>()
           .clearUniqueReportList();
     });
   }
@@ -58,8 +59,8 @@ class _MaintenanceStartupProductionListPageState
             if (!mounted) return;
             final formatted = parseDateTimeForQuery(dateEntryController.text);
             await context
-                .read<ChangeProductChecklistProvider>()
-                .getAllChangeProductFromDate(formatted ?? '', userRole ?? '');
+                .read<MaintenanceStartUpProduksiChecklistProvider>()
+                .getAllReportsFromDate(formatted ?? '', userRole ?? '');
           });
         },
         label: const Text("Tambah Startup Product"),
@@ -78,19 +79,19 @@ class _MaintenanceStartupProductionListPageState
             .where((form) => form.isMenu == "Change_Product_Checklist")
             .first;
     return AppBar(
-      title: Text("Startup Product (${formData!.code})"),
+      title: Text("Startup Product (F/RFA-016)"),
       actions: [
-        Consumer<ChangeProductChecklistProvider>(
+        Consumer<MaintenanceStartUpProduksiChecklistProvider>(
           builder: (
             BuildContext context,
-            ChangeProductChecklistProvider provider,
+            MaintenanceStartUpProduksiChecklistProvider provider,
             Widget? child,
           ) {
             return (provider.isLoading)
                 ? CircularProgressIndicator()
                 : IconButton(
                   onPressed: () async {
-                    await provider.getAllChangeProductFromDate(
+                    await provider.getAllReportsFromDate(
                       parseDateTimeForQuery(dateEntryController.text) ?? '',
                       role,
                     );
@@ -104,11 +105,11 @@ class _MaintenanceStartupProductionListPageState
   }
 
   Widget _buildBody(String role) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
+    final startUpProduksiChecklistProvider =
+        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
 
-    final isLoading = changeProductChecklistProvider.isLoading;
-    final reportList = changeProductChecklistProvider.uniqueReportList
+    final isLoading = startUpProduksiChecklistProvider.isLoading;
+    final reportList = startUpProduksiChecklistProvider.uniqueReportList
     .where((item) => item.preparedStatus == null)
     .toList();
 
@@ -174,8 +175,8 @@ class _MaintenanceStartupProductionListPageState
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
                 await context
-                    .read<ChangeProductChecklistProvider>()
-                    .getAllChangeProductFromDate(formattedDate, role);
+                    .read<MaintenanceStartUpProduksiChecklistProvider>()
+                    .getAllReportsFromDate(formattedDate, role);
               }
             },
             icon: const Icon(Icons.search),
@@ -215,8 +216,8 @@ class _MaintenanceStartupProductionListPageState
           if (!mounted) return;
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
-              .read<ChangeProductChecklistProvider>()
-              .getAllChangeProductFromDate(formatted ?? '', role ?? '');
+              .read<MaintenanceStartUpProduksiChecklistProvider>()
+              .getAllReportsFromDate(formatted ?? '', role ?? '');
         });
       },
       child: Card(

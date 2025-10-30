@@ -119,16 +119,13 @@ class StartUpProduksiChecklistMySQLService {
           d.check_item, 
           d.status_item 
       FROM 
-          t_change_product_checklist h
+          t_startup_produksi_checklist h
       INNER JOIN 
-          t_change_product_checklist_detail d 
+          t_startup_produksi_checklist_detail d 
           ON h.id = d.id_hdr
       LEFT JOIN 
           m_product p1 
-          ON h.first_product = p1.id
-      LEFT JOIN 
-          m_product p2 
-          ON h.next_product = p2.id
+          ON h.product = p1.id
       WHERE 
           DATE(h.transaction_date) = :date AND  h.prepared_status IS NULL
       ORDER BY 
@@ -167,16 +164,13 @@ class StartUpProduksiChecklistMySQLService {
           d.check_item, 
           d.status_item 
       FROM 
-          t_change_product_checklist h
+          t_startup_produksi_checklist h
       INNER JOIN 
-          t_change_product_checklist_detail d 
+          t_startup_produksi_checklist_detail d 
           ON h.id = d.id_hdr
-      LEFT JOIN 
+       LEFT JOIN 
           m_product p1 
-          ON h.first_product = p1.id
-      LEFT JOIN 
-          m_product p2 
-          ON h.next_product = p2.id
+          ON h.product = p1.id
       WHERE 
          DATE(h.transaction_date) = :date
       ORDER BY 
@@ -698,13 +692,13 @@ class StartUpProduksiChecklistMySQLService {
               d.check_item, 
               d.status_item 
           FROM 
-              t_change_product_checklist h
+              t_startup_produksi_checklist h
           INNER JOIN 
-              t_change_product_checklist_detail d 
+              t_startup_produksi_checklist_detail d 
               ON h.id = d.id_hdr
           LEFT JOIN 
               m_product p1 
-              ON h.first_product = p1.id
+              ON h.product = p1.id
           ORDER BY 
               h.id ASC;
         """);

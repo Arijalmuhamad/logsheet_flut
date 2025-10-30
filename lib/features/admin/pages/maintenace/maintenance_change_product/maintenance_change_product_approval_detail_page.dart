@@ -135,7 +135,7 @@ class _MaintenanceChangeProductApprovalDetailPageState
               ),
             ]),
             _buildSection('Change Product Checklist', [
-              if (approvalItem!.workCenter == 'REF-150' ||
+              if (approvalItem!.workCenter == 'REF-01' ||
                   approvalItem!.workCenter == 'REF-02') ...[
                 Column(
                   children: [
@@ -443,6 +443,14 @@ class _MaintenanceChangeProductApprovalDetailPageState
                         ),
                       ),
                     ],
+                  ),
+                ] else if (approvalItem?.preparedStatus == null) ...[
+                  Text(
+                    "Waiting Approval From Leader Productions...",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
                   ),
                 ],
               ] else if (AppRoles.leadProd.contains(

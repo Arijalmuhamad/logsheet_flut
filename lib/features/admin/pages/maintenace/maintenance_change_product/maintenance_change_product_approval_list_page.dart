@@ -8,12 +8,6 @@ import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
-class ReportEntity {
-  final String preparedStatus;
-  final String checkedStatus;
-
-  ReportEntity({required this.preparedStatus, required this.checkedStatus});
-}
 
 class MaintenanceChangeProductApprovalListPage extends StatefulWidget {
   const MaintenanceChangeProductApprovalListPage({super.key});

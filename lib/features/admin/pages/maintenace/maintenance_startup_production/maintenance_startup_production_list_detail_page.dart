@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_edit_page.dart';
@@ -9,6 +10,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -24,26 +26,28 @@ class MaintenanceStartupProductionListDetailPage extends StatefulWidget {
 
 class _MaintenanceStartupProductionListDetailPageState
     extends State<MaintenanceStartupProductionListDetailPage> {
-  MaintenanceChangeProductChecklistReportEntity? reportItem;
+  MaintenanceStartUpProduksiChecklistReportEntity? reportItem;
   final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final startUpProduksiChecklistProvider =
+          context.read<MaintenanceStartUpProduksiChecklistProvider>();
+
       final item = context
-          .read<ChangeProductChecklistProvider>()
+          .read<MaintenanceStartUpProduksiChecklistProvider>()
           .uniqueReportList
           .firstWhere((element) => element.id == widget.id);
 
       setState(() {
         reportItem = item;
       });
-      await context.read<ChangeProductChecklistProvider>().getLangkahKerja();
+      await context
+          .read<MaintenanceStartUpProduksiChecklistProvider>()
+          .getLangkahKerja();
 
-      final changeProductChecklistProvider =
-          context.read<ChangeProductChecklistProvider>();
-
-      changeProductChecklistProvider.prepopulateReportDetailListForDetail(
+      startUpProduksiChecklistProvider.prepopulateReportDetailListForDetail(
         widget.id,
       );
     });
@@ -57,10 +61,10 @@ class _MaintenanceStartupProductionListDetailPageState
 
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Consumer<ChangeProductChecklistProvider>(
+      body: Consumer<MaintenanceStartUpProduksiChecklistProvider>(
         builder: (
           BuildContext context,
-          ChangeProductChecklistProvider value,
+          MaintenanceStartUpProduksiChecklistProvider value,
           Widget? child,
         ) {
           return (value.isLoadingApproval)
@@ -72,39 +76,12 @@ class _MaintenanceStartupProductionListDetailPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
+    final startUpProduksiChecklistProvider =
+        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
     final user = context.read<UserProvider>();
-    String _isNull(double? value) {
-      if (value == null) {
-        return '-';
-      } else {
-        return value.toString();
-      }
-    }
 
-    String _formatDateString(String? s) {
-      if (s == null || s.isEmpty) return '-';
-      final dt = DateTime.tryParse(s);
-      if (dt != null) {
-        return DateFormat('dd MMMM yyyy').format(dt);
-      }
-      // If parsing fails, return the original string as a fallback
-      return s;
-    }
-
-    String _formatTimeString(String? s) {
-      if (s == null || s.isEmpty) return '-';
-      try {
-        final dt = DateFormat("HH:mm:ss").parse(s);
-        return DateFormat("HH:mm").format(dt); // hasil: 08:00
-      } catch (e) {
-        return s; // fallback jika parsing gagal
-      }
-    }
-
-    if (changeProductChecklistProvider.isLoading ||
-        changeProductChecklistProvider.isLoadingDelete) {
+    if (startUpProduksiChecklistProvider.isLoading ||
+        startUpProduksiChecklistProvider.isLoadingDelete) {
       return const Center(child: CircularProgressIndicator());
     }
     return SafeArea(
@@ -143,13 +120,12 @@ class _MaintenanceStartupProductionListDetailPageState
               _buildDataRow('Ticket ID', reportItem?.id ?? ''),
               _buildDataRow('Company', reportItem!.company),
               _buildDataRow('Plant', reportItem!.plant),
-              _buildDataRow('First Product', reportItem!.firstProduct ?? ''),
-              _buildDataRow('Next Product', reportItem!.nextProduct ?? ''),
+              _buildDataRow('Product', reportItem!.product ?? ''),
               _buildDataRow('Work Center', reportItem!.workCenter ?? ''),
             ]),
 
             _buildSection('Change Product Checklist', [
-              if (reportItem!.workCenter == 'REF-150' ||
+              if (reportItem!.workCenter == 'REF-01' ||
                   reportItem!.workCenter == 'REF-02') ...[
                 Column(
                   children: [
@@ -170,15 +146,15 @@ class _MaintenanceStartupProductionListDetailPageState
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount:
-                          changeProductChecklistProvider
+                          startUpProduksiChecklistProvider
                               .langkahKerjaPreTreatmentList
                               .length,
                       itemBuilder: (context, index) {
                         final item =
-                            changeProductChecklistProvider
+                            startUpProduksiChecklistProvider
                                 .langkahKerjaPreTreatmentList[index];
 
-                        final detailIndex = changeProductChecklistProvider
+                        final detailIndex = startUpProduksiChecklistProvider
                             .reportDetailList
                             .indexWhere(
                               (detail) => detail.checkItem == item.code,
@@ -187,7 +163,7 @@ class _MaintenanceStartupProductionListDetailPageState
                         // ambil status dari reportDetailList (default 'F' kalau belum ada)
                         final isChecked =
                             detailIndex != -1
-                                ? changeProductChecklistProvider
+                                ? startUpProduksiChecklistProvider
                                         .reportDetailList[detailIndex]
                                         .statusItem ==
                                     "T"
@@ -225,15 +201,15 @@ class _MaintenanceStartupProductionListDetailPageState
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount:
-                          changeProductChecklistProvider
+                          startUpProduksiChecklistProvider
                               .langkahKerjaBleacherList
                               .length,
                       itemBuilder: (context, index) {
                         final item =
-                            changeProductChecklistProvider
+                            startUpProduksiChecklistProvider
                                 .langkahKerjaBleacherList[index];
 
-                        final detailIndex = changeProductChecklistProvider
+                        final detailIndex = startUpProduksiChecklistProvider
                             .reportDetailList
                             .indexWhere(
                               (detail) => detail.checkItem == item.code,
@@ -242,7 +218,7 @@ class _MaintenanceStartupProductionListDetailPageState
                         // ambil status dari reportDetailList (default 'F' kalau belum ada)
                         final isChecked =
                             detailIndex != -1
-                                ? changeProductChecklistProvider
+                                ? startUpProduksiChecklistProvider
                                         .reportDetailList[detailIndex]
                                         .statusItem ==
                                     "T"
@@ -282,15 +258,15 @@ class _MaintenanceStartupProductionListDetailPageState
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount:
-                          changeProductChecklistProvider
+                          startUpProduksiChecklistProvider
                               .langkahKerjaDeodorizationList
                               .length,
                       itemBuilder: (context, index) {
                         final item =
-                            changeProductChecklistProvider
+                            startUpProduksiChecklistProvider
                                 .langkahKerjaDeodorizationList[index];
 
-                        final detailIndex = changeProductChecklistProvider
+                        final detailIndex = startUpProduksiChecklistProvider
                             .reportDetailList
                             .indexWhere(
                               (detail) => detail.checkItem == item.code,
@@ -299,7 +275,7 @@ class _MaintenanceStartupProductionListDetailPageState
                         // ambil status dari reportDetailList (default 'F' kalau belum ada)
                         final isChecked =
                             detailIndex != -1
-                                ? changeProductChecklistProvider
+                                ? startUpProduksiChecklistProvider
                                         .reportDetailList[detailIndex]
                                         .statusItem ==
                                     "T"
@@ -334,15 +310,15 @@ class _MaintenanceStartupProductionListDetailPageState
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount:
-                          changeProductChecklistProvider
+                          startUpProduksiChecklistProvider
                               .langkahKerjaFractionationList
                               .length,
                       itemBuilder: (context, index) {
                         final item =
-                            changeProductChecklistProvider
+                            startUpProduksiChecklistProvider
                                 .langkahKerjaFractionationList[index];
 
-                        final detailIndex = changeProductChecklistProvider
+                        final detailIndex = startUpProduksiChecklistProvider
                             .reportDetailList
                             .indexWhere(
                               (detail) => detail.checkItem == item.code,
@@ -351,7 +327,7 @@ class _MaintenanceStartupProductionListDetailPageState
                         // ambil status dari reportDetailList (default 'F' kalau belum ada)
                         final isChecked =
                             detailIndex != -1
-                                ? changeProductChecklistProvider
+                                ? startUpProduksiChecklistProvider
                                         .reportDetailList[detailIndex]
                                         .statusItem ==
                                     "T"
@@ -573,7 +549,7 @@ class _MaintenanceStartupProductionListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Change Product Detail',
+        'Startup Produksi Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
@@ -637,9 +613,10 @@ class _MaintenanceStartupProductionListDetailPageState
                 Navigator.of(dialogContext).pop(); // tutup dialog dulu
 
                 final provider =
-                    parentContext.read<ChangeProductChecklistProvider>();
+                    parentContext
+                        .read<MaintenanceStartUpProduksiChecklistProvider>();
 
-                final success = await provider.deleteChangeProductChecklist(
+                final success = await provider.deleteStartUpProduksiChecklist(
                   widget.id,
                 );
 
@@ -678,7 +655,7 @@ class _MaintenanceStartupProductionListDetailPageState
     final user = context.read<UserProvider>();
 
     var isSuccess = context
-        .read<ChangeProductChecklistProvider>()
+        .read<MaintenanceStartUpProduksiChecklistProvider>()
         .updateApproveRejectToHeader(
           id: widget.id,
           approvedBy: user.currentUser!.username,
@@ -775,5 +752,25 @@ class _MaintenanceStartupProductionListDetailPageState
         );
       },
     );
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd MMMM yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
+  }
+
+  String _formatTimeString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    try {
+      final dt = DateFormat("HH:mm:ss").parse(s);
+      return DateFormat("HH:mm").format(dt); // hasil: 08:00
+    } catch (e) {
+      return s; // fallback jika parsing gagal
+    }
   }
 }
