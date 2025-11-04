@@ -1,0 +1,443 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
+import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:provider/provider.dart';
+
+class DailyStorageTankAnalyticalReportDetailPage extends StatefulWidget {
+  DailyStorageTankAnalyticalReportDetailPage({super.key});
+
+  @override
+  State<DailyStorageTankAnalyticalReportDetailPage> createState() =>
+      _DailyStorageTankAnalyticalReportDetailPageState();
+}
+
+class _DailyStorageTankAnalyticalReportDetailPageState
+    extends State<DailyStorageTankAnalyticalReportDetailPage> {
+  MaintenanceChangeProductChecklistReportEntity? reportItem;
+  final TextEditingController remarkController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // if (reportItem == null) {
+    //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    // }
+
+    return Scaffold(
+      appBar: _buildAppBar(context),
+      body: Consumer<ChangeProductChecklistProvider>(
+        builder: (
+          BuildContext context,
+          ChangeProductChecklistProvider value,
+          Widget? child,
+        ) {
+          return (value.isLoadingApproval)
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(context);
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final changeProductChecklistProvider =
+        context.watch<ChangeProductChecklistProvider>();
+    final user = context.read<UserProvider>();
+
+    if (changeProductChecklistProvider.isLoading ||
+        changeProductChecklistProvider.isLoadingDelete) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(
+          top: 16,
+          bottom: 36,
+          right: 16,
+          left: 16,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFAB2F2B),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildInfoCard(
+                    'Analysis Date',
+                    _formatDateString(reportItem?.transactionDate),
+                  ),
+                ],
+              ),
+            ),
+
+            _buildSection('General Information', [
+              _buildDataRow('ID', 'ST-001'),
+              _buildDataRow('Company', 'PT. Dummy Oil Factory'),
+              _buildDataRow('Plant', 'Plant A - Cikarang'),
+            ]),
+
+            _buildSection('Storage Tank Analytical Result', [
+              _buildDataRow('Tank No', "Tank #3"),
+              _buildDataRow('Oil Type', 'Crude Palm Oil'),
+              _buildDataRow('Kapasitas Tanki', "10.000 Liter"),
+              _buildDataRow('Quantity', "8.000 Liter"),
+              _buildDataRow('Empty Space', "2.000 Liter"),
+              _buildDataRow('Suhu', "35°C"),
+
+              _buildSection('Quality Parameter', [
+                _buildDataRow('FFA', "0.25%"),
+                _buildDataRow('Moisture', "0.12%"),
+                _buildDataRow('LoviBondColor Y', "0.02%"),
+                _buildDataRow('LoviBondColor X', "0.02%"),
+                _buildDataRow('IV', "0.02%"),
+                _buildDataRow('PV', "0.02%"),
+                _buildDataRow('Slip Melting Point', "0.02%"),
+                _buildDataRow('Cloud Point', "0.02%"),
+                _buildDataRow('AnV', "0.02%"),
+                _buildDataRow('B-Carotene', "0.02%"),
+                _buildDataRow('P', "0.02%"),
+                _buildDataRow('Dobi', "0.02%"),
+                _buildDataRow('Totox', "0.02%"),
+                _buildDataRow('Totox', "0.02%"),
+                CustomStatelessChecklistItemRow(
+                  description: 'Odor',
+                  value: true,
+                  isShowNumber: false,
+                ),
+              ]),
+            ]),
+
+            _buildSection('Operator Information', [
+              _buildDataRow('Prepared By', 'John Doe'),
+              _buildDataRow('Checked By', 'Jane Smith'),
+              _buildDataRow('Approved By', 'Manager Oil Prod.'),
+            ]),
+
+            _buildSection('Remarks', [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Remarks Lorem Ipsum Remarks Lorem Ipsum Remarks Lorem Ipsum',
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDataRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF655F5B),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(), // <-- ini kuncinya
+          Text(value, style: const TextStyle(color: Colors.black54)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFAB2F2B),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: title == "Shift" || title == "Jam" ? 24 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, List<Widget> children) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Color(0xFF655F5B),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 1,
+      title: const Text(
+        'Change Product Detail',
+        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.black),
+      actions: [
+        // if (reportItem?.preparedStatus == null)
+        //   IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
+        // if (reportItem?.preparedStatus == null)
+        //   IconButton(
+        //     onPressed: () async {
+        //       // return _showDeleteConfirmationDialog(context);
+        //     },
+        //     icon: const Icon(Icons.delete_rounded, color: Colors.red),
+        //   ),
+      ],
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    // Simpan context utama ke variabel
+    final parentContext = context;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            'Delete Report',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to delete this report? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  () => Navigator.of(dialogContext).pop(), // tutup dialog
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                Navigator.of(dialogContext).pop(); // tutup dialog dulu
+
+                final provider =
+                    parentContext.read<ChangeProductChecklistProvider>();
+
+                final success = await provider.deleteChangeProductChecklist('');
+
+                if (success) {
+                  if (parentContext.mounted) {
+                    ScaffoldMessenger.of(parentContext).showSnackBar(
+                      const SnackBar(
+                        content: Text('Report deleted successfully.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.of(
+                      parentContext,
+                    ).pop(); // ✅ ini menutup halaman detail
+                  }
+                } else {
+                  if (parentContext.mounted) {
+                    ScaffoldMessenger.of(parentContext).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to delete report.'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _approveRejectChangeProductChecklist(String status) {
+    final user = context.read<UserProvider>();
+
+    var isSuccess = context
+        .read<ChangeProductChecklistProvider>()
+        .updateApproveRejectToHeader(
+          id: '',
+          approvedBy: user.currentUser!.username,
+          status: status,
+          role: user.currentUser!.role,
+          remarks: remarkController.text,
+        );
+    return isSuccess;
+  }
+
+  void _showRejectBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 20,
+            right: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                'Reject Checklist',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.red[800],
+                ),
+              ),
+              const SizedBox(height: 12),
+              CustomRemarkField(controller: remarkController),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (remarkController.text.isEmpty) {
+                          showSnackBar(
+                            "Harap isi remark sebelum reject",
+                            context,
+                          );
+                          return;
+                        }
+
+                        bool isSuccess =
+                            await _approveRejectChangeProductChecklist(
+                              "Rejected",
+                            );
+                        if (isSuccess) {
+                          Navigator.of(context).pop(); // Tutup bottom sheet
+                          showSnackBar("Berhasil Reject Checklist", context);
+                          Navigator.of(
+                            context,
+                          ).pop(); // Kembali ke halaman sebelumnya
+                        } else {
+                          showSnackBar("Gagal Reject Checklist", context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[700],
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'Confirm Reject',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatDateString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final dt = DateTime.tryParse(s);
+    if (dt != null) {
+      return DateFormat('dd MMMM yyyy').format(dt);
+    }
+    // If parsing fails, return the original string as a fallback
+    return s;
+  }
+
+  String _formatTimeString(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    try {
+      final dt = DateFormat("HH:mm:ss").parse(s);
+      return DateFormat("HH:mm").format(dt); // hasil: 08:00
+    } catch (e) {
+      return s; // fallback jika parsing gagal
+    }
+  }
+}

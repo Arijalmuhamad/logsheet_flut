@@ -134,7 +134,7 @@ class _MaintenanceChangeProductReportListDetailPageState
                 ]),
 
                 _buildSection('Change Product Checklist', [
-                  if (reportItem!.workCenter == 'REF-150' ||
+                  if (reportItem!.workCenter == 'REF-01' ||
                       reportItem!.workCenter == 'REF-02') ...[
                     Column(
                       children: [

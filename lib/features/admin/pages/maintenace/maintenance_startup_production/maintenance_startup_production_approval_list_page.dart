@@ -5,16 +5,10 @@ import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_detail_page.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
 
-// Dummy model class to simulate your report entity
-class ReportEntity {
-  final String preparedStatus;
-  final String checkedStatus;
-
-  ReportEntity({required this.preparedStatus, required this.checkedStatus});
-}
 
 class MaintenanceStartupProductionApprovalListPage extends StatefulWidget {
   const MaintenanceStartupProductionApprovalListPage({super.key});
@@ -32,18 +26,18 @@ class _MaintenanceStartupProductionApprovalListPageState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context
-          .read<ChangeProductChecklistProvider>()
+          .read<MaintenanceStartUpProduksiChecklistProvider>()
           .getAllApprovalHeaderAndDetail();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
+    final startUpProduksiChecklistProvider =
+        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
 
-    final isLoading = changeProductChecklistProvider.isLoading;
-    final approvalList = changeProductChecklistProvider.uniqueApprovalList;
+    final isLoading = startUpProduksiChecklistProvider.isLoading;
+    final approvalList = startUpProduksiChecklistProvider.uniqueApprovalList;
 
     return Scaffold(
       appBar: _buildAppBar(),
@@ -65,8 +59,7 @@ class _MaintenanceStartupProductionApprovalListPageState
                       workCenter: item.workCenter ?? '',
                       preparedStatus: item.preparedStatus ?? '',
                       checkedStatus: item.checkedStatus ?? '',
-                      firstProduct: item.firstProduct ?? '',
-                      nextProduct: item.nextProduct ?? '',
+                      product: item.product ?? '',
                     );
                   },
                 ),
@@ -82,12 +75,12 @@ class _MaintenanceStartupProductionApprovalListPageState
             .where((form) => form.isMenu == "Change_Product_Checklist")
             .first;
     return AppBar(
-      title: Text("Approval (${formData!.code})"),
+      title: Text("Approval (F/RFA-016)"),
       actions: [
-        Consumer<ChangeProductChecklistProvider>(
+        Consumer<MaintenanceStartUpProduksiChecklistProvider>(
           builder: (
             BuildContext context,
-            ChangeProductChecklistProvider provider,
+            MaintenanceStartUpProduksiChecklistProvider provider,
             Widget? child,
           ) {
             return (provider.isLoading)
@@ -110,8 +103,7 @@ class _MaintenanceStartupProductionApprovalListPageState
     required String workCenter,
     required String? preparedStatus,
     required String? checkedStatus,
-    required String firstProduct,
-    required String nextProduct,
+    required String product,
     IconData? icon,
     Color? iconColor,
     Color? cardColor,
@@ -159,7 +151,7 @@ class _MaintenanceStartupProductionApprovalListPageState
             // Refresh the list when returning from the detail page
             if (!mounted) return;
             await context
-                .read<ChangeProductChecklistProvider>()
+                .read<MaintenanceStartUpProduksiChecklistProvider>()
                 .getAllApprovalHeaderAndDetail();
           });
         },
@@ -189,11 +181,7 @@ class _MaintenanceStartupProductionApprovalListPageState
                       style: const TextStyle(fontSize: 14),
                     ),
                     Text(
-                      'First Product: $firstProduct',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      'Next Product: $nextProduct',
+                      'First Product: $product',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 4),

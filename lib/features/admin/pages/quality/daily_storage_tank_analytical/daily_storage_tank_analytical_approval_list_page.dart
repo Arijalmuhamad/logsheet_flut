@@ -3,22 +3,23 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_detail_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_detail_page.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:provider/provider.dart';
 
 // Dummy model class to simulate your report entity
 
-class MaintenanceChangeProductApprovalListPage extends StatefulWidget {
-  const MaintenanceChangeProductApprovalListPage({super.key});
+class DailyStorageTankAnalyticalApprovalListPage extends StatefulWidget {
+  const DailyStorageTankAnalyticalApprovalListPage({super.key});
 
   @override
-  State<MaintenanceChangeProductApprovalListPage> createState() =>
-      _MaintenanceChangeProductApprovalListPageState();
+  State<DailyStorageTankAnalyticalApprovalListPage> createState() =>
+      _DailyStorageTankAnalyticalApprovalListPageState();
 }
 
-class _MaintenanceChangeProductApprovalListPageState
-    extends State<MaintenanceChangeProductApprovalListPage> {
+class _DailyStorageTankAnalyticalApprovalListPageState
+    extends State<DailyStorageTankAnalyticalApprovalListPage> {
   DataFormNoEntity? formData;
   @override
   initState() {
@@ -146,7 +147,7 @@ class _MaintenanceChangeProductApprovalListPageState
             MaterialPageRoute(
               builder:
                   (context) =>
-                      MaintenanceChangeProductApprovalDetailPage(id: id),
+                      DailyStorageTankAnalyticalApprovalDetailPage(),
             ),
           ).then((_) async {
             // Refresh the list when returning from the detail page

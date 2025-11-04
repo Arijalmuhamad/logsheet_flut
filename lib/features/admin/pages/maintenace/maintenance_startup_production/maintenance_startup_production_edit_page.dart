@@ -17,6 +17,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
+import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -63,8 +64,8 @@ class _MaintenanceStartupProductionEditPageState
 
   Future<void> _initializePage() async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final changeProductChecklistProvider =
-          context.read<ChangeProductChecklistProvider>();
+      final startUpProduksiChecklistProvider =
+          context.read<MaintenanceStartUpProduksiChecklistProvider>();
       final valueProvider = context.read<ValueProvider>();
       final productProvider = context.read<ProductProvider>();
       final plant = context.read<PlantProvider>().currentPlant;
@@ -72,20 +73,19 @@ class _MaintenanceStartupProductionEditPageState
       setState(() => isLoading = true);
 
       try {
-        await changeProductChecklistProvider.getLangkahKerja();
+        await startUpProduksiChecklistProvider.getLangkahKerja();
         await valueProvider.fetchWorkCenterLists();
         await valueProvider.fetchWorkCenterFractLists();
-        await changeProductChecklistProvider.fetchLatestId(plant?.code ?? "");
+        await startUpProduksiChecklistProvider.fetchLatestId(plant?.code ?? "");
         await productProvider.fetchProducts();
 
-        final item = changeProductChecklistProvider.uniqueReportList.firstWhere(
+        final item = startUpProduksiChecklistProvider.uniqueReportList.firstWhere(
           (element) => element.id == widget.id,
         );
 
         final reportItem = item;
         log("Report Item workCenter: ${reportItem.workCenter}");
 
-        // Tentukan Plant berdasar Work Center
         if (reportItem.workCenter == 'REF-01' ||
             reportItem.workCenter == 'REF-02') {
           selectedPlant = 'Refinery';
@@ -97,11 +97,7 @@ class _MaintenanceStartupProductionEditPageState
                   .map((product) => product.rawMaterial ?? '-')
                   .toSet()
                   .toList();
-          // var refineryNextProductsList =
-          //     productProvider.productRefineryList
-          //         .map((product) => product.finishGood ?? '-')
-          //         .toSet()
-          //         .toList();
+
 
           firstProducts = refineryFirstProductsList;
           nextProducts = List.from(firstProducts);
@@ -138,8 +134,8 @@ class _MaintenanceStartupProductionEditPageState
           selectedHour = null;
         }
 
-        selectedFirstProduct = reportItem.firstProduct ?? '';
-        selectedNextProduct = reportItem.nextProduct ?? '';
+        selectedFirstProduct = reportItem.product ?? '';
+        selectedNextProduct = reportItem.product ?? '';
         remarkController.text = reportItem.remarks ?? '';
 
         form = context.read<DataFormNoProvider>().dataFormNoList.firstWhere(
@@ -209,15 +205,15 @@ class _MaintenanceStartupProductionEditPageState
 
   @override
   Widget build(BuildContext context) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
+    final startUpProduksiChecklistProvider =
+        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
     final valueProvider = context.read<ValueProvider>();
     final productProvider = context.read<ProductProvider>();
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text("Change Product (F/RFA-015)"),
+        title: const Text("Edit Startup Produksi (F/RFA-016)"),
         actions: [
           IconButton(
             onPressed: () async {
@@ -409,17 +405,7 @@ class _MaintenanceStartupProductionEditPageState
                             setState(() => selectedFirstProduct = value);
                           },
                         ),
-                        const SizedBox(height: 16),
-                        CustomDropdown.fromStringItems(
-                          hint: 'Pilih Produk Selanjutnya',
-                          prefixIcon: PrefixIconHelper.get('factory'),
-                          stringItems: nextProducts,
-                          value: selectedNextProduct,
-                          isDisabled: true,
-                          onChanged: (value) {
-                            setState(() => selectedNextProduct = value);
-                          },
-                        ),
+                       
                         const SizedBox(height: 16),
 
                         if (selectedPlant == 'Refinery') ...[
@@ -447,17 +433,17 @@ class _MaintenanceStartupProductionEditPageState
                                         const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     itemCount:
-                                        changeProductChecklistProvider
+                                        startUpProduksiChecklistProvider
                                             .langkahKerjaPreTreatmentList
                                             .length,
                                     itemBuilder: (context, index) {
                                       final langkah =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .langkahKerjaPreTreatmentList[index];
 
                                       // cari item yang cocok di reportDetailList berdasarkan checkItem == code
                                       final detailIndex =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .reportDetailList
                                               .indexWhere(
                                                 (detail) =>
@@ -468,7 +454,7 @@ class _MaintenanceStartupProductionEditPageState
                                       // ambil status dari reportDetailList (default 'F' kalau belum ada)
                                       final isChecked =
                                           detailIndex != -1
-                                              ? changeProductChecklistProvider
+                                              ? startUpProduksiChecklistProvider
                                                       .reportDetailList[detailIndex]
                                                       .statusItem ==
                                                   "T"
@@ -481,7 +467,7 @@ class _MaintenanceStartupProductionEditPageState
                                         onChanged: (val) {
                                           final newStatus =
                                               (val ?? false) ? "T" : "F";
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .updateChecklistStatus(
                                                 langkah.code!,
                                                 newStatus,
@@ -512,16 +498,16 @@ class _MaintenanceStartupProductionEditPageState
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
                                     itemCount:
-                                        changeProductChecklistProvider
+                                        startUpProduksiChecklistProvider
                                             .langkahKerjaBleacherList
                                             .length,
 
                                     itemBuilder: (context, index) {
                                       final langkah =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .langkahKerjaBleacherList[index];
                                       final detailIndex =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .reportDetailList
                                               .indexWhere(
                                                 (detail) =>
@@ -530,7 +516,7 @@ class _MaintenanceStartupProductionEditPageState
                                               );
                                       final isChecked =
                                           detailIndex != -1
-                                              ? changeProductChecklistProvider
+                                              ? startUpProduksiChecklistProvider
                                                       .reportDetailList[detailIndex]
                                                       .statusItem ==
                                                   "T"
@@ -542,7 +528,7 @@ class _MaintenanceStartupProductionEditPageState
                                         onChanged: (val) {
                                           final newStatus =
                                               (val ?? false) ? "T" : "F";
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .updateChecklistStatus(
                                                 langkah.code!,
                                                 newStatus,
@@ -573,16 +559,16 @@ class _MaintenanceStartupProductionEditPageState
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
                                     itemCount:
-                                        changeProductChecklistProvider
+                                        startUpProduksiChecklistProvider
                                             .langkahKerjaDeodorizationList
                                             .length,
                                     itemBuilder: (context, index) {
                                       final langkah =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .langkahKerjaDeodorizationList[index];
 
                                       final detailIndex =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .reportDetailList
                                               .indexWhere(
                                                 (detail) =>
@@ -591,7 +577,7 @@ class _MaintenanceStartupProductionEditPageState
                                               );
                                       final isChecked =
                                           detailIndex != -1
-                                              ? changeProductChecklistProvider
+                                              ? startUpProduksiChecklistProvider
                                                       .reportDetailList[detailIndex]
                                                       .statusItem ==
                                                   "T"
@@ -603,7 +589,7 @@ class _MaintenanceStartupProductionEditPageState
                                         onChanged: (val) {
                                           final newStatus =
                                               (val ?? false) ? "T" : "F";
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .updateChecklistStatus(
                                                 langkah.code!,
                                                 newStatus,
@@ -642,16 +628,16 @@ class _MaintenanceStartupProductionEditPageState
                                     scrollDirection: Axis.vertical,
                                     shrinkWrap: true,
                                     itemCount:
-                                        changeProductChecklistProvider
+                                        startUpProduksiChecklistProvider
                                             .langkahKerjaFractionationList
                                             .length,
                                     itemBuilder: (context, index) {
                                       final langkah =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .langkahKerjaFractionationList[index];
 
                                       final detailIndex =
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .reportDetailList
                                               .indexWhere(
                                                 (detail) =>
@@ -660,7 +646,7 @@ class _MaintenanceStartupProductionEditPageState
                                               );
                                       final isChecked =
                                           detailIndex != -1
-                                              ? changeProductChecklistProvider
+                                              ? startUpProduksiChecklistProvider
                                                       .reportDetailList[detailIndex]
                                                       .statusItem ==
                                                   "T"
@@ -672,7 +658,7 @@ class _MaintenanceStartupProductionEditPageState
                                         onChanged: (val) {
                                           final newStatus =
                                               (val ?? false) ? "T" : "F";
-                                          changeProductChecklistProvider
+                                          startUpProduksiChecklistProvider
                                               .updateChecklistStatus(
                                                 langkah.code!,
                                                 newStatus,
@@ -735,7 +721,7 @@ class _MaintenanceStartupProductionEditPageState
                             padding: const EdgeInsets.symmetric(vertical: 24.0),
                             child:
                                 (context
-                                        .watch<ChangeProductChecklistProvider>()
+                                        .watch<MaintenanceStartUpProduksiChecklistProvider>()
                                         .isLoadingInput)
                                     ? Center(child: CircularProgressIndicator())
                                     : CustomSaveButton(
@@ -787,13 +773,13 @@ class _MaintenanceStartupProductionEditPageState
         context.read<BusinessUnitProvider>().currentBusinessUnit;
     final plant = context.read<PlantProvider>().currentPlant;
     final details =
-        context.read<ChangeProductChecklistProvider>().reportDetailList;
+        context.read<MaintenanceStartUpProduksiChecklistProvider>().reportDetailList;
 
     final user = context.read<UserProvider>();
 
     var isSuccess = context
-        .read<ChangeProductChecklistProvider>()
-        .updateChangeProductChecklist(
+        .read<MaintenanceStartUpProduksiChecklistProvider>()
+        .updateStartUpProduksiChecklist(
           id: widget.id,
           company: businessUnit?.buCode ?? "",
           plant: plant?.code ?? '',
