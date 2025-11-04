@@ -31,6 +31,10 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_gl
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_report_list_production_page.dart';
@@ -276,7 +280,7 @@ class _UserHomePageState extends State<UserHomePage> {
             .dataFormNoList
             .where(
               (form) =>
-                  form.isMenu == "Change_Product_Checklist" &&
+                  form.isMenu == "Start_Up_Produksi_Checklist" &&
                   form.isActive == "T",
             )
             .first;
@@ -350,7 +354,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.15"), Text("Build 2025-10-30")],
+              children: [Text("Version 1.0.17"), Text("Build 2025-12-3")],
             ),
           ],
         ),
@@ -537,6 +541,61 @@ class _UserHomePageState extends State<UserHomePage> {
                               userName: user.username,
                               role: user.role,
                             ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Daily Storage Tank Analytical\n(${formStartupProductChecklist?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(${formStartupProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DailyStorageTankAnalyticalListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Report\n(${formStartupProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Approval\n(${formStartupProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalApprovalListPage(),
                       ),
                     );
                   },
@@ -755,7 +814,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                'Refinery\n(${formDailyProductionRefinery?.name}(A))',
+                'Refinery\n(${formDailyProductionRefinery?.name})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -768,7 +827,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 // Manager-only Approval item
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionRefinery?.name}(A))',
+                  title: 'List (${formDailyProductionRefinery?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -784,7 +843,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 if (AppRoles.productionManagerApproval.contains(userRole)) ...[
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDailyProductionRefinery?.name}(A))',
+                    title: 'Approval (${formDailyProductionRefinery?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -798,7 +857,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDailyProductionRefinery?.name}(A))',
+                  title: 'Reports (${formDailyProductionRefinery?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -820,7 +879,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                'Fractionation\n(${formDailyProductionFractionation?.name}(B))',
+                'Fractionation\n(${formDailyProductionFractionation?.name})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -833,7 +892,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 // Manager-only Approval item
                 _buildDrawerItem(
                   icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionFractionation?.name}(B))',
+                  title: 'List (${formDailyProductionFractionation?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -850,7 +909,7 @@ class _UserHomePageState extends State<UserHomePage> {
                   _buildDrawerItem(
                     icon: Icons.check_circle_outline,
                     title:
-                        'Approval (${formDailyProductionFractionation?.name}(B))',
+                        'Approval (${formDailyProductionFractionation?.name})',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -865,8 +924,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 ],
                 _buildDrawerItem(
                   icon: Icons.receipt_long_outlined,
-                  title:
-                      'Reports (${formDailyProductionFractionation?.name}(B))',
+                  title: 'Reports (${formDailyProductionFractionation?.name})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -1079,7 +1137,7 @@ class _UserHomePageState extends State<UserHomePage> {
               color: Color(0xFF655F5B),
             ),
             title: Text(
-              'StartUp Product Checklist',
+              'StartUp Product Checklist\n(${formStartupProductChecklist?.code})',
               style: TextStyle(
                 color: Colors.black87,
                 fontWeight: FontWeight.w600,
@@ -1091,7 +1149,7 @@ class _UserHomePageState extends State<UserHomePage> {
             children: [
               _buildDrawerItem(
                 icon: Icons.list_alt,
-                title: 'List',
+                title: 'List\n(${formStartupProductChecklist?.code})',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -1104,7 +1162,7 @@ class _UserHomePageState extends State<UserHomePage> {
 
               _buildDrawerItem(
                 icon: Icons.receipt_long_outlined,
-                title: 'Report',
+                title: 'Report\n(${formStartupProductChecklist?.code})',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -1118,7 +1176,7 @@ class _UserHomePageState extends State<UserHomePage> {
               if (AppRoles.managerProd.contains(userRole))
                 _buildDrawerItem(
                   icon: Icons.check_circle_outline,
-                  title: 'Approval',
+                  title: 'Approval\n(${formStartupProductChecklist?.code})',
                   onTap: () {
                     Navigator.push(
                       context,

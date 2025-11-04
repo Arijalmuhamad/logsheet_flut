@@ -3,67 +3,44 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_list_detail_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_input_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_detail_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_list_detail_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
-import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
-import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
-class MaintenanceStartupProductionListPage extends StatefulWidget {
-  const MaintenanceStartupProductionListPage({super.key});
+class DailyStorageTankAnalyticalListPage extends StatefulWidget {
+  const DailyStorageTankAnalyticalListPage({super.key});
 
   @override
-  State<MaintenanceStartupProductionListPage> createState() =>
-      _MaintenanceStartupProductionListPageState();
+  State<DailyStorageTankAnalyticalListPage> createState() =>
+      _DailyStorageTankAnalyticalListPageState();
 }
 
-class _MaintenanceStartupProductionListPageState
-    extends State<MaintenanceStartupProductionListPage> {
+class _DailyStorageTankAnalyticalListPageState
+    extends State<DailyStorageTankAnalyticalListPage> {
   DataFormNoEntity? formData;
-  final TextEditingController dateEntryController = TextEditingController();
 
-  initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await context
-          .read<MaintenanceStartUpProduksiChecklistProvider>()
-          .clearUniqueReportList();
-    });
-  }
+  final TextEditingController dateEntryController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final username = context.read<UserProvider>().currentUser?.username;
     final userRole = context.read<UserProvider>().currentUser?.role;
     return Scaffold(
-      appBar: _buildAppBar(userRole ?? ''),
+      appBar: _buildAppBar(),
       body: _buildBody(userRole ?? ''),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          log("Tombol Tambah Change Product Ditekan");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MaintenanceStartupProductionInputPage(),
+              builder: (context) => DailyStorageTankAnalyticalInputPage(),
             ),
-          ).then((_) async {
-            // Refresh the list when returning from the detail page
-            if (!mounted) return;
-            final formatted = parseDateTimeForQuery(dateEntryController.text);
-            await context
-                .read<MaintenanceStartUpProduksiChecklistProvider>()
-                .getAllReportsFromDate(formatted ?? '', userRole ?? '');
-          });
+          );
         },
-        label: const Text("Tambah Startup Product"),
+        label: const Text("Tambah Change Product"),
         icon: Icon(Icons.add),
         backgroundColor: Color(0xFFB91C1C),
         foregroundColor: Colors.white,
@@ -71,47 +48,28 @@ class _MaintenanceStartupProductionListPageState
     );
   }
 
-  AppBar _buildAppBar(String role) {
+  AppBar _buildAppBar() {
     formData =
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Start_Up_Produksi_Checklist")
+            .where((form) => form.isMenu == "Change_Product_Checklist")
             .first;
-    return AppBar(
-      title: Text("Startup Product (${formData?.code})"),
-      actions: [
-        Consumer<MaintenanceStartUpProduksiChecklistProvider>(
-          builder: (
-            BuildContext context,
-            MaintenanceStartUpProduksiChecklistProvider provider,
-            Widget? child,
-          ) {
-            return (provider.isLoading)
-                ? CircularProgressIndicator()
-                : IconButton(
-                  onPressed: () async {
-                    await provider.getAllReportsFromDate(
-                      parseDateTimeForQuery(dateEntryController.text) ?? '',
-                      role,
-                    );
-                  },
-                  icon: Icon(Icons.replay),
-                );
-          },
-        ),
+    return AppBar(title: Text("List (${formData!.code})"), actions: [
+        
       ],
     );
   }
 
   Widget _buildBody(String role) {
-    final startUpProduksiChecklistProvider =
-        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
+    final changeProductChecklistProvider =
+        context.watch<ChangeProductChecklistProvider>();
 
-    final isLoading = startUpProduksiChecklistProvider.isLoading;
-    final reportList = startUpProduksiChecklistProvider.uniqueReportList
-    .where((item) => item.preparedStatus == null)
-    .toList();
+    final isLoading = changeProductChecklistProvider.isLoading;
+    final reportList =
+        changeProductChecklistProvider.uniqueReportList
+            .where((item) => item.preparedStatus == null)
+            .toList();
 
     return Column(
       children: [
@@ -127,7 +85,21 @@ class _MaintenanceStartupProductionListPageState
                     return const Center(child: CircularProgressIndicator());
                   } else if (reportList.isEmpty) {
                     // 🔹 Tampilkan teks jika tidak ada data
-                    return const Center(child: Text("No Data Available"));
+                    return Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      DailyStorageTankAnalyticalListDetailPage(),
+                            ),
+                          );
+                        },
+                        child: Text('No data'),
+                      ),
+                    );
                   } else {
                     // 🔹 Tampilkan list jika ada data
                     return ListView.builder(
@@ -174,9 +146,9 @@ class _MaintenanceStartupProductionListPageState
               );
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
-                await context
-                    .read<MaintenanceStartUpProduksiChecklistProvider>()
-                    .getAllReportsFromDate(formattedDate, role);
+                // await context
+                //     .read<ChangeProductChecklistProvider>()
+                //     .getAllChangeProductFromDate(formattedDate, role);
               }
             },
             icon: const Icon(Icons.search),
@@ -208,16 +180,15 @@ class _MaintenanceStartupProductionListPageState
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => MaintenanceStartupProductionListDetailPage(id: id),
+            builder: (context) => DailyStorageTankAnalyticalInputPage(),
           ),
         ).then((_) {
-          // Refresh the list when returning from the detail page
-          if (!mounted) return;
-          final formatted = parseDateTimeForQuery(dateEntryController.text);
-          context
-              .read<MaintenanceStartUpProduksiChecklistProvider>()
-              .getAllReportsFromDate(formatted ?? '', role ?? '');
+          // // Refresh the list when returning from the detail page
+          // if (!mounted) return;
+          // final formatted = parseDateTimeForQuery(dateEntryController.text);
+          // context
+          //     .read<ChangeProductChecklistProvider>()
+          //     .getAllChangeProductFromDate(formatted ?? '', role ?? '');
         });
       },
       child: Card(

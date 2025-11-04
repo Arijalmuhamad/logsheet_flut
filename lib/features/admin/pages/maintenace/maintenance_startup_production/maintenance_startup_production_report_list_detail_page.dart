@@ -4,12 +4,14 @@ import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_entity.dart';
 import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_report_entity.dart';
+import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
+import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +31,7 @@ class MaintenanceStartupProductionReportListDetailPage extends StatefulWidget {
 class _MaintenanceStartupProductionReportListDetailPageState
     extends State<MaintenanceStartupProductionReportListDetailPage> {
   MaintenanceStartUpProduksiChecklistReportEntity? reportItem;
+  DataFormNoEntity? formData;
   @override
   void initState() {
     super.initState();
@@ -418,12 +421,18 @@ class _MaintenanceStartupProductionReportListDetailPageState
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    formData =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where((form) => form.isMenu == "Start_Up_Produksi_Checklist")
+            .first;
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
-      title: const Text(
-        'List Detail Report Startup Produksi',
-        style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
+      title: Text(
+        'Detail Report Startup Produksi (${formData?.code})',
+        style: const TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),

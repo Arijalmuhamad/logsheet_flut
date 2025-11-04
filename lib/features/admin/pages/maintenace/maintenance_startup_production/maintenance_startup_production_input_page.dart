@@ -79,7 +79,7 @@ class _MaintenanceStartupProductionInputPageState
               .dataFormNoList
               .where(
                 (form) =>
-                    form.isMenu == "Change_Product_Checklist" &&
+                    form.isMenu == "Start_Up_Produksi_Checklist" &&
                     form.isActive == "T",
               )
               .first;
@@ -153,7 +153,7 @@ class _MaintenanceStartupProductionInputPageState
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: const Text("Input Startup Produksi (F/RFA-016)"),
+        title: Text('Input Startup Produksi (${form?.code})'),
         actions: [
           IconButton(
             onPressed: () async {

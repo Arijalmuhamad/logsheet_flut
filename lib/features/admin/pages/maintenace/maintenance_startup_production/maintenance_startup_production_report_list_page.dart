@@ -54,10 +54,10 @@ class _MaintenanceStartupProductionReportListPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where((form) => form.isMenu == "Start_Up_Produksi_Checklist")
             .first;
     return AppBar(
-      title: Text("List Report Startup Produksi"),
+      title: Text("Report Startup Produksi (${formData?.code})"),
       actions: [
         Consumer<MaintenanceStartUpProduksiChecklistProvider>(
           builder: (

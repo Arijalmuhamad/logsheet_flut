@@ -2,69 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
-import 'package:logsheet_app/data/remote/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
-import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_edit_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
-import 'package:logsheet_app/providers/maintenance/start_up_produksi_checklist/maintenance_start_up_produksi_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class MaintenanceStartupProductionListDetailPage extends StatefulWidget {
-  String id;
-
-  MaintenanceStartupProductionListDetailPage({super.key, required this.id});
+class DailyStorageTankAnalyticalApprovalDetailPage extends StatefulWidget {
+  DailyStorageTankAnalyticalApprovalDetailPage({super.key});
 
   @override
-  State<MaintenanceStartupProductionListDetailPage> createState() =>
-      _MaintenanceStartupProductionListDetailPageState();
+  State<DailyStorageTankAnalyticalApprovalDetailPage> createState() =>
+      _DailyStorageTankAnalyticalApprovalDetailPageState();
 }
 
-class _MaintenanceStartupProductionListDetailPageState
-    extends State<MaintenanceStartupProductionListDetailPage> {
-  MaintenanceStartUpProduksiChecklistReportEntity? reportItem;
+class _DailyStorageTankAnalyticalApprovalDetailPageState
+    extends State<DailyStorageTankAnalyticalApprovalDetailPage> {
+  MaintenanceChangeProductChecklistReportEntity? reportItem;
   final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final startUpProduksiChecklistProvider =
-          context.read<MaintenanceStartUpProduksiChecklistProvider>();
-
-      final item = context
-          .read<MaintenanceStartUpProduksiChecklistProvider>()
-          .uniqueReportList
-          .firstWhere((element) => element.id == widget.id);
-
-      setState(() {
-        reportItem = item;
-      });
-      await context
-          .read<MaintenanceStartUpProduksiChecklistProvider>()
-          .getLangkahKerja();
-
-      startUpProduksiChecklistProvider.prepopulateReportDetailListForDetail(
-        widget.id,
-      );
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {});
   }
 
   @override
   Widget build(BuildContext context) {
-    if (reportItem == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
+    // if (reportItem == null) {
+    //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    // }
 
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Consumer<MaintenanceStartUpProduksiChecklistProvider>(
+      body: Consumer<ChangeProductChecklistProvider>(
         builder: (
           BuildContext context,
-          MaintenanceStartUpProduksiChecklistProvider value,
+          ChangeProductChecklistProvider value,
           Widget? child,
         ) {
           return (value.isLoadingApproval)
@@ -76,12 +52,12 @@ class _MaintenanceStartupProductionListDetailPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    final startUpProduksiChecklistProvider =
-        context.watch<MaintenanceStartUpProduksiChecklistProvider>();
+    final changeProductChecklistProvider =
+        context.watch<ChangeProductChecklistProvider>();
     final user = context.read<UserProvider>();
 
-    if (startUpProduksiChecklistProvider.isLoading ||
-        startUpProduksiChecklistProvider.isLoadingDelete) {
+    if (changeProductChecklistProvider.isLoading ||
+        changeProductChecklistProvider.isLoadingDelete) {
       return const Center(child: CircularProgressIndicator());
     }
     return SafeArea(
@@ -104,247 +80,69 @@ class _MaintenanceStartupProductionListDetailPageState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildInfoCard(
-                    'Tanggal',
+                    'Analysis Date',
                     _formatDateString(reportItem?.transactionDate),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildInfoCard(
-                    'Waktu',
-                    _formatTimeString(reportItem?.transactionTime),
                   ),
                 ],
               ),
             ),
 
             _buildSection('General Information', [
-              _buildDataRow('Ticket ID', reportItem?.id ?? ''),
-              _buildDataRow('Company', reportItem!.company),
-              _buildDataRow('Plant', reportItem!.plant),
-              _buildDataRow('Product', reportItem!.product ?? ''),
-              _buildDataRow('Work Center', reportItem!.workCenter ?? ''),
+              _buildDataRow('ID', 'ST-001'),
+              _buildDataRow('Company', 'PT. Dummy Oil Factory'),
+              _buildDataRow('Plant', 'Plant A - Cikarang'),
             ]),
 
-            _buildSection('Change Product Checklist', [
-              if (reportItem!.workCenter == 'REF-01' ||
-                  reportItem!.workCenter == 'REF-02') ...[
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pre-Treatment Section',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount:
-                          startUpProduksiChecklistProvider
-                              .langkahKerjaPreTreatmentList
-                              .length,
-                      itemBuilder: (context, index) {
-                        final item =
-                            startUpProduksiChecklistProvider
-                                .langkahKerjaPreTreatmentList[index];
+            _buildSection('Storage Tank Analytical Result', [
+              _buildDataRow('Tank No', "Tank #3"),
+              _buildDataRow('Oil Type', 'Crude Palm Oil'),
+              _buildDataRow('Kapasitas Tanki', "10.000 Liter"),
+              _buildDataRow('Quantity', "8.000 Liter"),
+              _buildDataRow('Empty Space', "2.000 Liter"),
+              _buildDataRow('Suhu', "35°C"),
 
-                        final detailIndex = startUpProduksiChecklistProvider
-                            .reportDetailList
-                            .indexWhere(
-                              (detail) => detail.checkItem == item.code,
-                            );
-
-                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                        final isChecked =
-                            detailIndex != -1
-                                ? startUpProduksiChecklistProvider
-                                        .reportDetailList[detailIndex]
-                                        .statusItem ==
-                                    "T"
-                                : false;
-
-                        return CustomStatelessChecklistItemRow(
-                          number: index + 1,
-                          description: item.name ?? '',
-                          value: isChecked,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16.0),
-                    Divider(
-                      height: 0.0,
-                      thickness: 1,
-                      endIndent: 0,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bleacher Section',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount:
-                          startUpProduksiChecklistProvider
-                              .langkahKerjaBleacherList
-                              .length,
-                      itemBuilder: (context, index) {
-                        final item =
-                            startUpProduksiChecklistProvider
-                                .langkahKerjaBleacherList[index];
-
-                        final detailIndex = startUpProduksiChecklistProvider
-                            .reportDetailList
-                            .indexWhere(
-                              (detail) => detail.checkItem == item.code,
-                            );
-
-                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                        final isChecked =
-                            detailIndex != -1
-                                ? startUpProduksiChecklistProvider
-                                        .reportDetailList[detailIndex]
-                                        .statusItem ==
-                                    "T"
-                                : false;
-
-                        return CustomStatelessChecklistItemRow(
-                          number: index + 1,
-                          description: item.name ?? '',
-                          value: isChecked,
-                        );
-                      },
-                    ),
-                    SizedBox(height: 16.0),
-
-                    const SizedBox(height: 16.0),
-                    Divider(
-                      height: 0.0,
-                      thickness: 1,
-                      endIndent: 0,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Deodorization Section',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount:
-                          startUpProduksiChecklistProvider
-                              .langkahKerjaDeodorizationList
-                              .length,
-                      itemBuilder: (context, index) {
-                        final item =
-                            startUpProduksiChecklistProvider
-                                .langkahKerjaDeodorizationList[index];
-
-                        final detailIndex = startUpProduksiChecklistProvider
-                            .reportDetailList
-                            .indexWhere(
-                              (detail) => detail.checkItem == item.code,
-                            );
-
-                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                        final isChecked =
-                            detailIndex != -1
-                                ? startUpProduksiChecklistProvider
-                                        .reportDetailList[detailIndex]
-                                        .statusItem ==
-                                    "T"
-                                : false;
-
-                        return CustomStatelessChecklistItemRow(
-                          number: index + 1,
-                          description: item.name ?? '',
-                          value: isChecked,
-                        );
-                      },
-                    ),
-                  ],
+              _buildSection('Quality Parameter', [
+                _buildDataRow('FFA', "0.25%"),
+                _buildDataRow('Moisture', "0.12%"),
+                _buildDataRow('LoviBondColor Y', "0.02%"),
+                _buildDataRow('LoviBondColor X', "0.02%"),
+                _buildDataRow('IV', "0.02%"),
+                _buildDataRow('PV', "0.02%"),
+                _buildDataRow('Slip Melting Point', "0.02%"),
+                _buildDataRow('Cloud Point', "0.02%"),
+                _buildDataRow('AnV', "0.02%"),
+                _buildDataRow('B-Carotene', "0.02%"),
+                _buildDataRow('P', "0.02%"),
+                _buildDataRow('Dobi', "0.02%"),
+                _buildDataRow('Totox', "0.02%"),
+                _buildDataRow('Totox', "0.02%"),
+                CustomStatelessChecklistItemRow(
+                  description: 'Odor',
+                  value: true,
+                  isShowNumber: false,
                 ),
-              ] else ...[
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Fractionation Section',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount:
-                          startUpProduksiChecklistProvider
-                              .langkahKerjaFractionationList
-                              .length,
-                      itemBuilder: (context, index) {
-                        final item =
-                            startUpProduksiChecklistProvider
-                                .langkahKerjaFractionationList[index];
-
-                        final detailIndex = startUpProduksiChecklistProvider
-                            .reportDetailList
-                            .indexWhere(
-                              (detail) => detail.checkItem == item.code,
-                            );
-
-                        // ambil status dari reportDetailList (default 'F' kalau belum ada)
-                        final isChecked =
-                            detailIndex != -1
-                                ? startUpProduksiChecklistProvider
-                                        .reportDetailList[detailIndex]
-                                        .statusItem ==
-                                    "T"
-                                : false;
-
-                        return CustomStatelessChecklistItemRow(
-                          number: index + 1,
-                          description: item.name ?? '',
-                          value: isChecked,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
+              ]),
             ]),
-            
+
+            _buildSection('Operator Information', [
+              _buildDataRow('Prepared By', 'John Doe'),
+              _buildDataRow('Checked By', 'Jane Smith'),
+              _buildDataRow('Approved By', 'Manager Oil Prod.'),
+            ]),
+
+            _buildSection('Remarks', [
+              Row(
+                children: [
+                  Expanded(
+                  child: Text(
+                    'Remarks Lorem Ipsum Remarks Lorem Ipsum Remarks Lorem Ipsum',
+                    softWrap: true,
+                  ),
+                  ),
+                ],
+              )
+            ]),
+
             if ((AppRoles.leadProd.contains(user.currentUser?.role)) ||
                 (AppRoles.managerProd.contains(user.currentUser?.role)))
               _buildSection('Approval Actions', [
@@ -383,7 +181,7 @@ class _MaintenanceStartupProductionListDetailPageState
                             ),
                             child: ElevatedButton(
                               onPressed: () async {
-                                _showRejectBottomSheet(context);
+                                // _showRejectBottomSheet(context);
                               },
                               child: Row(
                                 mainAxisAlignment:
@@ -404,22 +202,22 @@ class _MaintenanceStartupProductionListDetailPageState
                             ),
                             child: ElevatedButton(
                               onPressed: () async {
-                                bool isSuccess =
-                                    await _approveRejectChangeProductChecklist(
-                                      "Approved",
-                                    );
-                                if (isSuccess) {
-                                  showSnackBar(
-                                    "Berhasil Approve Checklist",
-                                    context,
-                                  );
-                                  Navigator.of(context).pop();
-                                } else {
-                                  showSnackBar(
-                                    "Gagal Approve Checklist",
-                                    context,
-                                  );
-                                }
+                                // bool isSuccess =
+                                //     await _approveRejectChangeProductChecklist(
+                                //       "Approved",
+                                //     );
+                                // if (isSuccess) {
+                                //   showSnackBar(
+                                //     "Berhasil Approve Checklist",
+                                //     context,
+                                //   );
+                                //   Navigator.of(context).pop();
+                                // } else {
+                                //   showSnackBar(
+                                //     "Gagal Approve Checklist",
+                                //     context,
+                                //   );
+                                // }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -471,21 +269,16 @@ class _MaintenanceStartupProductionListDetailPageState
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF655F5B),
-                fontWeight: FontWeight.w600,
-              ),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF655F5B),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black54)),
-          ),
+          const Spacer(), // <-- ini kuncinya
+          Text(value, style: const TextStyle(color: Colors.black54)),
         ],
       ),
     );
@@ -553,31 +346,21 @@ class _MaintenanceStartupProductionListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Startup Produksi Detail',
+        'Change Product Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
-        if (reportItem?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          MaintenanceStartupProductionEditPage(id: widget.id),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit),
-          ),
-        if (reportItem?.preparedStatus == null)
-          IconButton(
-            onPressed: () async => _showDeleteConfirmationDialog(context),
-            icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          ),
+        // if (reportItem?.preparedStatus == null)
+        //   IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
+        // if (reportItem?.preparedStatus == null)
+        //   IconButton(
+        //     onPressed: () async {
+        //       // return _showDeleteConfirmationDialog(context);
+        //     },
+        //     icon: const Icon(Icons.delete_rounded, color: Colors.red),
+        //   ),
       ],
     );
   }
@@ -617,12 +400,9 @@ class _MaintenanceStartupProductionListDetailPageState
                 Navigator.of(dialogContext).pop(); // tutup dialog dulu
 
                 final provider =
-                    parentContext
-                        .read<MaintenanceStartUpProduksiChecklistProvider>();
+                    parentContext.read<ChangeProductChecklistProvider>();
 
-                final success = await provider.deleteStartUpProduksiChecklist(
-                  widget.id,
-                );
+                final success = await provider.deleteChangeProductChecklist('');
 
                 if (success) {
                   if (parentContext.mounted) {
@@ -659,9 +439,9 @@ class _MaintenanceStartupProductionListDetailPageState
     final user = context.read<UserProvider>();
 
     var isSuccess = context
-        .read<MaintenanceStartUpProduksiChecklistProvider>()
+        .read<ChangeProductChecklistProvider>()
         .updateApproveRejectToHeader(
-          id: widget.id,
+          id: '',
           approvedBy: user.currentUser!.username,
           status: status,
           role: user.currentUser!.role,

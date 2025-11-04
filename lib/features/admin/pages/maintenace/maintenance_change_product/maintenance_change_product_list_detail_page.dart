@@ -340,119 +340,122 @@ class _MaintenanceChangeProductListDetailPageState
                 ),
               ],
             ]),
-
-            _buildSection('Approval Actions', [
-              if (reportItem?.preparedStatus == "Approved" &&
-                  reportItem?.checkedStatus == "Approved") ...[
-                Text(
-                  "Checklist Approved",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
+            if ((AppRoles.leadProd.contains(user.currentUser?.role)) ||
+                (AppRoles.managerProd.contains(user.currentUser?.role)))
+              _buildSection('Approval Actions', [
+                if (reportItem?.preparedStatus == "Approved" &&
+                    reportItem?.checkedStatus == "Approved") ...[
+                  Text(
+                    "Checklist Approved",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
                   ),
-                ),
-              ] else if (reportItem?.preparedStatus == "Rejected" ||
-                  reportItem?.checkedStatus == "Rejected") ...[
-                Text(
-                  "Checklist Rejected",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
+                ] else if (reportItem?.preparedStatus == "Rejected" ||
+                    reportItem?.checkedStatus == "Rejected") ...[
+                  Text(
+                    "Checklist Rejected",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
                   ),
-                ),
-              ] else if (AppRoles.leadProd.contains(
-                user.currentUser?.role,
-              )) ...[
-                if (reportItem?.preparedStatus == null) ...[
-                  Text('Prepared Status:'),
-                  SizedBox(height: 8.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 8.0,
-                          ),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              _showRejectBottomSheet(context);
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: const [
-                                Text('Reject'),
-                                Icon(Icons.close),
-                              ],
+                ] else if (AppRoles.leadProd.contains(
+                  user.currentUser?.role,
+                )) ...[
+                  if (reportItem?.preparedStatus == null) ...[
+                    Text('Prepared Status:'),
+                    SizedBox(height: 8.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 8.0,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                _showRejectBottomSheet(context);
+                              },
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: const [
+                                  Text('Reject'),
+                                  Icon(Icons.close),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 8.0,
-                          ),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              bool isSuccess =
-                                  await _approveRejectChangeProductChecklist(
-                                    "Approved",
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 8.0,
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                bool isSuccess =
+                                    await _approveRejectChangeProductChecklist(
+                                      "Approved",
+                                    );
+                                if (isSuccess) {
+                                  showSnackBar(
+                                    "Berhasil Approve Checklist",
+                                    context,
                                   );
-                              if (isSuccess) {
-                                showSnackBar(
-                                  "Berhasil Approve Checklist",
-                                  context,
-                                );
-                                Navigator.of(context).pop();
-                              } else {
-                                showSnackBar(
-                                  "Gagal Approve Checklist",
-                                  context,
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: const [
-                                Text('Approve'),
-                                Icon(Icons.check),
-                              ],
+                                  Navigator.of(context).pop();
+                                } else {
+                                  showSnackBar(
+                                    "Gagal Approve Checklist",
+                                    context,
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: const [
+                                  Text('Approve'),
+                                  Icon(Icons.check),
+                                ],
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ] else if (reportItem?.preparedStatus != null &&
+                      reportItem?.checkedStatus == null) ...[
+                    Text(
+                      "Waiting Apprvoal From Manager Productions...",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
                       ),
-                    ],
-                  ),
-                ] else if (reportItem?.preparedStatus != null &&
-                    reportItem?.checkedStatus == null) ...[
-                  Text(
-                    "Waiting Apprvoal From Manager Productions...",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
                     ),
-                  ),
-                ],
-              ] else if (AppRoles.managerProd.contains(
-                user.currentUser?.role,
-              )) ...[
-                if (reportItem?.preparedStatus == null) ...[
-                  Text(
-                    "Waiting Apprvoal From Leader Productions...",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                  ],
+                ] else if (AppRoles.managerProd.contains(
+                  user.currentUser?.role,
+                )) ...[
+                  if (reportItem?.preparedStatus == null) ...[
+                    Text(
+                      "Waiting Apprvoal From Leader Productions...",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ]),
+              ]),
           ],
         ),
       ),
