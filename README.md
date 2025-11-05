@@ -37,3 +37,6 @@ Android:
 flutter build apk --release
 ```
 > Pastikan bahwa file upload-keystore.jks telah dimasukkan ke dalam project dan terletak di logsheet_flut/android/app/
+
+>File .env, key.properties, dan upload-keystore.jks berisi kredensial sensitif.
+Jika Anda belum memiliki file tersebut, silakan hubungi developer untuk mendapatkan file tersebut dan panduan konfigurasi lebih lanjut melalui kontak resmi proyek atau tim pengembang.
