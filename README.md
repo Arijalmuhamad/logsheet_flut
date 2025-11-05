@@ -1,16 +1,32 @@
-# logsheet_app
+# Logsheet Automation Flutter Mobile Application
 
-A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Logsheet Application adalah aplikasi pencatatan hasil dari pengolahan minyak dari pabrik Downstream dan pembuatan reporting.
 
-A few resources to get you started if this is your first Flutter project:
+## Langkah Instalasi Project
+### 1. GitHub Clone Repository
+```
+git clone https://github.com/AlvinHartono/logsheet_flut.git
+cd logsheet_flut
+flutter pub get
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 2. Konfigurasi Environment
+Tambah/Paste ```.env``` file di ```/lib```
+```
+DB_HOST=HOST_NAME
+DB_PORT=PORT_NUMBER
+DB_NAME=DATABASE_NAME
+DB_USER=DATANASE_USER
+DB_PASSWORD=DATABASE_PASSWORD
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 3. Menjalankan Project
+Untuk menjalankan aplikasi dapat menggunakan command
+```
+flutter run
+```
+atau dengan shortcut ```fn + f5``` di VSCode.
+
