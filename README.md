@@ -29,4 +29,11 @@ Untuk menjalankan aplikasi dapat menggunakan command
 flutter run
 ```
 atau dengan shortcut ```fn + f5``` di VSCode.
+> Pastikan bahwa file key.properties telah dimasukkan ke dalam project dan terletak di logsheet_flut/android/
 
+### 4. Build untuk Production
+Android:
+```
+flutter build apk --release
+```
+> Pastikan bahwa file upload-keystore.jks telah dimasukkan ke dalam project dan terletak di logsheet_flut/android/app/
