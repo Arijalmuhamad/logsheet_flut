@@ -5,6 +5,13 @@
 
 Logsheet Application adalah aplikasi pencatatan hasil dari pengolahan minyak dari pabrik Downstream dan pembuatan reporting.
 
+## Requirements
+* Flutter SDK : >=3.32.0
+* Dart SDK: >=3.8.0 <4.0.0
+* Android Studio / VS Code
+* Git CLI / GitHub Desktop
+* Android Emulator / Physical Device
+
 ## Langkah Instalasi Project
 ### 1. GitHub Clone Repository
 ```
