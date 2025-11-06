@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality/quality_report/quality_report_qc_mysql_service.dart';
 
 class QualityReportQCRepository {
   final QualityReportQCMySQLService _mySQLService;

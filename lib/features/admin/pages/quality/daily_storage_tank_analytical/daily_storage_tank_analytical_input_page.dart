@@ -1,14 +1,23 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_checkbox_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
+import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
+import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
+import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/product_provider.dart';
+import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyStorageTankAnalyticalInputPage extends StatefulWidget {
@@ -30,6 +39,7 @@ class _DailyStorageTankAnalyticalInputPageState
       TextEditingController();
   final TextEditingController quantityController = TextEditingController();
   final TextEditingController emptySpaceController = TextEditingController();
+  final TextEditingController suhuController = TextEditingController();
 
   // Quality Parameters
   final TextEditingController ffaController = TextEditingController();
@@ -232,7 +242,7 @@ class _DailyStorageTankAnalyticalInputPageState
             CustomTextField(
               controller: kapasitasTankiController,
               label: 'Kapasistas Tanki (Kg)',
-              icon: Icons.storage_rounded,
+              icon: Icons.scale,
               isNumeric: true,
             ),
             CustomTextField(
@@ -244,7 +254,14 @@ class _DailyStorageTankAnalyticalInputPageState
             CustomTextField(
               controller: emptySpaceController,
               label: 'Empty Space (Kg)',
-              icon: Icons.storage_rounded,
+              icon: Icons.add_box,
+              isNumeric: true,
+            ),
+
+            CustomTextField(
+              controller: suhuController,
+              label: 'Suhu (°C)',
+              icon: Icons.thermostat,
               isNumeric: true,
             ),
             SizedBox(height: 8.0),
@@ -270,13 +287,13 @@ class _DailyStorageTankAnalyticalInputPageState
                     CustomTextField(
                       controller: ffaController,
                       label: 'FFA (%)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.bubble_chart,
                       isNumeric: true,
                     ),
                     CustomTextField(
                       controller: moistureController,
                       label: 'Moisture (%)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.water_drop,
                       isNumeric: true,
                     ),
                     Row(
@@ -287,7 +304,7 @@ class _DailyStorageTankAnalyticalInputPageState
                             child: CustomTextField(
                               controller: loviBondRController,
                               label: 'LoviBond (R)',
-                              icon: Icons.storage_rounded,
+                              icon: Icons.color_lens_rounded,
                               isNumeric: true,
                             ),
                           ),
@@ -299,7 +316,7 @@ class _DailyStorageTankAnalyticalInputPageState
                             child: CustomTextField(
                               controller: loviBondYController,
                               label: 'LoviBond (Y)',
-                              icon: Icons.storage_rounded,
+                              icon: Icons.color_lens_rounded,
                               isNumeric: true,
                             ),
                           ),
@@ -309,56 +326,56 @@ class _DailyStorageTankAnalyticalInputPageState
                     CustomTextField(
                       controller: ivController,
                       label: 'IV (gt2/100g)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.scale,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: pvController,
                       label: 'PV (meqO2/kg)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.energy_savings_leaf,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: slipMeltingPointController,
                       label: 'Slip Melting Point (oC)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.fireplace,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: cloudPointController,
-                      label: 'Cloud Point (oC)',
-                      icon: Icons.storage_rounded,
+                      label: 'Cloud Point (°C)',
+                      icon: Icons.wb_cloudy,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: anvController,
-                      label: 'Anv (oC)',
-                      icon: Icons.storage_rounded,
+                      label: 'Anv (°C)',
+                      icon: Icons.fact_check,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: bCaroteneController,
                       label: 'B-Carotene (ppm)',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.color_lens,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: dobiController,
                       label: 'DOBI',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.opacity,
                       isNumeric: true,
                     ),
 
                     CustomTextField(
                       controller: totoxController,
                       label: 'Totox',
-                      icon: Icons.storage_rounded,
+                      icon: Icons.bubble_chart,
                       isNumeric: true,
                     ),
                     // SizedBox(height: 8),
@@ -377,11 +394,128 @@ class _DailyStorageTankAnalyticalInputPageState
             SizedBox(height: 16.0),
             CustomRemarkField(controller: remarkController),
             SizedBox(height: 32.0),
-            CustomSaveButton(onPressed: () {}),
+            Consumer<DailyStorageTankAnalyticalProvider>(
+              builder: (context, provider, child) {
+                return (provider.isLoadingInput)
+                    ? Center(child: CircularProgressIndicator())
+                    : CustomSaveButton(
+                      onPressed: () async {
+                        final bool isSuccess =
+                            await _insertDailyStorageTankAnalyticalReport();
+                        if (isSuccess) {
+                          showSnackBar("Berhasil menyimpan data", context);
+                          Navigator.of(context).pop();
+                        } else {
+                          showSnackBar("Gagal meyimpan data", context);
+                        }
+                      },
+                    );
+              },
+            ),
+
             SizedBox(height: 16.0),
           ],
         ),
       ),
     );
+  }
+
+  Future<bool> _insertDailyStorageTankAnalyticalReport() async {
+    final plant = context.read<PlantProvider>().currentPlant;
+    final user = context.read<UserProvider>();
+    final id = await context
+        .read<DailyStorageTankAnalyticalProvider>()
+        .generateId(plant?.code ?? "");
+    final businessUnit =
+        context.read<BusinessUnitProvider>().currentBusinessUnit;
+    final formattedDate = parseDateFormatFromController(
+      dateEntryController.text,
+    );
+
+    try {
+      final report = DailyStorageTankAnalyticalToDbEntity(
+        id: id,
+        company: businessUnit?.buCode ?? "",
+        plant: plant?.code ?? '',
+        transactionDate: formattedDate,
+        postingDate: DateTime.now(),
+        tankNo: selectedTank,
+        oilType: selectedOilType,
+        kapasitasTanki: int.tryParse(kapasitasTankiController.text) ?? 0,
+        quantity: int.tryParse(quantityController.text) ?? 0,
+        emptySpace: int.tryParse(emptySpaceController.text) ?? 0,
+        suhu: int.tryParse(suhuController.text) ?? 0,
+        qpFFA: double.tryParse(ffaController.text) ?? 0.0,
+        qpMoisture: moistureController.text,
+        qpColorR: int.tryParse(loviBondRController.text) ?? 0,
+        qpColorY: int.tryParse(loviBondYController.text) ?? 0,
+        qpIV: double.tryParse(ivController.text) ?? 0.0,
+        qpPV: double.tryParse(pvController.text) ?? 0.0,
+        qpSlipMeltingPoint: slipMeltingPointController.text,
+        qpCloudPoint: double.tryParse(cloudPointController.text) ?? 0.0,
+        qpANV: double.tryParse(anvController.text) ?? 0.0,
+        betaCarotene: double.tryParse(bCaroteneController.text) ?? 0.0,
+        qpP: 0.0, // not in your form
+        qpDobi: double.tryParse(dobiController.text) ?? 0.0,
+        qpTotox: double.tryParse(totoxController.text) ?? 0.0,
+        qpOdor: odorChecked ? "T" : "F",
+        remarks: remarkController.text,
+
+        // Metadata
+        flag: 'T',
+        entryBy: user.currentUser?.username ?? '',
+        entryDate: DateTime.now(),
+        preparedBy: null,
+        preparedDate: null,
+        preparedStatus: null,
+        preparedStatusRemarks: null,
+        approvedBy: null,
+        approvedDate: null,
+        approvedStatus: null,
+        approvedStatusRemarks: null,
+        updatedBy: null,
+        updatedDate: null,
+        formNo: formData?.code,
+        dateIssued: formData?.dateIssued,
+        revisionNo: formData?.revisionNo.toString(),
+        revisionDate: formData?.revisionDate,
+      );
+
+      final isSuccess = await context
+          .read<DailyStorageTankAnalyticalProvider>()
+          .insertDailyStorageTankAnalyticalReport(report: report);
+
+      return isSuccess;
+    } catch (e) {
+      debugPrint("Error inserting Daily Storage Tank Analytical report: $e");
+      return false;
+    }
+  }
+
+  DateTime? parseDateFormatFromController(String? selectedDate) {
+    final date = DateTime.now();
+
+    if (selectedDate == null || selectedDate.isEmpty) return null;
+    try {
+      // UI format = "dd-MM-yyyy"
+      final inputFormat = DateFormat('dd-MM-yyyy');
+      final dateTime = inputFormat.parse(selectedDate);
+
+      // langsung return objek DateTime (bukan String)
+
+      final combinedDateTime = DateTime(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        date.hour,
+        date.minute,
+        date.second,
+      );
+
+      return combinedDateTime;
+    } catch (e) {
+      log('Date parse error: $e');
+      return null;
+    }
   }
 }

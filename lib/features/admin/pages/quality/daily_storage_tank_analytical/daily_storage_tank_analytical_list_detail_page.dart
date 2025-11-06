@@ -3,16 +3,23 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
+import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_edit_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyStorageTankAnalyticalListDetailPage extends StatefulWidget {
-  DailyStorageTankAnalyticalListDetailPage({super.key});
+  DailyStorageTankAnalyticalListDetailPage({super.key, required this.id});
+
+  String id;
 
   @override
   State<DailyStorageTankAnalyticalListDetailPage> createState() =>
@@ -21,20 +28,25 @@ class DailyStorageTankAnalyticalListDetailPage extends StatefulWidget {
 
 class _DailyStorageTankAnalyticalListDetailPageState
     extends State<DailyStorageTankAnalyticalListDetailPage> {
-  MaintenanceChangeProductChecklistReportEntity? reportItem;
+  DailyStorageTankAnalyticalFromDbEntity? reportItem;
   final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {});
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final item = context
+          .read<DailyStorageTankAnalyticalProvider>()
+          .reportsList
+          .firstWhere((element) => element.id == widget.id);
+
+      setState(() {
+        reportItem = item;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // if (reportItem == null) {
-    //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    // }
-
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Consumer<ChangeProductChecklistProvider>(
@@ -52,216 +64,239 @@ class _DailyStorageTankAnalyticalListDetailPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
-    final user = context.read<UserProvider>();
-
-    if (changeProductChecklistProvider.isLoading ||
-        changeProductChecklistProvider.isLoadingDelete) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          top: 16,
-          bottom: 36,
-          right: 16,
-          left: 16,
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFAB2F2B),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildInfoCard(
-                    'Analysis Date',
-                    _formatDateString(reportItem?.transactionDate),
-                  ),
-                ],
-              ),
-            ),
-
-            _buildSection('General Information', [
-              _buildDataRow('ID', 'ST-001'),
-              _buildDataRow('Company', 'PT. Dummy Oil Factory'),
-              _buildDataRow('Plant', 'Plant A - Cikarang'),
-            ]),
-
-            _buildSection('Storage Tank Analytical Result', [
-              _buildDataRow('Tank No', "Tank #3"),
-              _buildDataRow('Oil Type', 'Crude Palm Oil'),
-              _buildDataRow('Kapasitas Tanki', "10.000 Liter"),
-              _buildDataRow('Quantity', "8.000 Liter"),
-              _buildDataRow('Empty Space', "2.000 Liter"),
-              _buildDataRow('Suhu', "35°C"),
-
-              _buildSection('Quality Parameter', [
-                _buildDataRow('FFA', "0.25%"),
-                _buildDataRow('Moisture', "0.12%"),
-                _buildDataRow('LoviBondColor Y', "0.02%"),
-                _buildDataRow('LoviBondColor X', "0.02%"),
-                _buildDataRow('IV', "0.02%"),
-                _buildDataRow('PV', "0.02%"),
-                _buildDataRow('Slip Melting Point', "0.02%"),
-                _buildDataRow('Cloud Point', "0.02%"),
-                _buildDataRow('AnV', "0.02%"),
-                _buildDataRow('B-Carotene', "0.02%"),
-                _buildDataRow('P', "0.02%"),
-                _buildDataRow('Dobi', "0.02%"),
-                _buildDataRow('Totox', "0.02%"),
-                _buildDataRow('Totox', "0.02%"),
-                CustomStatelessChecklistItemRow(
-                  description: 'Odor',
-                  value: true,
-                  isShowNumber: false,
+    return Consumer2<DailyStorageTankAnalyticalProvider, UserProvider>(
+      builder: (
+        BuildContext context,
+        DailyStorageTankAnalyticalProvider reportProvider,
+        UserProvider userProvider,
+        Widget? child,
+      ) {
+        return (reportProvider.isLoading || reportProvider.isLoadingDelete)
+            ? Center(child: CircularProgressIndicator())
+            : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  bottom: 36,
+                  right: 16,
+                  left: 16,
                 ),
-              ]),
-            ]),
-
-            _buildSection('Operator Information', [
-              _buildDataRow('Prepared By', 'John Doe'),
-              _buildDataRow('Checked By', 'Jane Smith'),
-              _buildDataRow('Approved By', 'Manager Oil Prod.'),
-            ]),
-
-            _buildSection('Remarks', [
-              Row(
-                children: [
-                  Expanded(
-                  child: Text(
-                    'Remarks Lorem Ipsum Remarks Lorem Ipsum Remarks Lorem Ipsum',
-                    softWrap: true,
-                  ),
-                  ),
-                ],
-              )
-            ]),
-
-            if ((AppRoles.leadProd.contains(user.currentUser?.role)) ||
-                (AppRoles.managerProd.contains(user.currentUser?.role)))
-              _buildSection('Approval Actions', [
-                if (reportItem?.preparedStatus == "Approved" &&
-                    reportItem?.checkedStatus == "Approved") ...[
-                  Text(
-                    "Checklist Approved",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ] else if (reportItem?.preparedStatus == "Rejected" ||
-                    reportItem?.checkedStatus == "Rejected") ...[
-                  Text(
-                    "Checklist Rejected",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red,
-                    ),
-                  ),
-                ] else if (AppRoles.leadProd.contains(
-                  user.currentUser?.role,
-                )) ...[
-                  if (reportItem?.preparedStatus == null) ...[
-                    Text('Prepared Status:'),
-                    SizedBox(height: 8.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 8.0,
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                // _showRejectBottomSheet(context);
-                              },
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: const [
-                                  Text('Reject'),
-                                  Icon(Icons.close),
-                                ],
-                              ),
-                            ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFAB2F2B),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildInfoCard(
+                            'Analysis Date',
+                            _formatDateString(reportItem?.transactionDate),
                           ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 8.0,
-                            ),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                // bool isSuccess =
-                                //     await _approveRejectChangeProductChecklist(
-                                //       "Approved",
-                                //     );
-                                // if (isSuccess) {
-                                //   showSnackBar(
-                                //     "Berhasil Approve Checklist",
-                                //     context,
-                                //   );
-                                //   Navigator.of(context).pop();
-                                // } else {
-                                //   showSnackBar(
-                                //     "Gagal Approve Checklist",
-                                //     context,
-                                //   );
-                                // }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: const [
-                                  Text('Approve'),
-                                  Icon(Icons.check),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ] else if (reportItem?.preparedStatus != null &&
-                      reportItem?.checkedStatus == null) ...[
-                    Text(
-                      "Waiting Apprvoal From Manager Productions...",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
+                        ],
                       ),
                     ),
-                  ],
-                ] else if (AppRoles.managerProd.contains(
-                  user.currentUser?.role,
-                )) ...[
-                  if (reportItem?.preparedStatus == null) ...[
-                    Text(
-                      "Waiting Apprvoal From Leader Productions...",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
+
+                    _buildSection('General Information', [
+                      _buildDataRow('ID', reportItem?.id ?? ''),
+                      _buildDataRow('Company', reportItem?.company ?? ''),
+                      _buildDataRow('Plant', reportItem?.plant ?? ''),
+                    ]),
+
+                    _buildSection('Storage Tank Analytical Result', [
+                      _buildDataRow('Tank No', reportItem?.tankNo ?? ''),
+                      _buildDataRow('Oil Type', reportItem?.oilType ?? ''),
+                      _buildDataRow(
+                        'Kapasitas Tanki',
+                        reportItem?.kapasitasTanki ?? '',
                       ),
-                    ),
+                      _buildDataRow('Quantity', reportItem?.quantity ?? ''),
+                      _buildDataRow(
+                        'Empty Space',
+                        reportItem?.emptySpace ?? '',
+                      ),
+                      _buildDataRow('Suhu', reportItem?.suhu ?? ''),
+
+                      _buildSection('Quality Parameter', [
+                        _buildDataRow('FFA', reportItem?.qpFFA ?? ''),
+                        _buildDataRow('Moisture', reportItem?.qpMoisture ?? ''),
+                        _buildDataRow(
+                          'LoviBondColor R',
+                          reportItem?.qpColorR ?? '',
+                        ),
+                        _buildDataRow(
+                          'LoviBondColor Y',
+                          reportItem?.qpColorY ?? '',
+                        ),
+                        _buildDataRow('IV', reportItem?.qpIV ?? ''),
+                        _buildDataRow('PV', reportItem?.qpPV ?? ''),
+                        _buildDataRow(
+                          'Slip Melting Point',
+                          reportItem?.qpSlipMeltingPoint ?? '',
+                        ),
+                        _buildDataRow(
+                          'Cloud Point',
+                          reportItem?.qpCloudPoint ?? '',
+                        ),
+                        _buildDataRow('AnV', reportItem?.qpANV ?? ''),
+                        _buildDataRow(
+                          'B-Carotene',
+                          reportItem?.betaCarotene ?? '',
+                        ),
+                        _buildDataRow('P', reportItem?.qpP ?? ''),
+                        _buildDataRow('Dobi', reportItem?.qpDobi ?? ''),
+                        _buildDataRow('Totox', reportItem?.qpTotox ?? ''),
+                        CustomStatelessChecklistItemRow(
+                          description: 'Odor',
+                          value: reportItem?.qpOdor == "T" ? true : false,
+                          isShowNumber: false,
+                        ),
+                      ]),
+                    ]),
+
+                    _buildSection('Operator Information', [
+                      _buildDataRow('Prepared By', 'John Doe'),
+                      _buildDataRow('Checked By', 'Jane Smith'),
+                      _buildDataRow('Approved By', 'Manager Oil Prod.'),
+                    ]),
+
+                    _buildSection('Remarks', [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Remarks Lorem Ipsum Remarks Lorem Ipsum Remarks Lorem Ipsum',
+                              softWrap: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ]),
+
+                    // if ((AppRoles.leadProd.contains(user.currentUser?.role)) ||
+                    //     (AppRoles.managerProd.contains(user.currentUser?.role)))
+                    //   _buildSection('Approval Actions', [
+                    //     if (reportItem.preparedStatus == "Approved" &&
+                    //         reportItem.checkedStatus == "Approved") ...[
+                    //       Text(
+                    //         "Checklist Approved",
+                    //         style: TextStyle(
+                    //           fontWeight: FontWeight.bold,
+                    //           color: Colors.green,
+                    //         ),
+                    //       ),
+                    //     ] else if (reportItem?.preparedStatus == "Rejected" ||
+                    //         reportItem?.checkedStatus == "Rejected") ...[
+                    //       Text(
+                    //         "Checklist Rejected",
+                    //         style: TextStyle(
+                    //           fontWeight: FontWeight.bold,
+                    //           color: Colors.red,
+                    //         ),
+                    //       ),
+                    //     ] else if (AppRoles.leadProd.contains(
+                    //       user.currentUser?.role,
+                    //     )) ...[
+                    //       if (reportItem?.preparedStatus == null) ...[
+                    //         Text('Prepared Status:'),
+                    //         SizedBox(height: 8.0),
+                    //         Row(
+                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    //           children: [
+                    //             Expanded(
+                    //               child: Padding(
+                    //                 padding: const EdgeInsets.symmetric(
+                    //                   horizontal: 8.0,
+                    //                   vertical: 8.0,
+                    //                 ),
+                    //                 child: ElevatedButton(
+                    //                   onPressed: () async {
+                    //                     // _showRejectBottomSheet(context);
+                    //                   },
+                    //                   child: Row(
+                    //                     mainAxisAlignment:
+                    //                         MainAxisAlignment.spaceEvenly,
+                    //                     children: const [
+                    //                       Text('Reject'),
+                    //                       Icon(Icons.close),
+                    //                     ],
+                    //                   ),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //             Expanded(
+                    //               child: Padding(
+                    //                 padding: const EdgeInsets.symmetric(
+                    //                   horizontal: 8.0,
+                    //                   vertical: 8.0,
+                    //                 ),
+                    //                 child: ElevatedButton(
+                    //                   onPressed: () async {
+                    //                     // bool isSuccess =
+                    //                     //     await _approveRejectChangeProductChecklist(
+                    //                     //       "Approved",
+                    //                     //     );
+                    //                     // if (isSuccess) {
+                    //                     //   showSnackBar(
+                    //                     //     "Berhasil Approve Checklist",
+                    //                     //     context,
+                    //                     //   );
+                    //                     //   Navigator.of(context).pop();
+                    //                     // } else {
+                    //                     //   showSnackBar(
+                    //                     //     "Gagal Approve Checklist",
+                    //                     //     context,
+                    //                     //   );
+                    //                     // }
+                    //                   },
+                    //                   style: ElevatedButton.styleFrom(
+                    //                     backgroundColor: Colors.green,
+                    //                   ),
+                    //                   child: Row(
+                    //                     mainAxisAlignment:
+                    //                         MainAxisAlignment.spaceEvenly,
+                    //                     children: const [
+                    //                       Text('Approve'),
+                    //                       Icon(Icons.check),
+                    //                     ],
+                    //                   ),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ] else if (reportItem?.preparedStatus != null &&
+                    //           reportItem?.checkedStatus == null) ...[
+                    //         Text(
+                    //           "Waiting Apprvoal From Manager Productions...",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             color: Colors.orange,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ] else if (AppRoles.managerProd.contains(
+                    //       user.currentUser?.role,
+                    //     )) ...[
+                    //       if (reportItem?.preparedStatus == null) ...[
+                    //         Text(
+                    //           "Waiting Apprvoal From Leader Productions...",
+                    //           style: TextStyle(
+                    //             fontWeight: FontWeight.bold,
+                    //             color: Colors.orange,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ],
+                    //   ]),
                   ],
-                ],
-              ]),
-          ],
-        ),
-      ),
+                ),
+              ),
+            );
+      },
     );
   }
 
@@ -353,11 +388,23 @@ class _DailyStorageTankAnalyticalListDetailPageState
       iconTheme: const IconThemeData(color: Colors.black),
       actions: [
         if (reportItem?.preparedStatus == null)
-          IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
+          IconButton(
+            onPressed: () async {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          DailyStorageTankAnalyticalEditPage(id: widget.id),
+                ),
+              );
+            },
+            icon: const Icon(Icons.edit),
+          ),
         if (reportItem?.preparedStatus == null)
           IconButton(
             onPressed: () async {
-              // return _showDeleteConfirmationDialog(context);
+              return _showDeleteConfirmationDialog(context);
             },
             icon: const Icon(Icons.delete_rounded, color: Colors.red),
           ),
@@ -400,11 +447,12 @@ class _DailyStorageTankAnalyticalListDetailPageState
                 Navigator.of(dialogContext).pop(); // tutup dialog dulu
 
                 final provider =
-                    parentContext.read<ChangeProductChecklistProvider>();
+                    parentContext.read<DailyStorageTankAnalyticalProvider>();
 
-                final success = await provider.deleteChangeProductChecklist('');
+                final isSuccess = await provider
+                    .deleteDailyStorageTankAnalyticalReport(widget.id);
 
-                if (success) {
+                if (isSuccess) {
                   if (parentContext.mounted) {
                     ScaffoldMessenger.of(parentContext).showSnackBar(
                       const SnackBar(

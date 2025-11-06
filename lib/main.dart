@@ -13,8 +13,9 @@ import 'package:logsheet_app/data/repositories/master/business_unit_repository.d
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
 import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
 import 'package:logsheet_app/data/repositories/master/product_repository.dart';
-import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
-import 'package:logsheet_app/data/repositories/quality_report/quality_report_qc_repository.dart';
+import 'package:logsheet_app/data/repositories/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
+import 'package:logsheet_app/data/repositories/quality/quality_report/quality_report_production_repository.dart';
+import 'package:logsheet_app/data/repositories/quality/quality_report/quality_report_qc_repository.dart';
 import 'package:logsheet_app/data/repositories/master/user_repository.dart';
 import 'package:logsheet_app/data/repositories/master/value_repository.dart';
 import 'package:logsheet_app/data/services/daily_production/daily_production_fractionation_mysql_service.dart';
@@ -29,8 +30,9 @@ import 'package:logsheet_app/data/services/master/business_unit_mysql_service.da
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/product_mysql_service.dart';
-import 'package:logsheet_app/data/services/quality_report/quality_report_production_mysql_service.dart';
-import 'package:logsheet_app/data/services/quality_report/quality_report_qc_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality/quality_report/quality_report_production_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality/quality_report/quality_report_qc_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/user_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/value_mysql_service.dart';
 import 'package:logsheet_app/features/auth/login_page.dart';
@@ -46,8 +48,9 @@ import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/product_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
@@ -119,6 +122,10 @@ void main() async {
         ),
         Provider<StartUpProduksiChecklistMySQLService>(
           create: (context) => StartUpProduksiChecklistMySQLService(),
+        ),
+
+        Provider<DailyStorageTankAnalyticalMySQLService>(
+          create: (context) => DailyStorageTankAnalyticalMySQLService(),
         ),
 
         // Provide User Repository
@@ -225,6 +232,13 @@ void main() async {
               ),
         ),
 
+        Provider<DailyStorageTankAnalyticalRepository>(
+          create:
+              (context) => DailyStorageTankAnalyticalRepository(
+                context.read<DailyStorageTankAnalyticalMySQLService>(),
+              ),
+        ),
+
         // Provide The User Provider
         ChangeNotifierProvider(
           create: (context) => UserProvider(context.read<UserRepository>()),
@@ -316,6 +330,13 @@ void main() async {
           create:
               (context) => MaintenanceStartUpProduksiChecklistProvider(
                 context.read<StartUpProduksiChecklistRepository>(),
+              ),
+        ),
+
+         ChangeNotifierProvider(
+          create:
+              (context) => DailyStorageTankAnalyticalProvider(
+                context.read<DailyStorageTankAnalyticalRepository>(),
               ),
         ),
 

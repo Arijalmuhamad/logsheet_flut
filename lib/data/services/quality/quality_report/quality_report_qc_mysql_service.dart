@@ -1,13 +1,13 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
-import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
-class QualityReportProductionMySQLService {
-  Future<bool> insertTicket(QualityReportProductionEntity entity) async {
+class QualityReportQCMySQLService {
+  Future<bool> insertTicket(QualityReportQcEntity entity) async {
     MySQLConnection? connection;
     try {
       var connResult = await getMySQLConnection();
@@ -16,7 +16,9 @@ class QualityReportProductionMySQLService {
       connResult = await getMySQLConnection();
 
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for business unit registration.');
+        log(
+          '(Quality Report QC MySQL) Failed to get MySQL connection for insert ticket.',
+        );
         return false;
       }
 
@@ -66,7 +68,7 @@ class QualityReportProductionMySQLService {
       });
 
       final String sql =
-          'INSERT INTO t_quality_report_refinery (${columns.join(', ')}) VALUES (${params.join(', ')})';
+          'INSERT INTO t_quality_report_qc (${columns.join(', ')}) VALUES (${params.join(', ')})';
 
       // final String sql =
       //     'INSERT INTO t_quality_report_refinery_2 (`id`) VALUES ("QRMPS2125000108")';
@@ -116,11 +118,10 @@ class QualityReportProductionMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD' || 'LEAD_PROD':
+        case 'LEAD' || 'LEAD_QC':
           baseQuery = """
           SELECT
             a.id,
-            a.id_fk,
             a.company,
             a.plant,
             a.transaction_date,
@@ -181,21 +182,21 @@ class QualityReportProductionMySQLService {
             a.revision_no,
             a.revision_date
           FROM
-            t_quality_report_refinery AS a
-          JOIN
+            t_quality_report_qc AS a
+          JOIN 
             m_product AS b
-          ON
+          ON 
             a.oil_type = b.id
+
           WHERE
-            plant = :plantCode AND (flag IS NULL OR flag = 'T') AND prepared_status IS NULL AND checked_status IS NULL
+             plant = :plantCode AND (flag IS NULL OR flag = 'T') AND prepared_status IS NULL AND checked_status IS NULL
         """;
           params["plantCode"] = plantCode;
           break;
-        case 'OPR' || 'OPR_PROD':
+        case 'OPR' || 'OPR_QC':
           baseQuery = """
           SELECT
             a.id,
-            a.id_fk,
             a.company,
             a.plant,
             a.transaction_date,
@@ -238,7 +239,6 @@ class QualityReportProductionMySQLService {
             a.`w_sbe_m&i`,
             a.w_sbe_qc,
             a.remarks,
-            a.flag,
             a.entry_by,
             a.entry_date,
             a.prepared_by,
@@ -256,7 +256,7 @@ class QualityReportProductionMySQLService {
             a.revision_no,
             a.revision_date
           FROM
-            t_quality_report_refinery AS a
+            t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
@@ -269,24 +269,10 @@ class QualityReportProductionMySQLService {
           params["plantCode"] = plantCode;
           break;
 
-        case 'MGR' || 'MGR_PROD':
-          baseQuery = """
-          SELECT
-            *
-          FROM
-            t_quality_report_refinery
-          WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T') 
-        """;
-          params["status"] = "Approved";
-          params["plantCode"] = plantCode;
-          break;
-        case 'ADM':
-          // Query for Admin: Can see all reports.
+        case 'MGR' || 'MGR_QC':
           baseQuery = """
           SELECT
             a.id,
-            a.id_fk,
             a.company,
             a.plant,
             a.transaction_date,
@@ -347,7 +333,82 @@ class QualityReportProductionMySQLService {
             a.revision_no,
             a.revision_date
           FROM
-            t_quality_report_refinery AS a
+            t_quality_report_qc AS a
+          JOIN 
+            m_product AS b
+          ON 
+            a.oil_type = b.id
+          WHERE
+             plant = :plantCode AND (flag IS NULL OR flag = 'T')
+        """;
+          params["status"] = "Approved";
+          params["plantCode"] = plantCode;
+          break;
+        case 'ADM':
+          // Query for Admin: Can see all reports.
+          baseQuery = """
+          SELECT
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.oil_type AS oil_type_id,
+            b.raw_material AS oil_type,
+            a.`time`,
+            a.shift,
+            a.rm_flowrate,
+            a.rm_tank_source,
+            a.rm_temp,
+            a.rm_ffa,
+            a.rm_iv,
+            a.rm_dobi,
+            a.rm_av,
+            a.`rm_m&i`,
+            a.rm_pv,
+            a.rm_totox,
+            a.rm_color_r,
+            a.rm_color_y,
+            a.rm_color_b,
+            a.bo_color_r,
+            a.bo_color_y,
+            a.bo_color_b,
+            a.bo_break_test,
+            a.fg_ffa,
+            a.fg_iv,
+            a.fg_pv,
+            a.fg_moisture,
+            a.fg_impurities,
+            a.fg_color_r,
+            a.fg_color_y,
+            a.fg_color_b,
+            a.fg_tank_to,
+            a.fg_tank_to_others_remarks,
+            a.bp_ffa,
+            a.`bp_m&i`,
+            a.bp_to_tank,
+            a.`w_sbe_m&i`,
+            a.w_sbe_qc,
+            a.remarks,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.updated_by,
+            a.updated_date,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+          FROM
+            t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
@@ -390,11 +451,17 @@ class QualityReportProductionMySQLService {
       log(
         'Fetched ${result.rows.length} reports for user $username with role $role.',
       );
-      await closeMySQLConnection(connection);
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log('Error fetching all reports: $e');
       return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
     }
   }
 
@@ -410,7 +477,7 @@ class QualityReportProductionMySQLService {
       final result = await connection!.execute(
         // "SELECT id FROM t_quality_report_refinery WHERE plant = :plant order by id DESC LIMIT 1;",
         // {"plant": plantCode},
-        "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'QRRM'",
+        "SELECT concat(prefix,plantid,accountingyear,autonumber) as ticket FROM m_controlnumber WHERE plantid = :plant AND prefix = 'QRM'",
         {"plant": plantCode},
       );
 
@@ -427,29 +494,33 @@ class QualityReportProductionMySQLService {
     } catch (e) {
       log('Error fetching latest ticket id: $e');
       return null;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
     }
   }
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
-    MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
         log('Failed to get MySQL connection for updating autonumber.');
         return false;
       }
-      connection = connResult.connection;
 
       final sql =
-          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'QRRM'";
+          "UPDATE m_controlnumber SET autonumber = :autonumber WHERE plantid = :plantid AND prefix = 'QRM'";
       final params = {"autonumber": newAutoNumber, "plantid": plantCode};
 
-      final result = await connection!.execute(sql, params);
+      final result = await connResult.connection!.execute(sql, params);
       log(
         'Autonumber for $plantCode updated. Affected rows: ${result.affectedRows}',
       );
-
-      await closeMySQLConnection(connection);
+      connResult.connection?.close();
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating autonumber: $e');
@@ -457,11 +528,7 @@ class QualityReportProductionMySQLService {
     }
   }
 
-  Future<bool> updateTicket(
-    QualityReportProductionEntity entity,
-    UserEntity currentUser, {
-    bool isEditFromQc = false,
-  }) async {
+  Future<bool> updateTicket(QualityReportQcEntity entity, String role) async {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
@@ -470,78 +537,54 @@ class QualityReportProductionMySQLService {
         return false;
       }
 
-      log("ID PRODUKSI: ${entity.id} \n ID FK PRODUKSI: ${entity.idFk}");
-
       connection = connResult.connection;
 
-      if (isEditFromQc) {
-        final entityData = entity.toMap();
-        final List<String> setClause = [];
-        final Map<String, dynamic> sqlExecuteParams = {};
+      final entityData = entity.toMap();
+      final List<String> setClause = [];
+      final Map<String, dynamic> sqlExecuteParams = {};
 
-        entityData.forEach((keyInEntityMap, value) {
-          if (keyInEntityMap != "id" && keyInEntityMap != "id_fk") {
-            String actualDbColumnName = keyInEntityMap;
-            String safeParameterName = keyInEntityMap;
+      entityData.forEach((keyInEntityMap, value) {
+        if (keyInEntityMap != 'id') {
+          String actualDbColumnName = keyInEntityMap;
+          String safeParameterName = keyInEntityMap;
 
-            if (keyInEntityMap == 'rm_mni') {
-              actualDbColumnName = 'rm_m&i';
-              safeParameterName = 'rm_mni_param';
-            } else if (keyInEntityMap == 'fg_mni') {
-              actualDbColumnName = 'fg_m&i';
-              safeParameterName = 'fg_mni_param';
-            } else if (keyInEntityMap == 'bp_mni') {
-              actualDbColumnName = 'bp_m&i';
-              safeParameterName = 'bp_mni_param';
-            } else if (keyInEntityMap == 'wsbeqc') {
-              actualDbColumnName = 'w_sbe_qc';
-              safeParameterName = 'w_sbe_qc_param';
-            } else if (keyInEntityMap == 'w_sbe_mni') {
-              actualDbColumnName = 'w_sbe_m&i';
-              safeParameterName = 'w_sbe_mni_param';
-            } else if (keyInEntityMap == 'w_sbe_m&i') {
-              actualDbColumnName = 'w_sbe_m&i';
-              safeParameterName = 'w_sbe_mni_param';
-            }
-
-            setClause.add('`$actualDbColumnName` = :$safeParameterName');
-
-            sqlExecuteParams[safeParameterName] = value;
+          // Handle specific column name mappings
+          if (keyInEntityMap == 'rm_mni') {
+            actualDbColumnName = 'rm_m&i';
+            safeParameterName = 'rm_mni_param';
+          } else if (keyInEntityMap == 'fg_mni') {
+            actualDbColumnName = 'fg_m&i';
+            safeParameterName = 'fg_mni_param';
+          } else if (keyInEntityMap == 'bp_mni') {
+            actualDbColumnName = 'bp_m&i';
+            safeParameterName = 'bp_mni_param';
+          } else if (keyInEntityMap == 'wsbeqc') {
+            actualDbColumnName = 'w_sbe_qc';
+            safeParameterName = 'w_sbe_qc_param';
+          } else if (keyInEntityMap == 'w_sbe_mni') {
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
+          } else if (keyInEntityMap == 'w_sbe_m&i') {
+            actualDbColumnName = 'w_sbe_m&i';
+            safeParameterName = 'w_sbe_mni_param';
           }
-        });
-        sqlExecuteParams['id'] = entity.id;
 
-        final sql =
-            "UPDATE t_quality_report_refinery SET ${setClause.join(', ')} WHERE id_fk = :id";
+          setClause.add('`$actualDbColumnName` = :$safeParameterName');
 
-        log('Generated UPDATE SQL: $sql');
-        log('Params for SQL: $sqlExecuteParams');
+          sqlExecuteParams[safeParameterName] = value;
+        }
+      });
+      sqlExecuteParams['id'] = entity.id;
 
-        final result = await connection!.execute(sql, sqlExecuteParams);
-        log("ticket updated: ${result.affectedRows} row(s) affected.");
-        return result.affectedRows > BigInt.from(0);
-      } else {
-        final sql = """UPDATE t_quality_report_refinery SET 
-        `rm_temp` = :rm_temp, 
-        `remarks` = :remarks, 
-        `updated_by` = :updated_by, 
-        `updated_date` = :updated_date
-        WHERE 
-        id_fk = :id_produksi""";
+      final sql =
+          "UPDATE t_quality_report_qc SET ${setClause.join(', ')} WHERE id = :id";
 
-        final params = {
-          'rm_temp': entity.rmTemp,
-          'remarks': entity.remarks,
-          'updated_by': currentUser.username,
-          'updated_date': DateTime.now(),
-          'id_produksi': entity.id,
-        };
+      log('Generated UPDATE SQL: $sql');
+      log('Params for SQL: $sqlExecuteParams');
 
-        log('Generated UPDATE SQL: $sql');
-        final result = await connection!.execute(sql, params);
-        log('ticket updated: ${result.affectedRows} row(s) affected.');
-        return result.affectedRows > BigInt.from(0);
-      }
+      final result = await connection!.execute(sql, sqlExecuteParams);
+      log('ticket updated: ${result.affectedRows} row(s) affected.');
+      return result.affectedRows > BigInt.from(0);
     } catch (e) {
       log('Error updating report: $e');
       return false;
@@ -565,11 +608,11 @@ class QualityReportProductionMySQLService {
         return [];
       }
       connection = connResult.connection;
+      //TODO
       final result = await connection!.execute(
         """
           SELECT
             a.id,
-            a.id_fk,
             a.company,
             a.plant,
             a.transaction_date,
@@ -630,13 +673,13 @@ class QualityReportProductionMySQLService {
             a.revision_no,
             a.revision_date
           FROM
-            t_quality_report_refinery AS a
+            t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
-	        WHERE 
-            prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+          WHERE
+           prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
         """,
         {"plantCode": plantCode},
       );
@@ -665,19 +708,19 @@ class QualityReportProductionMySQLService {
     MySQLConnection? connection;
     try {
       final connResult = await getMySQLConnection();
-
       if (connResult.connection == null) {
         log(
           'Failed to get MySQL connection for sending approve/reject ticket.',
         );
         return false;
       }
+
       connection = connResult.connection;
       final date = DateTime.now();
 
-      if (userRole == "MGR" || userRole == "MGR_PROD") {
+      if (userRole == "MGR" || userRole == "MGR_QC") {
         final sql =
-            "UPDATE t_quality_report_refinery SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_quality_report_qc SET checked_by = :username, checked_status = :status, checked_date = :date, checked_status_remarks = :remark WHERE id = :id";
 
         final result = await connection!.execute(sql, {
           "username": username,
@@ -691,7 +734,7 @@ class QualityReportProductionMySQLService {
         return result.affectedRows > BigInt.from(0);
       } else {
         final sql =
-            "UPDATE t_quality_report_refinery SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
+            "UPDATE t_quality_report_qc SET prepared_by = :username, prepared_status = :status, prepared_date = :date, prepared_status_remarks = :remark WHERE id = :id";
 
         final result = await connection!.execute(sql, {
           "username": username,
@@ -730,7 +773,7 @@ class QualityReportProductionMySQLService {
       }
       connection = connResult.connection!;
       final result = await connection.execute(
-        "SELECT time FROM t_quality_report_refinery WHERE date(posting_date) = :date AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
+        "SELECT time FROM t_quality_report_qc WHERE date(posting_date) = :date AND plant = :plantCode AND (flag IS NULL OR flag = 'T');",
         {"date": dateFilter, "plantCode": plantCode},
       );
 
@@ -763,13 +806,38 @@ class QualityReportProductionMySQLService {
       }
       connection = connResult.connection!;
       log('attempting the select query.');
+      // TODO
+      /// SELECT
+      //   DATE(a.posting_date) AS report_date,
+      //   a.work_center,
+      //   b.raw_material AS oil_type
+
+      // FROM
+      //   t_quality_report_qc AS a
+
+      // JOIN
+      //   m_product AS b
+      // ON
+      //   a.oil_type = b.id
+
+      // WHERE
+      //   (flag IS NULL OR flag = 'T') AND
+      //   posting_date >= CURDATE() - INTERVAL 7 DAY
+      // GROUP BY
+      //   DATE(a.posting_date),
+      //   a.work_center,
+      //   b.raw_material AS oil_type
+      // HAVING
+      //   SUM(shift in (1,2,3,4,5) AND prepared_status = 'Approved') = 24
+      // AND
+      //   COUNT(checked_status) < 24;
       final result = await connection.execute("""
           SELECT
             DATE(posting_date) as report_date,
             work_center,
             oil_type
           FROM
-            t_quality_report_refinery
+            t_quality_report_qc
           WHERE
             (flag IS NULL OR flag = 'T') AND
             posting_date >= CURDATE() - INTERVAL 7 DAY
@@ -808,7 +876,7 @@ class QualityReportProductionMySQLService {
 
       final result = await connection.execute(
         // "DELETE FROM t_quality_report_refinery WHERE id = :id", // Delete query
-        "UPDATE t_quality_report_refinery SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id_fk = :id", // Delete with Flag
+        "UPDATE t_quality_report_qc SET flag = 'D', prepared_by = :username, prepared_status = :prepared_status, prepared_date = :prepared_date WHERE id = :id", // Delete with Flag
         {
           "username": username,
           "prepared_status": "Deleted",
@@ -848,7 +916,6 @@ class QualityReportProductionMySQLService {
       String query = """
           SELECT
             a.id,
-            a.id_fk,
             a.company,
             a.plant,
             a.transaction_date,
@@ -891,6 +958,7 @@ class QualityReportProductionMySQLService {
             a.`w_sbe_m&i`,
             a.w_sbe_qc,
             a.remarks,
+            a.flag,
             a.entry_by,
             a.entry_date,
             a.prepared_by,
@@ -908,14 +976,14 @@ class QualityReportProductionMySQLService {
             a.revision_no,
             a.revision_date
           FROM
-            t_quality_report_refinery AS a
+            t_quality_report_qc AS a
           JOIN 
             m_product AS b
           ON 
             a.oil_type = b.id
-	        WHERE 
-	          DATE(posting_date) = :dateFilter AND plant = :plantCode
-      """;
+          WHERE 
+            DATE(posting_date) = :dateFilter AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+           """;
 
       dateFilter ??= DateTime.now();
 
