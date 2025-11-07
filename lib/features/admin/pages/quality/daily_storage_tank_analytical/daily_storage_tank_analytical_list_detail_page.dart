@@ -158,9 +158,14 @@ class _DailyStorageTankAnalyticalListDetailPageState
                     ]),
 
                     _buildSection('Operator Information', [
-                      _buildDataRow('Prepared By', 'John Doe'),
-                      _buildDataRow('Checked By', 'Jane Smith'),
-                      _buildDataRow('Approved By', 'Manager Oil Prod.'),
+                      _buildDataRow(
+                        'Prepared By',
+                        reportItem?.preparedBy ?? '-',
+                      ),
+                      _buildDataRow(
+                        'Approved By',
+                        reportItem?.approvedBy ?? '-',
+                      ),
                     ]),
 
                     _buildSection('Remarks', [
@@ -168,7 +173,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                         children: [
                           Expanded(
                             child: Text(
-                              'Remarks Lorem Ipsum Remarks Lorem Ipsum Remarks Lorem Ipsum',
+                              reportItem?.remarks ?? '',
                               softWrap: true,
                             ),
                           ),
@@ -176,122 +181,138 @@ class _DailyStorageTankAnalyticalListDetailPageState
                       ),
                     ]),
 
-                    // if ((AppRoles.leadProd.contains(user.currentUser?.role)) ||
-                    //     (AppRoles.managerProd.contains(user.currentUser?.role)))
-                    //   _buildSection('Approval Actions', [
-                    //     if (reportItem.preparedStatus == "Approved" &&
-                    //         reportItem.checkedStatus == "Approved") ...[
-                    //       Text(
-                    //         "Checklist Approved",
-                    //         style: TextStyle(
-                    //           fontWeight: FontWeight.bold,
-                    //           color: Colors.green,
-                    //         ),
-                    //       ),
-                    //     ] else if (reportItem?.preparedStatus == "Rejected" ||
-                    //         reportItem?.checkedStatus == "Rejected") ...[
-                    //       Text(
-                    //         "Checklist Rejected",
-                    //         style: TextStyle(
-                    //           fontWeight: FontWeight.bold,
-                    //           color: Colors.red,
-                    //         ),
-                    //       ),
-                    //     ] else if (AppRoles.leadProd.contains(
-                    //       user.currentUser?.role,
-                    //     )) ...[
-                    //       if (reportItem?.preparedStatus == null) ...[
-                    //         Text('Prepared Status:'),
-                    //         SizedBox(height: 8.0),
-                    //         Row(
-                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //           children: [
-                    //             Expanded(
-                    //               child: Padding(
-                    //                 padding: const EdgeInsets.symmetric(
-                    //                   horizontal: 8.0,
-                    //                   vertical: 8.0,
-                    //                 ),
-                    //                 child: ElevatedButton(
-                    //                   onPressed: () async {
-                    //                     // _showRejectBottomSheet(context);
-                    //                   },
-                    //                   child: Row(
-                    //                     mainAxisAlignment:
-                    //                         MainAxisAlignment.spaceEvenly,
-                    //                     children: const [
-                    //                       Text('Reject'),
-                    //                       Icon(Icons.close),
-                    //                     ],
-                    //                   ),
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //             Expanded(
-                    //               child: Padding(
-                    //                 padding: const EdgeInsets.symmetric(
-                    //                   horizontal: 8.0,
-                    //                   vertical: 8.0,
-                    //                 ),
-                    //                 child: ElevatedButton(
-                    //                   onPressed: () async {
-                    //                     // bool isSuccess =
-                    //                     //     await _approveRejectChangeProductChecklist(
-                    //                     //       "Approved",
-                    //                     //     );
-                    //                     // if (isSuccess) {
-                    //                     //   showSnackBar(
-                    //                     //     "Berhasil Approve Checklist",
-                    //                     //     context,
-                    //                     //   );
-                    //                     //   Navigator.of(context).pop();
-                    //                     // } else {
-                    //                     //   showSnackBar(
-                    //                     //     "Gagal Approve Checklist",
-                    //                     //     context,
-                    //                     //   );
-                    //                     // }
-                    //                   },
-                    //                   style: ElevatedButton.styleFrom(
-                    //                     backgroundColor: Colors.green,
-                    //                   ),
-                    //                   child: Row(
-                    //                     mainAxisAlignment:
-                    //                         MainAxisAlignment.spaceEvenly,
-                    //                     children: const [
-                    //                       Text('Approve'),
-                    //                       Icon(Icons.check),
-                    //                     ],
-                    //                   ),
-                    //                 ),
-                    //               ),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       ] else if (reportItem?.preparedStatus != null &&
-                    //           reportItem?.checkedStatus == null) ...[
-                    //         Text(
-                    //           "Waiting Apprvoal From Manager Productions...",
-                    //           style: TextStyle(
-                    //             fontWeight: FontWeight.bold,
-                    //             color: Colors.orange,
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ] else if (AppRoles.managerProd.contains(
-                    //       user.currentUser?.role,
-                    //     )) ...[
-                    //       if (reportItem?.preparedStatus == null) ...[
-                    //         Text(
-                    //           "Waiting Apprvoal From Leader Productions...",
-                    //           style: TextStyle(
-                    //             fontWeight: FontWeight.bold,
-                    //             color: Colors.orange,
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ],
-                    //   ]),
+                    if ((AppRoles.leadQC.contains(
+                          userProvider.currentUser?.role,
+                        )) ||
+                        (AppRoles.qualityControlManagerApproval.contains(
+                          userProvider.currentUser?.role,
+                        )))
+                      _buildSection('Approval Actions', [
+                        if (reportItem?.preparedStatus == "Approved" &&
+                            reportItem?.approvedStatus == "Approved") ...[
+                          Text(
+                            "Checklist Approved",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ] else if (reportItem?.preparedStatus == "Rejected" ||
+                            reportItem?.approvedStatus == "Rejected") ...[
+                          Text(
+                            "Checklist Rejected",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ] else if (AppRoles.leadQC.contains(
+                          userProvider.currentUser?.role,
+                        )) ...[
+                          if (reportItem?.preparedStatus == null) ...[
+                            Text('Prepared Status:'),
+                            SizedBox(height: 8.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 8.0,
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        // _showRejectBottomSheet(context);
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: const [
+                                          Text('Reject'),
+                                          Icon(Icons.close),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 8.0,
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        bool isSuccess = await _approveReport(
+                                          "Approved",
+                                        );
+                                        if (isSuccess) {
+                                          showSnackBar(
+                                            "Berhasil Approve Checklist",
+                                            context,
+                                          );
+                                          Navigator.of(context).pop();
+                                        } else {
+                                          showSnackBar(
+                                            "Gagal Approve Checklist",
+                                            context,
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: const [
+                                          Text('Approve'),
+                                          Icon(Icons.check),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else if (reportItem?.preparedStatus != null &&
+                              reportItem?.approvedStatus == null) ...[
+                            Text(
+                              "Waiting Apprvoal From Manager Productions...",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ] else if (AppRoles.qualityControlManagerApproval
+                            .contains(userProvider.currentUser?.role)) ...[
+                          if (reportItem?.preparedStatus == null) ...[
+                            Text(
+                              "Waiting Apprvoal From Leader Productions...",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ] else if (reportItem?.preparedStatus == "Approved" ||
+                              reportItem?.approvedStatus == "Rejected") ...[
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Text(
+                                  "Checklist Prepared",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ]),
                   ],
                 ),
               ),
@@ -483,13 +504,13 @@ class _DailyStorageTankAnalyticalListDetailPageState
     );
   }
 
-  Future<bool> _approveRejectChangeProductChecklist(String status) {
+  Future<bool> _approveReport(String status) {
     final user = context.read<UserProvider>();
 
     var isSuccess = context
-        .read<ChangeProductChecklistProvider>()
+        .read<DailyStorageTankAnalyticalProvider>()
         .updateApproveRejectToHeader(
-          id: '',
+          id: widget.id,
           approvedBy: user.currentUser!.username,
           status: status,
           role: user.currentUser!.role,
@@ -552,16 +573,11 @@ class _DailyStorageTankAnalyticalListDetailPageState
                           return;
                         }
 
-                        bool isSuccess =
-                            await _approveRejectChangeProductChecklist(
-                              "Rejected",
-                            );
+                        bool isSuccess = await _approveReport("Rejected");
                         if (isSuccess) {
                           Navigator.of(context).pop(); // Tutup bottom sheet
                           showSnackBar("Berhasil Reject Checklist", context);
-                          Navigator.of(
-                            context,
-                          ).pop(); // Kembali ke halaman sebelumnya
+                          Navigator.of(context).pop();
                         } else {
                           showSnackBar("Gagal Reject Checklist", context);
                         }

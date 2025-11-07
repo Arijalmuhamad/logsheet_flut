@@ -203,15 +203,22 @@ class _DailyStorageTankAnalyticalInputPageState
                       ),
                     );
                   }
-                return DropdownButtonFormField(
+                return DropdownButtonFormField<String>(
                   value: selectedOilType,
                   items:
-                      provider.productRefineryList.map((oil) {
-                        return DropdownMenuItem(
-                          value: oil.rawMaterial,
-                          child: Text("${oil.rawMaterial}"),
-                        );
-                      }).toList(),
+                      [
+                            ...provider.productFractionationList,
+                            ...provider.productRefineryList,
+                          ]
+                          .map((e) => e.rawMaterial)
+                          .toSet() // Ensures unique rawMaterial values
+                          .map((rawMaterial) {
+                            return DropdownMenuItem<String>(
+                              value: rawMaterial,
+                              child: Text(rawMaterial ?? ''),
+                            );
+                          })
+                          .toList(),
                   onChanged: (value) => setState(() => selectedOilType = value),
                   decoration: InputDecoration(
                     hintText: 'Pilih Oil Type',

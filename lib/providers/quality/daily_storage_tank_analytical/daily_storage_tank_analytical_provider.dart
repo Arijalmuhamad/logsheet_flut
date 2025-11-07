@@ -40,6 +40,9 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   List<DailyStorageTankAnalyticalFromDbEntity> _reportsList = [];
   List<DailyStorageTankAnalyticalFromDbEntity> get reportsList => _reportsList;
 
+    List<DailyStorageTankAnalyticalFromDbEntity> _approvalList = [];
+  List<DailyStorageTankAnalyticalFromDbEntity> get approvalList => _approvalList;
+
   // functions for changing loading state
   void _setLoading(bool value) {
     _isLoading = value;
@@ -171,13 +174,17 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     return newId;
   }
 
-  Future<void> getAllDailyStorageTankReport(String? dateFilter) async {
+  Future<void> getAllDailyStorageTankReport(
+    String? dateFilter,
+    String? role,
+  ) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
       log('Fetching reports...');
       _reportsList = await _repository.getAllDailyStorageTankReport(
         dateFilter ?? '',
+        role ?? '',
       );
       _reportsList = _reportsList.where((item) => item.flag == 'T').toList();
 
@@ -234,6 +241,58 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
       _setErrorMessage('Failed to update report: $e');
       _setLoading(false);
       return false;
+    }
+  }
+
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    _setLoadingApproval(true);
+    _setErrorMessage(null);
+    try {
+      final result = await _repository.updateApproveRejectToHeader(
+        id: id,
+        approvedBy: approvedBy,
+        status: status,
+        role: role,
+        remarks: remarks,
+      );
+
+      if (result) {
+        _setLoadingApproval(false);
+        return true;
+      } else {
+        _setErrorMessage('Failed to update approval status.');
+        _setLoadingApproval(false);
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('$e');
+      _setLoadingApproval(false);
+      return false;
+    }
+  }
+
+  Future<void> getAllDailyStorageTankApproval(
+  ) async {
+    _setLoadingApproval(true);
+    _setErrorMessage(null);
+    try {
+      log('Fetching reports...');
+      _approvalList = await _repository.getAllDailyStorageTankApproval();
+
+      notifyListeners();
+
+      // await Future.delayed(const Duration(seconds: 1));
+      _setLoadingApproval(false);
+      log('Approval List length: ${_approvalList.length}');
+    } catch (e) {
+      _setErrorMessage('Failed to fetch approval daily storage: $e');
+      _setLoadingApproval(false);
     }
   }
 }

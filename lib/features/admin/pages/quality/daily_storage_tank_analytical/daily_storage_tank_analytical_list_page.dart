@@ -44,7 +44,7 @@ class _DailyStorageTankAnalyticalListPageState
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyStorageTankAnalyticalProvider>()
-              .getAllDailyStorageTankReport(formatted);
+              .getAllDailyStorageTankReport(formatted, userRole);
         });;
         },
         label: const Text("Tambah Daily Tank Storage Report"),
@@ -104,6 +104,7 @@ class _DailyStorageTankAnalyticalListPageState
                                 entryBy: item.entryBy ?? '',
                                 tank: item.tankNo,
                                 oilType: item.oilType,
+                                role: role
                               );
                             },
                           );
@@ -140,7 +141,7 @@ class _DailyStorageTankAnalyticalListPageState
               if (formattedDate != null) {
                 await context
                     .read<DailyStorageTankAnalyticalProvider>()
-                    .getAllDailyStorageTankReport(formattedDate);
+                    .getAllDailyStorageTankReport(formattedDate, role);
               }
             },
             icon: const Icon(Icons.search),
@@ -165,6 +166,7 @@ class _DailyStorageTankAnalyticalListPageState
     required String? tank,
     required String? oilType,
     required String? entryBy,
+    required String? role
   }) {
     return InkWell(
       onTap: () {
@@ -178,7 +180,7 @@ class _DailyStorageTankAnalyticalListPageState
           final formatted = parseDateTimeForQuery(dateEntryController.text);
           context
               .read<DailyStorageTankAnalyticalProvider>()
-              .getAllDailyStorageTankReport(formatted);
+              .getAllDailyStorageTankReport(formatted, role);
         });
       },
       child: Card(

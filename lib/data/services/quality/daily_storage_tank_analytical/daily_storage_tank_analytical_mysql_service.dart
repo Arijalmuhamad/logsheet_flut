@@ -1,15 +1,16 @@
 import 'dart:developer';
 
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
+import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 class DailyStorageTankAnalyticalMySQLService {
-  final String dailyStorageTankAnalyticalReport = "t_daily_storage_tank_analytical_report";
+  final String dailyStorageTankAnalyticalReport =
+      "t_daily_storage_tank_analytical_report";
 
   Future<bool> insertDailyStorageTankAnalytical({
     required DailyStorageTankAnalyticalToDbEntity report,
-    
   }) async {
     MySQLConnection? connection;
     try {
@@ -45,7 +46,7 @@ class DailyStorageTankAnalyticalMySQLService {
       await connection?.close();
     }
     return true;
-  } 
+  }
 
   Future<bool> updateAutoNumber(String plantCode, int newAutoNumber) async {
     MySQLConnection? connection;
@@ -118,8 +119,9 @@ class DailyStorageTankAnalyticalMySQLService {
     }
   }
 
-   Future<List<Map<String, dynamic>>> getAllDailyStorageTankReport(
+  Future<List<Map<String, dynamic>>> getAllDailyStorageTankReport(
     String? dateFilter,
+    String? role,
   ) async {
     MySQLConnection? connection;
 
@@ -131,9 +133,63 @@ class DailyStorageTankAnalyticalMySQLService {
       }
 
       connection = connResult.connection;
-
+      String baseQuery = '';
       // Base query
-      String baseQuery = """
+
+      if (AppRoles.leadQC.contains(role)) {
+        baseQuery = """
+      SELECT 
+        a.id, 
+        a.company, 
+        a.plant, 
+        a.transaction_date, 
+        a.posting_date, 
+        a.tank_no, 
+        a.oil_type, 
+        a.kapasitas_tanki, 
+        a.quantity, 
+        a.empty_space, 
+        a.suhu, 
+        a.qp_ffa, 
+        a.qp_moisture, 
+        a.qp_lovibond_color_r, 
+        a.qp_lovibond_color_y, 
+        a.qp_iv, 
+        a.qp_pv, 
+        a.qp_slip_melting_point, 
+        a.qp_cloud_point, 
+        a.qp_anv, 
+        a.qp_beta_carotene, 
+        a.qp_p, 
+        a.qp_dobi, 
+        a.qp_totox, 
+        a.qp_odor, 
+        a.remarks, 
+        a.flag, 
+        a.entry_by, 
+        a.entry_date, 
+        a.prepared_by, 
+        a.prepared_date, 
+        a.prepared_status, 
+        a.prepared_status_remarks, 
+        a.approved_by, 
+        a.approved_date, 
+        a.approved_status, 
+        a.approved_status_remarks, 
+        a.updated_by, 
+        a.updated_date, 
+        a.form_no, 
+        a.date_issued, 
+        a.revision_no, 
+        a.revision_date
+      FROM t_daily_storage_tank_analytical_report AS a
+      WHERE 
+         DATE(a.transaction_date) = :date AND a.prepared_status IS NULL
+      ORDER BY 
+          a.id ASC;
+""";
+      } else {
+        baseQuery = """
       SELECT 
         a.id, 
         a.company, 
@@ -184,6 +240,7 @@ class DailyStorageTankAnalyticalMySQLService {
       ORDER BY 
           a.id ASC;
 """;
+      }
 
       final IResultSet result = await connection!.execute(baseQuery, {
         "date": dateFilter,
@@ -239,48 +296,191 @@ class DailyStorageTankAnalyticalMySQLService {
   }
 
   Future<bool> updateDailyStorageTankAnalyticalReport({
-  required DailyStorageTankAnalyticalToDbEntity report,
-  required String id,
-}) async {
-  MySQLConnection? connection;
-  try {
-    final connResult = await getMySQLConnection();
-    if (connResult.connection == null) {
-      log('Failed to get MySQL connection for updateDailyStorageTankAnalyticalReport.');
-      return false;
-    }
+    required DailyStorageTankAnalyticalToDbEntity report,
+    required String id,
+  }) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          'Failed to get MySQL connection for updateDailyStorageTankAnalyticalReport.',
+        );
+        return false;
+      }
 
-    connection = connResult.connection!;
-    final Map<String, dynamic> reportMap = report.toMap();
+      connection = connResult.connection!;
+      final Map<String, dynamic> reportMap = report.toMap();
 
-    // Build the SET clause dynamically
-    final List<String> setClauses = [];
-    final Map<String, dynamic> sqlParams = {};
+      // Build the SET clause dynamically
+      final List<String> setClauses = [];
+      final Map<String, dynamic> sqlParams = {};
 
-    reportMap.forEach((key, value) {
-      setClauses.add('`$key` = :$key');
-      sqlParams[key] = value;
-    });
+      reportMap.forEach((key, value) {
+        setClauses.add('`$key` = :$key');
+        sqlParams[key] = value;
+      });
 
-    // Add the WHERE clause param
-    sqlParams['id'] = id;
+      // Add the WHERE clause param
+      sqlParams['id'] = id;
 
-    final String sql = '''
+      final String sql = '''
       UPDATE $dailyStorageTankAnalyticalReport
       SET ${setClauses.join(', ')}
       WHERE id = :id
     ''';
 
-    final result = await connection.execute(sql, sqlParams);
+      final result = await connection.execute(sql, sqlParams);
 
-    log('Updated DailyStorageTankAnalyticalReport for ID $id. Affected rows: ${result.affectedRows}');
-    return result.affectedRows > BigInt.from(0);
-  } catch (e) {
-    log('Error in updateDailyStorageTankAnalyticalReport: $e');
-    return false;
-  } finally {
-    await closeMySQLConnection(connection);
+      log(
+        'Updated DailyStorageTankAnalyticalReport for ID $id. Affected rows: ${result.affectedRows}',
+      );
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error in updateDailyStorageTankAnalyticalReport: $e');
+      return false;
+    } finally {
+      await closeMySQLConnection(connection);
+    }
   }
-}
 
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updateApproveRejectToHeader.');
+        return false;
+      }
+      connection = connResult.connection!;
+      String query;
+      final Map<String, dynamic> params = {
+        "id": id,
+        "approvedBy": approvedBy,
+        "approvedDate": DateTime.now(),
+        "status": status,
+        "remark": remarks,
+      };
+
+      if (AppRoles.leadProd.contains(role)) {
+        query = """
+          UPDATE $dailyStorageTankAnalyticalReport
+          SET prepared_status = :status, prepared_by = :approvedBy, prepared_date = :approvedDate, prepared_status_remarks = :remark
+          WHERE id = :id
+        """;
+      } else if (AppRoles.qualityControlManagerApproval.contains(role)) {
+        query = """
+          UPDATE $dailyStorageTankAnalyticalReport
+          SET approved_status = :status, approved_by = :approvedBy, approved_date = :approvedDate, approved_status_remarks = :remark
+          WHERE id = :id
+        """;
+      } else {
+        log('Invalid role provided for approval update: $role');
+        return false;
+      }
+
+      final result = await connection.execute(query, params);
+
+      log(
+        'Successfully updated approval status for Change Product Checklist ID: $id by $approvedBy ($role) with status: $status',
+      );
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating approval status for Change Product Checklist: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllDailyStorageTankApproval() async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all approval reports.');
+        return [];
+      }
+
+      connection = connResult.connection;
+
+      // Query without date filter
+      const String baseQuery = """
+      SELECT 
+        a.id, 
+        a.company, 
+        a.plant, 
+        a.transaction_date, 
+        a.posting_date, 
+        a.tank_no, 
+        a.oil_type, 
+        a.kapasitas_tanki, 
+        a.quantity, 
+        a.empty_space, 
+        a.suhu, 
+        a.qp_ffa, 
+        a.qp_moisture, 
+        a.qp_lovibond_color_r, 
+        a.qp_lovibond_color_y, 
+        a.qp_iv, 
+        a.qp_pv, 
+        a.qp_slip_melting_point, 
+        a.qp_cloud_point, 
+        a.qp_anv, 
+        a.qp_beta_carotene, 
+        a.qp_p, 
+        a.qp_dobi, 
+        a.qp_totox, 
+        a.qp_odor, 
+        a.remarks, 
+        a.flag, 
+        a.entry_by, 
+        a.entry_date, 
+        a.prepared_by, 
+        a.prepared_date, 
+        a.prepared_status, 
+        a.prepared_status_remarks, 
+        a.approved_by, 
+        a.approved_date, 
+        a.approved_status, 
+        a.approved_status_remarks, 
+        a.updated_by, 
+        a.updated_date, 
+        a.form_no, 
+        a.date_issued, 
+        a.revision_no, 
+        a.revision_date
+      FROM t_daily_storage_tank_analytical_report AS a
+      ORDER BY a.id ASC;
+    """;
+
+      final IResultSet result = await connection!.execute(baseQuery);
+
+      log('Fetched ${result.rows.length} Daily Storage Tank Approval reports');
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all approval reports: $e');
+      return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
 }

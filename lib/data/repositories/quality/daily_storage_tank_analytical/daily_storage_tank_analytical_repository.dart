@@ -25,9 +25,10 @@ class DailyStorageTankAnalyticalRepository {
 
   Future<List<DailyStorageTankAnalyticalFromDbEntity>> getAllDailyStorageTankReport(
     String date,
+    String role,
   ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        .getAllDailyStorageTankReport(date);
+        .getAllDailyStorageTankReport(date, role);
 
     log('converting to list...');
 
@@ -53,6 +54,47 @@ class DailyStorageTankAnalyticalRepository {
 
   Future<bool> updatedeleteDailyStorageTankAnalyticalReport(DailyStorageTankAnalyticalToDbEntity entity, String id) async {
     return await _mySQLService.updateDailyStorageTankAnalyticalReport(report: entity, id: id);
+  }
+
+  
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    return await _mySQLService.updateApproveRejectToHeader(
+      id: id,
+      approvedBy: approvedBy,
+      status: status,
+      role: role,
+      remarks: remarks,
+    );
+  }
+
+
+  Future<List<DailyStorageTankAnalyticalFromDbEntity>> getAllDailyStorageTankApproval(
+  ) async {
+    final List<Map<String, dynamic>> reportsData = await _mySQLService
+        . getAllDailyStorageTankApproval();
+
+    log('converting to list...');
+
+    final List<DailyStorageTankAnalyticalFromDbEntity> mapToList = [];
+
+    for (final maps in reportsData) {
+      try {
+        log("Converting: $maps");
+        final entity = DailyStorageTankAnalyticalFromDbEntity.fromMap(maps);
+        mapToList.add(entity);
+      } catch (e, st) {
+        log("❌ Error converting map: $e\n$st");
+      }
+    }
+
+    log('converted ${mapToList.length}');
+    return mapToList;
   }
 
 }
