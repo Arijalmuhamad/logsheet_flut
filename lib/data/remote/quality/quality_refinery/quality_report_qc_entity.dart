@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
 
 class QualityReportQcEntity {
   final String id;

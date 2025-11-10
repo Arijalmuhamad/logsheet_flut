@@ -9,6 +9,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_date_field.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
 class DailyStorageTankAnalyticalListPage extends StatefulWidget {
@@ -38,9 +39,15 @@ class _DailyStorageTankAnalyticalListPageState
             MaterialPageRoute(
               builder: (context) => DailyStorageTankAnalyticalInputPage(),
             ),
-          );
+          ).then((_) {
+          if (!mounted) return;
+          final formatted = parseDateTimeForQuery(dateEntryController.text);
+          context
+              .read<DailyStorageTankAnalyticalProvider>()
+              .getAllDailyStorageTankReport(formatted, userRole);
+        });;
         },
-        label: const Text("Tambah Change Product"),
+        label: const Text("Tambah Daily Tank Storage Report"),
         icon: Icon(Icons.add),
         backgroundColor: Color(0xFFB91C1C),
         foregroundColor: Colors.white,
@@ -62,14 +69,11 @@ class _DailyStorageTankAnalyticalListPageState
   }
 
   Widget _buildBody(String role) {
-    final changeProductChecklistProvider =
-        context.watch<ChangeProductChecklistProvider>();
+    final dailyStorageTankAnalyticalProvider =
+        context.watch<DailyStorageTankAnalyticalProvider>();
 
-    final isLoading = changeProductChecklistProvider.isLoading;
-    final reportList =
-        changeProductChecklistProvider.uniqueReportList
-            .where((item) => item.preparedStatus == null)
-            .toList();
+    final isLoading = dailyStorageTankAnalyticalProvider.isLoading;
+    final reportList = dailyStorageTankAnalyticalProvider.reportsList;
 
     return Column(
       children: [
@@ -80,43 +84,32 @@ class _DailyStorageTankAnalyticalListPageState
               padding: const EdgeInsets.all(8.0),
               child: Builder(
                 builder: (context) {
-                  if (isLoading) {
-                    // 🔹 Tampilkan indikator loading
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (reportList.isEmpty) {
-                    // 🔹 Tampilkan teks jika tidak ada data
-                    return Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      DailyStorageTankAnalyticalListDetailPage(),
-                            ),
+                  return Consumer<DailyStorageTankAnalyticalProvider>(
+                    builder: (
+                      BuildContext context,
+                      DailyStorageTankAnalyticalProvider provider,
+                      Widget? child,
+                    ) {
+                      return (provider.isLoading)
+                          ? Center(child: CircularProgressIndicator())
+                          : (provider.reportsList.isEmpty)
+                          ? Center(child: Text('No data'))
+                          : ListView.builder(
+                            itemCount: reportList.length,
+                            itemBuilder: (context, index) {
+                              final item = reportList[index];
+                              return _cardItem(
+                                id: item.id ?? '',
+                                date: item.transactionDate?.toString() ?? '',
+                                entryBy: item.entryBy ?? '',
+                                tank: item.tankNo,
+                                oilType: item.oilType,
+                                role: role
+                              );
+                            },
                           );
-                        },
-                        child: Text('No data'),
-                      ),
-                    );
-                  } else {
-                    // 🔹 Tampilkan list jika ada data
-                    return ListView.builder(
-                      itemCount: reportList.length,
-                      itemBuilder: (context, index) {
-                        final item = reportList[index];
-                        return _changeProductsCardItem(
-                          id: item.id,
-                          date: item.transactionDate,
-                          time: item.transactionTime,
-                          workCenter: item.workCenter ?? '',
-                          entryBy: item.entryBy ?? '',
-                          role: role,
-                        );
-                      },
-                    );
-                  }
+                    },
+                  );
                 },
               ),
             ),
@@ -146,9 +139,9 @@ class _DailyStorageTankAnalyticalListPageState
               );
               log('Searching for date: $formattedDate');
               if (formattedDate != null) {
-                // await context
-                //     .read<ChangeProductChecklistProvider>()
-                //     .getAllChangeProductFromDate(formattedDate, role);
+                await context
+                    .read<DailyStorageTankAnalyticalProvider>()
+                    .getAllDailyStorageTankReport(formattedDate, role);
               }
             },
             icon: const Icon(Icons.search),
@@ -167,28 +160,27 @@ class _DailyStorageTankAnalyticalListPageState
     );
   }
 
-  Widget _changeProductsCardItem({
+  Widget _cardItem({
     required String id,
     required String date,
-    required String time,
-    required String workCenter,
-    required String entryBy,
-    String? role,
+    required String? tank,
+    required String? oilType,
+    required String? entryBy,
+    required String? role
   }) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DailyStorageTankAnalyticalInputPage(),
+            builder: (context) => DailyStorageTankAnalyticalListDetailPage(id: id,),
           ),
         ).then((_) {
-          // // Refresh the list when returning from the detail page
-          // if (!mounted) return;
-          // final formatted = parseDateTimeForQuery(dateEntryController.text);
-          // context
-          //     .read<ChangeProductChecklistProvider>()
-          //     .getAllChangeProductFromDate(formatted ?? '', role ?? '');
+          if (!mounted) return;
+          final formatted = parseDateTimeForQuery(dateEntryController.text);
+          context
+              .read<DailyStorageTankAnalyticalProvider>()
+              .getAllDailyStorageTankReport(formatted, role);
         });
       },
       child: Card(
@@ -234,10 +226,10 @@ class _DailyStorageTankAnalyticalListPageState
                   ),
                   SizedBox(width: 16),
 
-                  const Icon(Icons.schedule, size: 18, color: Colors.grey),
+                  const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
                   Text(
-                    "$time",
+                    "$tank",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   SizedBox(width: 16),
@@ -253,7 +245,7 @@ class _DailyStorageTankAnalyticalListPageState
                   ),
                   SizedBox(width: 8),
                   Text(
-                    "$workCenter",
+                    "$oilType",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const Icon(Icons.person, size: 16, color: Colors.grey),

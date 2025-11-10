@@ -2,9 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/data/remote/transactions/report_notification_data_entity.dart';
-import 'package:logsheet_app/data/repositories/quality_report/quality_report_production_repository.dart';
+import 'package:logsheet_app/data/repositories/quality/quality_report/quality_report_production_repository.dart';
 
 class QualityReportProductionProvider with ChangeNotifier {
   final QualityReportProductionRepository _repository;

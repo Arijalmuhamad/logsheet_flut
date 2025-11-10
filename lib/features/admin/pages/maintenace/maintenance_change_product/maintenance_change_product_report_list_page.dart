@@ -12,7 +12,7 @@ import 'package:logsheet_app/providers/maintenance/change_product_checklist/main
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
 class MaintenanceChangeProductReportListPage extends StatefulWidget {

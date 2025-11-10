@@ -8,12 +8,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/product_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:logsheet_app/core/database/app_database.dart';
 import 'package:logsheet_app/data/dao/quality_report_refinery_dao.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 
 class QualityEditProductionPage extends StatefulWidget {
