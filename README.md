@@ -47,3 +47,6 @@ flutter build apk --release
 
 >File .env, key.properties, dan upload-keystore.jks berisi kredensial sensitif.
 Jika Anda belum memiliki file tersebut, silakan hubungi developer untuk mendapatkan file tersebut dan panduan konfigurasi lebih lanjut melalui kontak resmi proyek atau tim pengembang.
+
+
+### Untuk Dokumentasi lebih lanjut: [Technical Documentation](https://app.clickup.com/90181965755/v/dc/2kzm75xv-738)
