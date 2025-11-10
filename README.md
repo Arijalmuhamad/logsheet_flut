@@ -21,7 +21,7 @@ flutter pub get
 ```
 
 ### 2. Konfigurasi Environment
-Tambah/Paste ```.env``` file di ```/lib```
+Tambah/Paste ```.env``` file di root project ```/logsheet_flut```
 ```
 DB_HOST=HOST_NAME
 DB_PORT=PORT_NUMBER
