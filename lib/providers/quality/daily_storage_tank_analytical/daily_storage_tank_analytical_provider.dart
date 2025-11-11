@@ -40,8 +40,9 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   List<DailyStorageTankAnalyticalFromDbEntity> _reportsList = [];
   List<DailyStorageTankAnalyticalFromDbEntity> get reportsList => _reportsList;
 
-    List<DailyStorageTankAnalyticalFromDbEntity> _approvalList = [];
-  List<DailyStorageTankAnalyticalFromDbEntity> get approvalList => _approvalList;
+  List<DailyStorageTankAnalyticalFromDbEntity> _approvalList = [];
+  List<DailyStorageTankAnalyticalFromDbEntity> get approvalList =>
+      _approvalList;
 
   // functions for changing loading state
   void _setLoading(bool value) {
@@ -277,8 +278,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getAllDailyStorageTankApproval(
-  ) async {
+  Future<void> getAllDailyStorageTankApproval() async {
     _setLoadingApproval(true);
     _setErrorMessage(null);
     try {
