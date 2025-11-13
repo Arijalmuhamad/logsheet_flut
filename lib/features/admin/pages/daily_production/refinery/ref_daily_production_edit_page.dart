@@ -234,7 +234,7 @@ class _RefDailyProductionEditPageState
     if (awal1Text != '' && akhir1Text != '') {
       // Coba parse nilai ke integer
       final double awal = double.parse(awal1Text);
-      final double akhir = double.parse(akhir1Text);
+      final double akhir = double.tryParse(akhir1Text) ?? 0.0;
 
       log("AWAL $awal AKHIR $akhir");
 
