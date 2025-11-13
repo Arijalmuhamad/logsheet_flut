@@ -1089,7 +1089,7 @@ class _DailyProductionPageState
         beRefQty: "1 Bag (1000 Kg)",
         beTotalBag: bleachingBagController.text,
         beTotalJenis: bleachingTypeController.text,
-        beLotBatchNumber: parseInt(bleachingBagController.text),
+        beLotBatchNumber: parseInt(bleachingBatchController.text),
         beYieldPercent: parseDouble(yieldPercentController),
         paRefTank: selectedRefineryMachine,
         paRefQty: paValue,
