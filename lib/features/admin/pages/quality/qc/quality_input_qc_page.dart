@@ -986,13 +986,16 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Moisture',
             ),
-            _buildTextField(
-              controller: fgImpurities,
-              label: 'Impurities',
-              icon: Icons.science,
-              isNumeric: true,
-              hintText: 'Masukkan nilai Impurities',
-            ),
+            if (selectedWorkCenter != "REF-01") ...[
+              _buildTextField(
+                controller: fgImpurities,
+                label: 'Impurities',
+                icon: Icons.science,
+                isNumeric: true,
+                hintText: 'Masukkan nilai Impurities',
+              ),
+            ],
+
             _buildTextField(
               controller: fgColorRController,
               label: 'Color R',

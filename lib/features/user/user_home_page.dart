@@ -70,7 +70,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formDryFractionation,
       formChecklistLampsAndGlassControl,
       formChangeProductChecklist,
-      formStartupProductChecklist;
+      formStartupProductChecklist,
+      formDailyStorageTankAnalytical;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -286,6 +287,17 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
+    formDailyStorageTankAnalytical =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Daily_Storage_Tank_Analytical" &&
+                  form.isActive == "T",
+            )
+            .first;
+
     // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
     return Scaffold(
@@ -355,7 +367,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.17"), Text("Build 2025-12-3")],
+              children: [Text("Version 1.0.17"), Text("Build 2025-11-12")],
             ),
           ],
         ),
@@ -488,12 +500,67 @@ class _UserHomePageState extends State<UserHomePage> {
           if (AppRoles.qualityControlAccess.contains(userRole)) ...[
             _buildDrawerSubheader("Quality Control"),
             ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Daily Storage Tank Analytical\n(${formDailyStorageTankAnalytical?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DailyStorageTankAnalyticalListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Report\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Approval\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
               leading: const Icon(
                 Icons.factory_outlined,
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                '${formQualityRefineryQC?.treeMenu} \n${formQualityRefineryQC?.name} ',
+                '${formQualityRefineryQC?.treeMenu} \n(${formQualityRefineryQC?.name}) ',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -548,91 +615,36 @@ class _UserHomePageState extends State<UserHomePage> {
                 ),
               ],
             ),
-            ExpansionTile(
-              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
-              title: Text(
-                'Daily Storage Tank Analytical\n(${formStartupProductChecklist?.code})',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'List\n(${formStartupProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DailyStorageTankAnalyticalListPage(),
-                      ),
-                    );
-                  },
-                ),
 
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'Report\n(${formStartupProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyStorageTankAnalyticalReportListPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'Approval\n(${formStartupProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyStorageTankAnalyticalApprovalListPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            ExpansionTile(
-              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
-              title: Text(
-                'Daily Quality Refinery 500 MT Prodcuction\n(${formStartupProductChecklist?.code})',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'List\n(${formStartupProductChecklist?.code})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) =>
-                                DailyQualityRefinery500MtProductionListPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+            // ExpansionTile(
+            //   leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+            //   title: Text(
+            //     'Daily Quality Refinery 500 MT Prodcuction\n(${formStartupProductChecklist?.code})',
+            //     style: TextStyle(
+            //       color: Colors.black87,
+            //       fontWeight: FontWeight.w600,
+            //     ),
+            //   ),
+            //   childrenPadding: const EdgeInsets.only(left: 20.0),
+            //   iconColor: const Color(0xFFAB2F2B),
+            //   collapsedIconColor: Colors.grey,
+            //   children: [
+            //     _buildDrawerItem(
+            //       icon: Icons.list_alt,
+            //       title: 'List\n(${formStartupProductChecklist?.code})',
+            //       onTap: () {
+            //         Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder:
+            //                 (_) =>
+            //                     DailyQualityRefinery500MtProductionListPage(),
+            //           ),
+            //         );
+            //       },
+            //     ),
+            //   ],
+            // ),
           ],
 
           if (AppRoles.productionQualityAccess.contains(userRole)) ...[
@@ -835,6 +847,69 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
+          if (AppRoles.logsheetAccess.contains(userRole)) ...[
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: Text(
+                '${formDryFractionation?.treeMenu}\n (${formDryFractionation?.name})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List ${formDryFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DryFractionationListPage(),
+                      ),
+                    );
+                  },
+                ),
+                // Manager-only Approval item
+                if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formDryFractionation?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DryFractionationApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDryFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DryFractionationReportListPage(
+                              userName: user.username,
+                              role: user.role,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
 
           // Daily Productions
           if (AppRoles.logsheetAccess.contains(userRole)) ...[
@@ -972,72 +1047,6 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
-
-          // Dry Fractionation
-          if (AppRoles.logsheetAccess.contains(userRole)) ...[
-            ExpansionTile(
-              leading: const Icon(
-                Icons.article_rounded,
-                color: Color(0xFF655F5B),
-              ),
-              title: Text(
-                '${formDryFractionation?.treeMenu}\n (${formDryFractionation?.name})',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                _buildDrawerItem(
-                  icon: Icons.list_alt_outlined,
-                  title: 'List ${formDryFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DryFractionationListPage(),
-                      ),
-                    );
-                  },
-                ),
-                // Manager-only Approval item
-                if (AppRoles.logsheetManagerApproval.contains(userRole)) ...[
-                  _buildDrawerItem(
-                    icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDryFractionation?.name})',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => DryFractionationApprovalListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                _buildDrawerItem(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDryFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DryFractionationReportListPage(
-                              userName: user.username,
-                              role: user.role,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-
           // Show Maintenance section for all roles
           _buildDrawerSubheader("Maintenance"),
           ExpansionTile(

@@ -53,6 +53,7 @@ class _DailyStorageTankAnalyticalInputPageState
   final TextEditingController cloudPointController = TextEditingController();
   final TextEditingController anvController = TextEditingController();
   final TextEditingController bCaroteneController = TextEditingController();
+  final TextEditingController pController = TextEditingController();
   final TextEditingController dobiController = TextEditingController();
   final TextEditingController totoxController = TextEditingController();
 
@@ -372,6 +373,13 @@ class _DailyStorageTankAnalyticalInputPageState
                       isNumeric: true,
                     ),
 
+                     CustomTextField(
+                      controller: pController,
+                      label: 'P (ppm)',
+                      icon: Icons.bubble_chart,
+                      isNumeric: true,
+                    ),
+
                     CustomTextField(
                       controller: dobiController,
                       label: 'DOBI',
@@ -462,7 +470,7 @@ class _DailyStorageTankAnalyticalInputPageState
         qpCloudPoint: double.tryParse(cloudPointController.text) ?? 0.0,
         qpANV: double.tryParse(anvController.text) ?? 0.0,
         betaCarotene: double.tryParse(bCaroteneController.text) ?? 0.0,
-        qpP: 0.0, // not in your form
+        qpP: double.tryParse(pController.text) ?? 0.0, 
         qpDobi: double.tryParse(dobiController.text) ?? 0.0,
         qpTotox: double.tryParse(totoxController.text) ?? 0.0,
         qpOdor: odorChecked ? "T" : "F",

@@ -91,11 +91,14 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-        // _fetchReports();
-      });
+      final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+      _selectedDate = picked;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+        _selectedDate,
+        plantCode,
+        _tempSelectedShift,
+      );
     }
   }
 
@@ -143,8 +146,13 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     if (confirm == true) {
       // Assuming you have a delete method in your provider
       // await Provider.of<QualityReportRefineryProvider>(context, listen: false).delete(id);
+      final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
       _showSnackbar('🗑️ Data berhasil dihapus');
-      // _fetchReports();
+      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+        _selectedDate,
+        plantCode,
+        _tempSelectedShift,
+      );
     }
   }
 
@@ -453,8 +461,16 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
         const SizedBox(width: 10),
         ElevatedButton.icon(
           onPressed: () {
-            setState(() {
-              // _fetchReports();
+            setState(() async {
+              final plantCode =
+                  context.read<PlantProvider>().currentPlant?.code ?? "";
+              await context
+                  .read<QualityReportQCProvider>()
+                  .fetchFilteredTickets(
+                    _selectedDate,
+                    plantCode,
+                    _tempSelectedShift,
+                  );
             });
           },
           icon: const Icon(Icons.search),
