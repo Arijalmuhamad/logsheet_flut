@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/check_if_null_string.dart';
 import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
@@ -108,7 +109,7 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
     selectedOilType = widget.report.oilTypeId;
     selectedWorkCenter = widget.report.workCenter;
     selectedTankSource = widget.report.rmTankSource;
-    selectedBpToTankGroup = widget.report.bpToTank;
+    selectedBpToTankGroup = checkIfNull(widget.report.bpToTank);
     selectedHour = widget.report.time?.hour;
     selectedToTankGroup = widget.report.fgTankTo;
 
@@ -158,6 +159,9 @@ class _QualityEditQCPageState extends State<QualityEditQCPage> {
       if (!mounted) return;
       await context.read<ProductProvider>().fetchProducts();
     });
+
+
+
   }
 
   @override
