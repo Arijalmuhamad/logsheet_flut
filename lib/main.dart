@@ -13,6 +13,7 @@ import 'package:logsheet_app/data/repositories/master/business_unit_repository.d
 import 'package:logsheet_app/data/repositories/master/data_form_no_repository.dart';
 import 'package:logsheet_app/data/repositories/master/plant_repository.dart';
 import 'package:logsheet_app/data/repositories/master/product_repository.dart';
+import 'package:logsheet_app/data/repositories/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
 import 'package:logsheet_app/data/repositories/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
 import 'package:logsheet_app/data/repositories/quality/quality_report/quality_report_production_repository.dart';
 import 'package:logsheet_app/data/repositories/quality/quality_report/quality_report_qc_repository.dart';
@@ -30,6 +31,7 @@ import 'package:logsheet_app/data/services/master/business_unit_mysql_service.da
 import 'package:logsheet_app/data/services/master/data_form_no_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/plant_mysql_service.dart';
 import 'package:logsheet_app/data/services/master/product_mysql_service.dart';
+import 'package:logsheet_app/data/services/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality/quality_report/quality_report_production_mysql_service.dart';
 import 'package:logsheet_app/data/services/quality/quality_report/quality_report_qc_mysql_service.dart';
@@ -48,6 +50,7 @@ import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/product_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:logsheet_app/providers/quality/quality_report/quality_report_production_provider.dart';
 import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
@@ -126,6 +129,10 @@ void main() async {
 
         Provider<DailyStorageTankAnalyticalMySQLService>(
           create: (context) => DailyStorageTankAnalyticalMySQLService(),
+        ),
+
+        Provider<DailyQualityCompositeFractionationMysqlService>(
+          create: (context) => DailyQualityCompositeFractionationMysqlService(),
         ),
 
         // Provide User Repository
@@ -239,6 +246,13 @@ void main() async {
               ),
         ),
 
+        Provider<DailyQualityCompositeFractionationRepository>(
+          create:
+              (context) => DailyQualityCompositeFractionationRepository(
+                context.read<DailyQualityCompositeFractionationMysqlService>(),
+              ),
+        ),
+
         // Provide The User Provider
         ChangeNotifierProvider(
           create: (context) => UserProvider(context.read<UserRepository>()),
@@ -337,6 +351,13 @@ void main() async {
           create:
               (context) => DailyStorageTankAnalyticalProvider(
                 context.read<DailyStorageTankAnalyticalRepository>(),
+              ),
+        ),
+
+          ChangeNotifierProvider(
+          create:
+              (context) => DailyQualityCompositeFractionationProvider(
+                context.read<DailyQualityCompositeFractionationRepository>(),
               ),
         ),
 

@@ -31,7 +31,9 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_gl
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/daily_quality_refinery_500_mt_production/daily_quality_refinery_500_mt_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_list_page.dart';
@@ -71,7 +73,8 @@ class _UserHomePageState extends State<UserHomePage> {
       formChecklistLampsAndGlassControl,
       formChangeProductChecklist,
       formStartupProductChecklist,
-      formDailyStorageTankAnalytical;
+      formDailyStorageTankAnalytical,
+      formDailyQualityCompositeFractionationA;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -298,6 +301,18 @@ class _UserHomePageState extends State<UserHomePage> {
             )
             .first;
 
+    formDailyQualityCompositeFractionationA =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Daily_Quality_Composite_Fractionation_500_mt" &&
+                  form.isActive == "T",
+            )
+            .first;
+
     // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
     return Scaffold(
@@ -367,7 +382,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.17"), Text("Build 2025-11-12")],
+              children: [Text("Version 1.0.18"), Text("Build 2025-11-17")],
             ),
           ],
         ),
@@ -616,35 +631,51 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
 
-            // ExpansionTile(
-            //   leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
-            //   title: Text(
-            //     'Daily Quality Refinery 500 MT Prodcuction\n(${formStartupProductChecklist?.code})',
-            //     style: TextStyle(
-            //       color: Colors.black87,
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //   ),
-            //   childrenPadding: const EdgeInsets.only(left: 20.0),
-            //   iconColor: const Color(0xFFAB2F2B),
-            //   collapsedIconColor: Colors.grey,
-            //   children: [
-            //     _buildDrawerItem(
-            //       icon: Icons.list_alt,
-            //       title: 'List\n(${formStartupProductChecklist?.code})',
-            //       onTap: () {
-            //         Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder:
-            //                 (_) =>
-            //                     DailyQualityRefinery500MtProductionListPage(),
-            //           ),
-            //         );
-            //       },
-            //     ),
-            //   ],
-            // ),
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyQualityCompositeFractionationListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Reports\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                DailyQualityCompositeFractionationReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
 
           if (AppRoles.productionQualityAccess.contains(userRole)) ...[

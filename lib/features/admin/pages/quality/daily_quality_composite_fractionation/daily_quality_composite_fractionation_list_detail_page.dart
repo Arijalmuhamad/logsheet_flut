@@ -3,9 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
+import 'package:logsheet_app/data/remote/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
 import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_edit_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_edit_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_edit_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_report_detail_page.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
@@ -13,29 +15,33 @@ import 'package:logsheet_app/features/admin/widgets/custom_snack_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_stateless_checklist_item_row.dart';
 import 'package:logsheet_app/providers/maintenance/change_product_checklist/maintenance_change_product_checklist_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
+import 'package:logsheet_app/providers/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_provider.dart';
 import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
-class DailyStorageTankAnalyticalListDetailPage extends StatefulWidget {
-  DailyStorageTankAnalyticalListDetailPage({super.key, required this.id});
+class DailyQualityCompositeFractionationListDetailPage extends StatefulWidget {
+  DailyQualityCompositeFractionationListDetailPage({
+    super.key,
+    required this.id,
+  });
 
   String id;
 
   @override
-  State<DailyStorageTankAnalyticalListDetailPage> createState() =>
-      _DailyStorageTankAnalyticalListDetailPageState();
+  State<DailyQualityCompositeFractionationListDetailPage> createState() =>
+      _DailyQualityCompositeFractionationListDetailPageState();
 }
 
-class _DailyStorageTankAnalyticalListDetailPageState
-    extends State<DailyStorageTankAnalyticalListDetailPage> {
-  DailyStorageTankAnalyticalFromDbEntity? reportItem;
+class _DailyQualityCompositeFractionationListDetailPageState
+    extends State<DailyQualityCompositeFractionationListDetailPage> {
+  DailyQualityCompositeFractionationEntity? reportItem;
   final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final item = context
-          .read<DailyStorageTankAnalyticalProvider>()
+          .read<DailyQualityCompositeFractionationProvider>()
           .reportsList
           .firstWhere((element) => element.id == widget.id);
 
@@ -49,10 +55,10 @@ class _DailyStorageTankAnalyticalListDetailPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Consumer<DailyStorageTankAnalyticalProvider>(
+      body: Consumer<DailyQualityCompositeFractionationProvider>(
         builder: (
           BuildContext context,
-          DailyStorageTankAnalyticalProvider value,
+          DailyQualityCompositeFractionationProvider value,
           Widget? child,
         ) {
           return (value.isLoadingApproval)
@@ -64,10 +70,10 @@ class _DailyStorageTankAnalyticalListDetailPageState
   }
 
   Widget _buildBody(BuildContext context) {
-    return Consumer2<DailyStorageTankAnalyticalProvider, UserProvider>(
+    return Consumer2<DailyQualityCompositeFractionationProvider, UserProvider>(
       builder: (
         BuildContext context,
-        DailyStorageTankAnalyticalProvider reportProvider,
+        DailyQualityCompositeFractionationProvider reportProvider,
         UserProvider userProvider,
         Widget? child,
       ) {
@@ -93,8 +99,10 @@ class _DailyStorageTankAnalyticalListDetailPageState
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildInfoCard(
-                            'Analysis Date',
-                            _formatDateString(reportItem?.transactionDate),
+                            'Date',
+                            _formatDateString(
+                              reportItem?.transactionDate?.toIso8601String(),
+                            ),
                           ),
                         ],
                       ),
@@ -102,70 +110,85 @@ class _DailyStorageTankAnalyticalListDetailPageState
 
                     _buildSection('General Information', [
                       _buildDataRow('ID', reportItem?.id ?? ''),
-                      _buildDataRow('Company', reportItem?.company ?? ''),
-                      _buildDataRow('Plant', reportItem?.plant ?? ''),
                     ]),
 
-                    _buildSection('Storage Tank Analytical Result', [
-                      _buildDataRow('Tank No', reportItem?.tankNo ?? ''),
-                      _buildDataRow('Oil Type', reportItem?.oilType ?? ''),
+                    _buildSection('Raw Material', [
                       _buildDataRow(
-                        'Kapasitas Tanki',
-                        reportItem?.kapasitasTanki ?? '',
+                        'Crystalizer',
+                        reportItem?.crystalizer ?? '',
                       ),
-                      _buildDataRow('Quantity', reportItem?.quantity ?? ''),
+                      _buildDataRow('M&I', reportItem?.rmMni.toString() ?? ''),
+                      _buildDataRow('IV', reportItem?.rmIv.toString() ?? ''),
                       _buildDataRow(
-                        'Empty Space',
-                        reportItem?.emptySpace ?? '',
+                        'Colour R',
+                        reportItem?.rmColorR.toString() ?? '',
                       ),
-                      _buildDataRow('Suhu', reportItem?.suhu ?? ''),
+                      _buildDataRow(
+                        'Colour Y',
+                        reportItem?.rmColorY.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'Colour W',
+                        reportItem?.rmColorW.toString() ?? '',
+                      ),
 
-                      _buildSection('Quality Parameter', [
-                        _buildDataRow('FFA', reportItem?.qpFFA ?? ''),
-                        _buildDataRow('Moisture', reportItem?.qpMoisture ?? ''),
-                        _buildDataRow(
-                          'LoviBondColor R',
-                          reportItem?.qpColorR ?? '',
-                        ),
-                        _buildDataRow(
-                          'LoviBondColor Y',
-                          reportItem?.qpColorY ?? '',
-                        ),
-                        _buildDataRow('IV', reportItem?.qpIV ?? ''),
-                        _buildDataRow('PV', reportItem?.qpPV ?? ''),
-                        _buildDataRow(
-                          'Slip Melting Point',
-                          reportItem?.qpSlipMeltingPoint ?? '',
-                        ),
-                        _buildDataRow(
-                          'Cloud Point',
-                          reportItem?.qpCloudPoint ?? '',
-                        ),
-                        _buildDataRow('AnV', reportItem?.qpANV ?? ''),
-                        _buildDataRow(
-                          'B-Carotene',
-                          reportItem?.betaCarotene ?? '',
-                        ),
-                        _buildDataRow('P', reportItem?.qpP ?? ''),
-                        _buildDataRow('Dobi', reportItem?.qpDobi ?? ''),
-                        _buildDataRow('Totox', reportItem?.qpTotox ?? ''),
-                        CustomStatelessChecklistItemRow(
-                          description: 'Odor',
-                          value: reportItem?.qpOdor == "T" ? true : false,
-                          isShowNumber: false,
-                        ),
-                      ]),
+                      _buildDataRow(
+                        'Colour Y',
+                        reportItem?.rmColorB.toString() ?? '',
+                      ),
                     ]),
 
-                    _buildSection('Operator Information', [
+                    _buildSection('Finish Goods', [
+                      _buildDataRow('FFA', reportItem?.fgFfa.toString() ?? ''),
+                      _buildDataRow('M&I', reportItem?.fgMni.toString() ?? ''),
+                      _buildDataRow('IV', reportItem?.rmIv.toString() ?? ''),
                       _buildDataRow(
-                        'Prepared By',
-                        reportItem?.preparedBy ?? '-',
+                        'Colour R',
+                        reportItem?.fgColorR.toString() ?? '',
                       ),
                       _buildDataRow(
-                        'Approved By',
-                        reportItem?.approvedBy ?? '-',
+                        'Colour Y',
+                        reportItem?.fgColorY.toString() ?? '',
                       ),
+                      _buildDataRow(
+                        'Colour W',
+                        reportItem?.fgColorW.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'Colour B',
+                        reportItem?.fgColorB.toString() ?? '',
+                      ),
+                      _buildDataRow('CP', reportItem?.fgCp.toString() ?? ''),
+                      _buildDataRow(
+                        'Clarity',
+                        reportItem?.fgCp.toString() ?? '',
+                      ),
+                      _buildDataRow('To Tank', reportItem?.fgToTank ?? ''),
+                    ]),
+
+                    _buildSection('By Product', [
+                      _buildDataRow('FFA', reportItem?.bpFfa.toString() ?? ''),
+                      _buildDataRow('M&I', reportItem?.bpMni.toString() ?? ''),
+                      _buildDataRow('IV', reportItem?.bpIv.toString() ?? ''),
+                      _buildDataRow('PV', reportItem?.bpPv.toString() ?? ''),
+                      _buildDataRow(
+                        'Colour R',
+                        reportItem?.bpColorR.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'Colour Y',
+                        reportItem?.bpColorY.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'Colour W',
+                        reportItem?.bpColorW.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'Colour B',
+                        reportItem?.bpColorB.toString() ?? '',
+                      ),
+
+                      _buildDataRow('To Tank', reportItem?.bpToTank ?? ''),
                     ]),
 
                     _buildSection('Remarks', [
@@ -189,7 +212,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                         )))
                       _buildSection('Approval Actions', [
                         if (reportItem?.preparedStatus == "Approved" &&
-                            reportItem?.approvedStatus == "Approved") ...[
+                            reportItem?.checkedStatus == "Approved") ...[
                           Text(
                             "Checklist Approved",
                             style: TextStyle(
@@ -198,7 +221,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                             ),
                           ),
                         ] else if (reportItem?.preparedStatus == "Rejected" ||
-                            reportItem?.approvedStatus == "Rejected") ...[
+                            reportItem?.checkedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -244,21 +267,21 @@ class _DailyStorageTankAnalyticalListDetailPageState
                                     ),
                                     child: ElevatedButton(
                                       onPressed: () async {
-                                        bool isSuccess = await _approveReport(
-                                          "Approved",
-                                        );
-                                        if (isSuccess) {
-                                          showSnackBar(
-                                            "Berhasil Approve Checklist",
-                                            context,
-                                          );
-                                          Navigator.of(context).pop();
-                                        } else {
-                                          showSnackBar(
-                                            "Gagal Approve Checklist",
-                                            context,
-                                          );
-                                        }
+                                        // bool isSuccess = await _approveReport(
+                                        //   "Approved",
+                                        // );
+                                        // if (isSuccess) {
+                                        //   showSnackBar(
+                                        //     "Berhasil Approve Checklist",
+                                        //     context,
+                                        //   );
+                                        //   Navigator.of(context).pop();
+                                        // } else {
+                                        //   showSnackBar(
+                                        //     "Gagal Approve Checklist",
+                                        //     context,
+                                        //   );
+                                        // }
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.green,
@@ -277,7 +300,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                               ],
                             ),
                           ] else if (reportItem?.preparedStatus != null &&
-                              reportItem?.approvedStatus == null) ...[
+                              reportItem?.checkedStatus == null) ...[
                             Text(
                               "Waiting Apprvoal From Manager Productions...",
                               style: TextStyle(
@@ -297,7 +320,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                               ),
                             ),
                           ] else if (reportItem?.preparedStatus == "Approved" ||
-                              reportItem?.approvedStatus == "Rejected") ...[
+                              reportItem?.checkedStatus == "Rejected") ...[
                             Row(
                               mainAxisSize: MainAxisSize.max,
                               children: [
@@ -415,8 +438,9 @@ class _DailyStorageTankAnalyticalListDetailPageState
                 context,
                 MaterialPageRoute(
                   builder:
-                      (context) =>
-                          DailyStorageTankAnalyticalEditPage(id: widget.id),
+                      (context) => DailyQualityCompositeFractionationEditPage(
+                        id: widget.id,
+                      ),
                 ),
               );
             },
@@ -468,10 +492,11 @@ class _DailyStorageTankAnalyticalListDetailPageState
                 Navigator.of(dialogContext).pop(); // tutup dialog dulu
 
                 final provider =
-                    parentContext.read<DailyStorageTankAnalyticalProvider>();
+                    parentContext
+                        .read<DailyQualityCompositeFractionationProvider>();
 
                 final isSuccess = await provider
-                    .deleteDailyStorageTankAnalyticalReport(widget.id);
+                    .deletedailyQualityCompositeFractionation(widget.id);
 
                 if (isSuccess) {
                   if (parentContext.mounted) {
@@ -504,20 +529,20 @@ class _DailyStorageTankAnalyticalListDetailPageState
     );
   }
 
-  Future<bool> _approveReport(String status) {
-    final user = context.read<UserProvider>();
+  // Future<bool> _approveReport(String status) {
+  //   final user = context.read<UserProvider>();
 
-    var isSuccess = context
-        .read<DailyStorageTankAnalyticalProvider>()
-        .updateApproveRejectToHeader(
-          id: widget.id,
-          approvedBy: user.currentUser!.username,
-          status: status,
-          role: user.currentUser!.role,
-          remarks: remarkController.text,
-        );
-    return isSuccess;
-  }
+  //   var isSuccess = context
+  //       .read<DailyQualityCompositeFractionationProvider>()
+  //       .updateApproveRejectToHeader(
+  //         id: widget.id,
+  //         approvedBy: user.currentUser!.username,
+  //         status: status,
+  //         role: user.currentUser!.role,
+  //         remarks: remarkController.text,
+  //       );
+  //   return isSuccess;
+  // }
 
   void _showRejectBottomSheet(BuildContext context) {
     showModalBottomSheet(
@@ -573,14 +598,14 @@ class _DailyStorageTankAnalyticalListDetailPageState
                           return;
                         }
 
-                        bool isSuccess = await _approveReport("Rejected");
-                        if (isSuccess) {
-                          Navigator.of(context).pop(); // Tutup bottom sheet
-                          showSnackBar("Berhasil Reject Checklist", context);
-                          Navigator.of(context).pop();
-                        } else {
-                          showSnackBar("Gagal Reject Checklist", context);
-                        }
+                        // bool isSuccess = await _approveReport("Rejected");
+                        // if (isSuccess) {
+                        //   Navigator.of(context).pop(); // Tutup bottom sheet
+                        //   showSnackBar("Berhasil Reject Checklist", context);
+                        //   Navigator.of(context).pop();
+                        // } else {
+                        //   showSnackBar("Gagal Reject Checklist", context);
+                        // }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red[700],

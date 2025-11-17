@@ -1,14 +1,13 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
-import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_from_db_entity.dart';
-import 'package:logsheet_app/data/remote/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_to_db_entity.dart';
-import 'package:logsheet_app/data/repositories/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_repository.dart';
+import 'package:flutter/widgets.dart';
+import 'package:logsheet_app/data/remote/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
+import 'package:logsheet_app/data/repositories/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_repository.dart';
 
-class DailyStorageTankAnalyticalProvider with ChangeNotifier {
-  final DailyStorageTankAnalyticalRepository _repository;
+class DailyQualityCompositeFractionationProvider with ChangeNotifier {
+  final DailyQualityCompositeFractionationRepository _repository;
 
-  DailyStorageTankAnalyticalProvider(this._repository);
+  DailyQualityCompositeFractionationProvider(this._repository);
 
   // Loading state for fetching
   bool _isLoading = false;
@@ -37,14 +36,14 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   String? _latestId;
   String? get latestId => _latestId;
 
-  List<DailyStorageTankAnalyticalFromDbEntity> _reportsList = [];
-  List<DailyStorageTankAnalyticalFromDbEntity> get reportsList => _reportsList;
+  List<DailyQualityCompositeFractionationEntity> _reportsList = [];
+  List<DailyQualityCompositeFractionationEntity> get reportsList =>
+      _reportsList;
 
-  List<DailyStorageTankAnalyticalFromDbEntity> _approvalList = [];
-  List<DailyStorageTankAnalyticalFromDbEntity> get approvalList =>
+  List<DailyQualityCompositeFractionationEntity> _approvalList = [];
+  List<DailyQualityCompositeFractionationEntity> get approvalList =>
       _approvalList;
 
-  // functions for changing loading state
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -77,15 +76,15 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> insertDailyStorageTankAnalyticalReport({
-    required DailyStorageTankAnalyticalToDbEntity report,
+  Future<bool> insertDailyQualityCompositeFractionationReport({
+    required DailyQualityCompositeFractionationEntity report,
   }) async {
     _setLoadingInput(true);
 
     _setErrorMessage(null);
 
     try {
-      final result = await _repository.insertDailyStorageTankAnalytical(
+      final result = await _repository.insertDailyQualityCompositeFractionation(
         report: report,
       );
 
@@ -93,7 +92,9 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
         _setLoadingInput(false);
         return true;
       } else {
-        _setErrorMessage('Failed to insert Change Product Checklist.');
+        _setErrorMessage(
+          'Failed to insert Daily Quality Composite Fractionation.',
+        );
         _setLoadingInput(false);
         return false;
       }
@@ -121,7 +122,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     }
   }
 
-  Future<String?> fetchLatestId(String plantCode) async {
+  Future<String?> getLatestId(String plantCode) async {
     _setLoading(true);
     _setErrorMessage(null);
     try {
@@ -137,7 +138,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
   }
 
   Future<String> generateId(String plantCode) async {
-    await fetchLatestId(plantCode);
+    await getLatestId(plantCode);
 
     if (_latestId == null || _latestId!.isEmpty) {
       log("_latestId is null or empty in _generateHeaderId");
@@ -148,8 +149,8 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     log("Latest ID: $latest");
 
     // Pisahkan bagian depan (prefix + plantid + accountingyear) dan autonumber
-    final prefixPart = latest.length > 9 ? latest.substring(0, 9) : latest;
-    final autoPart = latest.length > 9 ? latest.substring(9) : "";
+    final prefixPart = latest.length > 10 ? latest.substring(0, 10) : latest;
+    final autoPart = latest.length > 10 ? latest.substring(10) : "";
 
     // Konversi autonumber ke int dan tambah 1
     int newAuto = 1; // default kalau autoPart kosong atau gagal parsing
@@ -175,7 +176,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     return newId;
   }
 
-  Future<void> getAllDailyStorageTankReport(
+  Future<void> getAllDailyCompositeFractionationReport(
     String? dateFilter,
     String? role,
   ) async {
@@ -183,7 +184,7 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     _setErrorMessage(null);
     try {
       log('Fetching reports...');
-      _reportsList = await _repository.getAllDailyStorageTankReport(
+      _reportsList = await _repository.getAllDailyQualityCompositeReport(
         dateFilter ?? '',
         role ?? '',
       );
@@ -200,20 +201,21 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> deleteDailyStorageTankAnalyticalReport(String id) async {
+  Future<bool> deletedailyQualityCompositeFractionation(String id) async {
     _setLoadingDelete(true);
     _setErrorMessage(null);
 
     try {
-      final result = await _repository.deleteDailyStorageTankAnalyticalReport(
-        id,
-      );
+      final result = await _repository
+          .deletedailyQualityCompositeFractionationReport(id);
 
       if (result) {
         _setLoadingDelete(false);
         return true;
       } else {
-        _setErrorMessage('Failed to delete DailyStorageTankAnalyticalReport.');
+        _setErrorMessage(
+          'Failed to delete dailyQualityCompositeFractionation.',
+        );
         _setLoadingDelete(false);
         return false;
       }
@@ -225,74 +227,23 @@ class DailyStorageTankAnalyticalProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateDailyStorageTankAnalyticalReport(
-    DailyStorageTankAnalyticalToDbEntity report,
+  Future<bool> updateDailyQualityCompositeFractionationReport(
+    DailyQualityCompositeFractionationEntity report,
     String id,
   ) async {
-    _setLoading(true);
+    _setLoadingEdit(true);
     _setErrorMessage(null);
     try {
       log('Updating report...');
       final isSuccess = await _repository
-          .updatedeleteDailyStorageTankAnalyticalReport(report, id);
+          .updateDailyQualityCompositeFractionationReport(report, id);
       await Future.delayed(const Duration(milliseconds: 300));
-      _setLoading(false);
+      _setLoadingEdit(false);
       return isSuccess;
     } catch (e) {
       _setErrorMessage('Failed to update report: $e');
-      _setLoading(false);
+      _setLoadingEdit(false);
       return false;
-    }
-  }
-
-  Future<bool> updateApproveRejectToHeader({
-    required String id,
-    required String approvedBy,
-    required String status,
-    required String role,
-    String? remarks,
-  }) async {
-    _setLoadingApproval(true);
-    _setErrorMessage(null);
-    try {
-      final result = await _repository.updateApproveRejectToHeader(
-        id: id,
-        approvedBy: approvedBy,
-        status: status,
-        role: role,
-        remarks: remarks,
-      );
-
-      if (result) {
-        _setLoadingApproval(false);
-        return true;
-      } else {
-        _setErrorMessage('Failed to update approval status.');
-        _setLoadingApproval(false);
-        return false;
-      }
-    } catch (e) {
-      _setErrorMessage('$e');
-      _setLoadingApproval(false);
-      return false;
-    }
-  }
-
-  Future<void> getAllDailyStorageTankApproval() async {
-    _setLoadingApproval(true);
-    _setErrorMessage(null);
-    try {
-      log('Fetching reports...');
-      _approvalList = await _repository.getAllDailyStorageTankApproval();
-
-      notifyListeners();
-
-      // await Future.delayed(const Duration(seconds: 1));
-      _setLoadingApproval(false);
-      log('Approval List length: ${_approvalList.length}');
-    } catch (e) {
-      _setErrorMessage('Failed to fetch approval daily storage: $e');
-      _setLoadingApproval(false);
     }
   }
 }

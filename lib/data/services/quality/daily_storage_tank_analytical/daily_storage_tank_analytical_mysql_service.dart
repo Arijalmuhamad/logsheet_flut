@@ -40,7 +40,7 @@ class DailyStorageTankAnalyticalMySQLService {
         await connection!.execute(reportSql, reportSqlParams);
       }); // Added closing parenthesis for transactional
     } catch (e) {
-      log('Error in insertChangeProductChecklist: $e');
+      log('Error in insertdailyStorageTankAnalyticalReport: $e');
       return false;
     } finally {
       await connection?.close();
@@ -267,7 +267,7 @@ class DailyStorageTankAnalyticalMySQLService {
     try {
       final connResult = await getMySQLConnection();
       if (connResult.connection == null) {
-        log('Failed to get MySQL connection for deleteChangeProductChecklist.');
+        log('Failed to get MySQL connection for DailyStorageTankAnalyticalReport.');
         return false;
       }
       connection = connResult.connection!;
@@ -279,11 +279,11 @@ class DailyStorageTankAnalyticalMySQLService {
       final result = await connection.execute(sql, params);
 
       log(
-        'Successfully updated flag to "D" for change product checklist with ID: $id',
+        'Successfully updated flag to "D" for DailyStorageTankAnalyticalReport with ID: $id',
       );
       return result.affectedRows > BigInt.from(0);
     } catch (e) {
-      log('Error deleting change product checklist (updating flag): $e');
+      log('Error deleting DailyStorageTankAnalyticalReport (updating flag): $e');
       return false;
     } finally {
       try {
