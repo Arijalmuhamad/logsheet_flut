@@ -39,9 +39,9 @@ class _DailyQualityCompositeFractionationReportListPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Change_Product_Checklist")
+            .where((form) => form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt")
             .first;
-    return AppBar(title: Text("List (${formData!.code})"), actions: [
+    return AppBar(title: Text("Report List (${formData!.code})"), actions: [
         
       ],
     );

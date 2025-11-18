@@ -77,7 +77,7 @@ class DailyStorageTankAnalyticalRepository {
   Future<List<DailyStorageTankAnalyticalFromDbEntity>> getAllDailyStorageTankApproval(
   ) async {
     final List<Map<String, dynamic>> reportsData = await _mySQLService
-        . getAllDailyStorageTankApproval();
+        .getAllDailyStorageTankApproval();
 
     log('converting to list...');
 

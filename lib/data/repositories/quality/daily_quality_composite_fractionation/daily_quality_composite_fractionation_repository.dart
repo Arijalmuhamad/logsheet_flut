@@ -60,4 +60,43 @@ class DailyQualityCompositeFractionationRepository {
       id: id,
     );
   }
+
+  Future<List<DailyQualityCompositeFractionationEntity>> getAllDailyQualityCompositeApprovalReport(
+  ) async {
+    final List<Map<String, dynamic>> reportsData = await _mySQLService
+        .getAllDailyQualityCompositeApprovalReport();
+
+    log('converting to list...');
+
+    final List<DailyQualityCompositeFractionationEntity> mapToList = [];
+
+    for (final maps in reportsData) {
+      try {
+        log("Converting: $maps");
+        final entity = DailyQualityCompositeFractionationEntity.fromMap(maps);
+        mapToList.add(entity);
+      } catch (e, st) {
+        log("❌ Error converting map: $e\n$st");
+      }
+    }
+
+    log('converted ${mapToList.length}');
+    return mapToList;
+  }
+
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    return await _mySQLService.updateApproveRejectToHeader(
+      id: id,
+      approvedBy: approvedBy,
+      status: status,
+      role: role,
+      remarks: remarks,
+    );
+  }
 }

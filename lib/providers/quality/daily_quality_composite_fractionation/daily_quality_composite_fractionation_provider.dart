@@ -246,4 +246,56 @@ class DailyQualityCompositeFractionationProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> getAllDailyQualityCompositeApprovalReport() async {
+    _setLoadingApproval(true);
+    _setErrorMessage(null);
+    try {
+      log('Fetching reports...');
+      _approvalList =
+          await _repository.getAllDailyQualityCompositeApprovalReport();
+
+      notifyListeners();
+
+      // await Future.delayed(const Duration(seconds: 1));
+      _setLoadingApproval(false);
+      log('Approval List length: ${_approvalList.length}');
+    } catch (e) {
+      _setErrorMessage('Failed to fetch approval daily quality composite: $e');
+      _setLoadingApproval(false);
+    }
+  }
+
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    _setLoadingApproval(true);
+    _setErrorMessage(null);
+    try {
+      final result = await _repository.updateApproveRejectToHeader(
+        id: id,
+        approvedBy: approvedBy,
+        status: status,
+        role: role,
+        remarks: remarks,
+      );
+
+      if (result) {
+        _setLoadingApproval(false);
+        return true;
+      } else {
+        _setErrorMessage('Failed to update approval status.');
+        _setLoadingApproval(false);
+        return false;
+      }
+    } catch (e) {
+      _setErrorMessage('$e');
+      _setLoadingApproval(false);
+      return false;
+    }
+  }
 }

@@ -31,6 +31,7 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_gl
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
@@ -670,6 +671,22 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 DailyQualityCompositeFractionationReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Approval\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                DailyQualityCompositeFractionationApprovalListPage(),
                       ),
                     );
                   },

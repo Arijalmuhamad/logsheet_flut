@@ -261,4 +261,105 @@ class DailyQualityCompositeFractionationMysqlService {
       await closeMySQLConnection(connection);
     }
   }
+
+  Future<List<Map<String, dynamic>>>
+  getAllDailyQualityCompositeApprovalReport() async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for get all approval reports.');
+        return [];
+      }
+
+      connection = connResult.connection;
+
+      // Query without date filter
+      const String baseQuery = """
+      SELECT 
+      *
+      FROM t_daily_quality_composite_fractionation_500_mt AS a
+      ORDER BY a.id ASC;
+    """;
+
+      final IResultSet result = await connection!.execute(baseQuery);
+
+      log(
+        'Fetched ${result.rows.length} Daily Quality Composite Fractionation Approval reports',
+      );
+
+      return result.rows.map((row) => row.assoc()).toList();
+    } catch (e) {
+      log('Error fetching all approval reports: $e');
+      return [];
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
+
+  Future<bool> updateApproveRejectToHeader({
+    required String id,
+    required String approvedBy,
+    required String status,
+    required String role,
+    String? remarks,
+  }) async {
+    MySQLConnection? connection;
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log('Failed to get MySQL connection for updateApproveRejectToHeader.');
+        return false;
+      }
+      connection = connResult.connection!;
+      String query;
+      final Map<String, dynamic> params = {
+        "id": id,
+        "approvedBy": approvedBy,
+        "approvedDate": DateTime.now(),
+        "status": status,
+        "remark": remarks,
+      };
+
+      if (AppRoles.leadQC.contains(role)) {
+        query = """
+          UPDATE $dailyQualityCompositeFractionationTable
+          SET prepared_status = :status, prepared_by = :approvedBy, prepared_date = :approvedDate, prepared_status_remarks = :remark
+          WHERE id = :id
+        """;
+      } else if (AppRoles.qualityControlManagerApproval.contains(role)) {
+        query = """
+          UPDATE $dailyQualityCompositeFractionationTable
+          SET checked_status = :status, checked_by = :approvedBy, checked_date = :approvedDate, checked_status_remarks = :remark
+          WHERE id = :id
+        """;
+      } else {
+        log('Invalid role provided for approval update: $role');
+        return false;
+      }
+
+      final result = await connection.execute(query, params);
+
+      log(
+        'Successfully updated approval status for Change Product Checklist ID: $id by $approvedBy ($role) with status: $status',
+      );
+      return result.affectedRows > BigInt.from(0);
+    } catch (e) {
+      log('Error updating approval status for Change Product Checklist: $e');
+      return false;
+    } finally {
+      try {
+        await closeMySQLConnection(connection);
+        log("Is still connected: ${connection?.connected}");
+      } catch (e) {
+        log('Error closing connection: $e');
+      }
+    }
+  }
 }

@@ -368,7 +368,7 @@ class DailyStorageTankAnalyticalMySQLService {
         "remark": remarks,
       };
 
-      if (AppRoles.leadProd.contains(role)) {
+      if (AppRoles.leadQC.contains(role)) {
         query = """
           UPDATE $dailyStorageTankAnalyticalReport
           SET prepared_status = :status, prepared_by = :approvedBy, prepared_date = :approvedDate, prepared_status_remarks = :remark

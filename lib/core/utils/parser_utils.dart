@@ -35,12 +35,17 @@ TimeOfDay? parseTimeOfDay(dynamic value) {
   return null;
 }
 
-String? formatTimeOfDay(TimeOfDay? time) {
+String? formatTimeOfDay(TimeOfDay? time, {bool showSecond = true}) {
   if (time == null) {
     return null;
   }
   // padLeft ensures that single-digit hours/minutes get a leading zero (e.g., 9 becomes '09')
   final hour = time.hour.toString().padLeft(2, '0');
   final minute = time.minute.toString().padLeft(2, '0');
-  return '$hour:$minute:00'; // We add ':00' for seconds to match the standard TIME format
+  if (showSecond) {
+    return '$hour:$minute:00';
+  } else {
+    return '$hour:$minute';
+  }
+  // We add ':00' for seconds to match the standard TIME format
 }

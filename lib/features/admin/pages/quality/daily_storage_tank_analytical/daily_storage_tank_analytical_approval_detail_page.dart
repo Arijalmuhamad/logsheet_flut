@@ -210,7 +210,7 @@ class _DailyStorageTankAnalyticalListDetailPageState
                           ),
                         ] else if (AppRoles.qualityControlManagerApproval
                             .contains(userProvider.currentUser?.role)) ...[
-                          // 👉 tambahkan widget khusus untuk role manager di sini, misalnya:
+                         
                           if (approvalItem?.preparedStatus == "Approved" &&
                               approvalItem?.approvedStatus == null) ...[
                             Text('Approved Status:'),

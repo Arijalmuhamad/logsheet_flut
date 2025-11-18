@@ -21,8 +21,9 @@ import 'package:logsheet_app/providers/quality/daily_quality_composite_fractiona
 import 'package:logsheet_app/providers/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_provider.dart';
 import 'package:provider/provider.dart';
 
-class DailyQualityCompositeFractionationListDetailPage extends StatefulWidget {
-  DailyQualityCompositeFractionationListDetailPage({
+class DailyQualityCompositeFractionationApprovalDetailPage
+    extends StatefulWidget {
+  DailyQualityCompositeFractionationApprovalDetailPage({
     super.key,
     required this.id,
   });
@@ -30,13 +31,13 @@ class DailyQualityCompositeFractionationListDetailPage extends StatefulWidget {
   String id;
 
   @override
-  State<DailyQualityCompositeFractionationListDetailPage> createState() =>
-      _DailyQualityCompositeFractionationListDetailPageState();
+  State<DailyQualityCompositeFractionationApprovalDetailPage> createState() =>
+      _DailyQualityCompositeFractionationApprovalDetailPageState();
 }
 
-class _DailyQualityCompositeFractionationListDetailPageState
-    extends State<DailyQualityCompositeFractionationListDetailPage> {
-  DailyQualityCompositeFractionationEntity? reportItem;
+class _DailyQualityCompositeFractionationApprovalDetailPageState
+    extends State<DailyQualityCompositeFractionationApprovalDetailPage> {
+  DailyQualityCompositeFractionationEntity? approvalItem;
   final TextEditingController remarkController = TextEditingController();
   @override
   void initState() {
@@ -44,11 +45,11 @@ class _DailyQualityCompositeFractionationListDetailPageState
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final item = context
           .read<DailyQualityCompositeFractionationProvider>()
-          .reportsList
+          .approvalList
           .firstWhere((element) => element.id == widget.id);
 
       setState(() {
-        reportItem = item;
+        approvalItem = item;
       });
     });
   }
@@ -103,7 +104,7 @@ class _DailyQualityCompositeFractionationListDetailPageState
                           _buildInfoCard(
                             'Date',
                             _formatDateString(
-                              reportItem?.transactionDate?.toIso8601String(),
+                              approvalItem?.transactionDate?.toIso8601String(),
                             ),
                           ),
                         ],
@@ -111,86 +112,101 @@ class _DailyQualityCompositeFractionationListDetailPageState
                     ),
 
                     _buildSection('General Information', [
-                      _buildDataRow('ID', reportItem?.id ?? ''),
+                      _buildDataRow('ID', approvalItem?.id ?? ''),
                     ]),
 
                     _buildSection('Raw Material', [
                       _buildDataRow(
                         'Crystalizer',
-                        reportItem?.crystalizer ?? '',
+                        approvalItem?.crystalizer ?? '',
                       ),
-                      _buildDataRow('M&I', reportItem?.rmMni.toString() ?? ''),
-                      _buildDataRow('IV', reportItem?.rmIv.toString() ?? ''),
+                      _buildDataRow(
+                        'M&I',
+                        approvalItem?.rmMni.toString() ?? '',
+                      ),
+                      _buildDataRow('IV', approvalItem?.rmIv.toString() ?? ''),
                       _buildDataRow(
                         'Colour R',
-                        reportItem?.rmColorR.toString() ?? '',
+                        approvalItem?.rmColorR.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour Y',
-                        reportItem?.rmColorY.toString() ?? '',
+                        approvalItem?.rmColorY.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour W',
-                        reportItem?.rmColorW.toString() ?? '',
+                        approvalItem?.rmColorW.toString() ?? '',
                       ),
 
                       _buildDataRow(
                         'Colour Y',
-                        reportItem?.rmColorB.toString() ?? '',
+                        approvalItem?.rmColorB.toString() ?? '',
                       ),
                     ]),
 
                     _buildSection('Finish Goods', [
-                      _buildDataRow('FFA', reportItem?.fgFfa.toString() ?? ''),
-                      _buildDataRow('M&I', reportItem?.fgMni.toString() ?? ''),
-                      _buildDataRow('IV', reportItem?.rmIv.toString() ?? ''),
+                      _buildDataRow(
+                        'FFA',
+                        approvalItem?.fgFfa.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'M&I',
+                        approvalItem?.fgMni.toString() ?? '',
+                      ),
+                      _buildDataRow('IV', approvalItem?.rmIv.toString() ?? ''),
                       _buildDataRow(
                         'Colour R',
-                        reportItem?.fgColorR.toString() ?? '',
+                        approvalItem?.fgColorR.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour Y',
-                        reportItem?.fgColorY.toString() ?? '',
+                        approvalItem?.fgColorY.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour W',
-                        reportItem?.fgColorW.toString() ?? '',
+                        approvalItem?.fgColorW.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour B',
-                        reportItem?.fgColorB.toString() ?? '',
+                        approvalItem?.fgColorB.toString() ?? '',
                       ),
-                      _buildDataRow('CP', reportItem?.fgCp.toString() ?? ''),
+                      _buildDataRow('CP', approvalItem?.fgCp.toString() ?? ''),
                       _buildDataRow(
                         'Clarity',
-                        reportItem?.fgCp.toString() ?? '',
+                        approvalItem?.fgCp.toString() ?? '',
                       ),
-                      _buildDataRow('To Tank', reportItem?.fgToTank ?? ''),
+                      _buildDataRow('To Tank', approvalItem?.fgToTank ?? ''),
                     ]),
 
                     _buildSection('By Product', [
-                      _buildDataRow('FFA', reportItem?.bpFfa.toString() ?? ''),
-                      _buildDataRow('M&I', reportItem?.bpMni.toString() ?? ''),
-                      _buildDataRow('IV', reportItem?.bpIv.toString() ?? ''),
-                      _buildDataRow('PV', reportItem?.bpPv.toString() ?? ''),
+                      _buildDataRow(
+                        'FFA',
+                        approvalItem?.bpFfa.toString() ?? '',
+                      ),
+                      _buildDataRow(
+                        'M&I',
+                        approvalItem?.bpMni.toString() ?? '',
+                      ),
+                      _buildDataRow('IV', approvalItem?.bpIv.toString() ?? ''),
+                      _buildDataRow('PV', approvalItem?.bpPv.toString() ?? ''),
                       _buildDataRow(
                         'Colour R',
-                        reportItem?.bpColorR.toString() ?? '',
+                        approvalItem?.bpColorR.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour Y',
-                        reportItem?.bpColorY.toString() ?? '',
+                        approvalItem?.bpColorY.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour W',
-                        reportItem?.bpColorW.toString() ?? '',
+                        approvalItem?.bpColorW.toString() ?? '',
                       ),
                       _buildDataRow(
                         'Colour B',
-                        reportItem?.bpColorB.toString() ?? '',
+                        approvalItem?.bpColorB.toString() ?? '',
                       ),
 
-                      _buildDataRow('To Tank', reportItem?.bpToTank ?? ''),
+                      _buildDataRow('To Tank', approvalItem?.bpToTank ?? ''),
                     ]),
 
                     _buildSection('Remarks', [
@@ -198,7 +214,7 @@ class _DailyQualityCompositeFractionationListDetailPageState
                         children: [
                           Expanded(
                             child: Text(
-                              reportItem?.remarks ?? '',
+                              approvalItem?.remarks ?? '',
                               softWrap: true,
                             ),
                           ),
@@ -213,8 +229,8 @@ class _DailyQualityCompositeFractionationListDetailPageState
                           userProvider.currentUser?.role,
                         )))
                       _buildSection('Approval Actions', [
-                        if (reportItem?.preparedStatus == "Approved" &&
-                            reportItem?.checkedStatus == "Approved") ...[
+                        if (approvalItem?.preparedStatus == "Approved" &&
+                            approvalItem?.checkedStatus == "Approved") ...[
                           Text(
                             "Checklist Approved",
                             style: TextStyle(
@@ -222,8 +238,8 @@ class _DailyQualityCompositeFractionationListDetailPageState
                               color: Colors.green,
                             ),
                           ),
-                        ] else if (reportItem?.preparedStatus == "Rejected" ||
-                            reportItem?.checkedStatus == "Rejected") ...[
+                        ] else if (approvalItem?.preparedStatus == "Rejected" ||
+                            approvalItem?.checkedStatus == "Rejected") ...[
                           Text(
                             "Checklist Rejected",
                             style: TextStyle(
@@ -231,11 +247,11 @@ class _DailyQualityCompositeFractionationListDetailPageState
                               color: Colors.red,
                             ),
                           ),
-                        ] else if (AppRoles.leadQC.contains(
-                          userProvider.currentUser?.role,
-                        )) ...[
-                          if (reportItem?.preparedStatus == null) ...[
-                            Text('Prepared Status:'),
+                        ] else if (AppRoles.qualityControlManagerApproval
+                            .contains(userProvider.currentUser?.role)) ...[
+                          if (approvalItem?.preparedStatus == "Approved" &&
+                              approvalItem?.checkedStatus == null) ...[
+                            Text('Approved Status:'),
                             SizedBox(height: 8.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -276,16 +292,14 @@ class _DailyQualityCompositeFractionationListDetailPageState
                                         if (isSuccess) {
                                           showSnackBar(
                                             "Berhasil Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
-
-                                          log("Sukses Approve");
-                                          if (!mounted) return;
                                           Navigator.of(this.context).pop();
+                                          log("Sukses Approve");
                                         } else {
                                           showSnackBar(
                                             "Gagal Approve Checklist",
-                                            context,
+                                            this.context,
                                           );
                                         }
                                       },
@@ -305,39 +319,25 @@ class _DailyQualityCompositeFractionationListDetailPageState
                                 ),
                               ],
                             ),
-                          ] else if (reportItem?.preparedStatus != null &&
-                              reportItem?.checkedStatus == null) ...[
+                          ] else if (approvalItem?.preparedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Manager Productions...",
+                              "Waiting Approval From Leader Productions...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
                             ),
                           ],
-                        ] else if (AppRoles.qualityControlManagerApproval
-                            .contains(userProvider.currentUser?.role)) ...[
-                          if (reportItem?.preparedStatus == null) ...[
+                        ] else if (AppRoles.leadQC.contains(
+                          userProvider.currentUser?.role,
+                        )) ...[
+                          if (approvalItem?.checkedStatus == null) ...[
                             Text(
-                              "Waiting Apprvoal From Leader QC...",
+                              "Waiting Apprvoal From Manager Productions...",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.orange,
                               ),
-                            ),
-                          ] else if (reportItem?.preparedStatus == "Approved" ||
-                              reportItem?.checkedStatus == "Rejected") ...[
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  "Checklist Prepared",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                         ],
@@ -431,107 +431,12 @@ class _DailyQualityCompositeFractionationListDetailPageState
       backgroundColor: Colors.white,
       elevation: 1,
       title: const Text(
-        'Change Product Detail',
+        'Detail',
         style: TextStyle(color: Color(0xFF655F5B), fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
       iconTheme: const IconThemeData(color: Colors.black),
-      actions: [
-        if (reportItem?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => DailyQualityCompositeFractionationEditPage(
-                        id: widget.id,
-                      ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit),
-          ),
-        if (reportItem?.preparedStatus == null)
-          IconButton(
-            onPressed: () async {
-              return _showDeleteConfirmationDialog(context);
-            },
-            icon: const Icon(Icons.delete_rounded, color: Colors.red),
-          ),
-      ],
-    );
-  }
-
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    // Simpan context utama ke variabel
-    final parentContext = context;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text(
-            'Delete Report',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'Are you sure you want to delete this report? This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed:
-                  () => Navigator.of(dialogContext).pop(), // tutup dialog
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () async {
-                Navigator.of(dialogContext).pop(); // tutup dialog dulu
-
-                final provider =
-                    parentContext
-                        .read<DailyQualityCompositeFractionationProvider>();
-
-                final isSuccess = await provider
-                    .deletedailyQualityCompositeFractionation(widget.id);
-
-                if (isSuccess) {
-                  if (parentContext.mounted) {
-                    ScaffoldMessenger.of(parentContext).showSnackBar(
-                      const SnackBar(
-                        content: Text('Report deleted successfully.'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                    Navigator.of(
-                      parentContext,
-                    ).pop(); // ✅ ini menutup halaman detail
-                  }
-                } else {
-                  if (parentContext.mounted) {
-                    ScaffoldMessenger.of(parentContext).showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to delete report.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
+      actions: [],
     );
   }
 
@@ -603,19 +508,21 @@ class _DailyQualityCompositeFractionationListDetailPageState
                           );
                           return;
                         }
+
                         Navigator.of(context).pop();
+
                         bool isSuccess = await _approveRejectReport("Rejected");
                         if (isSuccess) {
-                          Navigator.of(
-                            this.context,
-                          ).pop(); // Tutup bottom sheet
                           showSnackBar(
                             "Berhasil Reject Checklist",
                             this.context,
                           );
+                          Navigator.of(
+                            this.context,
+                          ).pop(); // Tutup bottom sheet
                         } else {
-                          Navigator.of(this.context).pop();
                           showSnackBar("Gagal Reject Checklist", this.context);
+                          Navigator.of(this.context).pop();
                         }
                       },
                       style: ElevatedButton.styleFrom(
