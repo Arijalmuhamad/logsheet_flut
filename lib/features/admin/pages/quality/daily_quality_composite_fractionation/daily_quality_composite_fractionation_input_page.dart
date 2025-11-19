@@ -34,6 +34,7 @@ class DailyQualityCompositeFractionationInputPage extends StatefulWidget {
 class _DailyQualityCompositeFractionationInputPageState
     extends State<DailyQualityCompositeFractionationInputPage> {
   String? selectedTankSource;
+  String? selectedWorkCenter;
   int? selectedHour;
   String? selectedFgToTank;
   String? selectedBpToTank;
@@ -85,6 +86,7 @@ class _DailyQualityCompositeFractionationInputPageState
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await context.read<ValueProvider>().fetchTankSourceLists();
       // await context.read<ProductProvider>().fetchProducts();
+      await context.read<ValueProvider>().fetchWorkCenterFractLists();
     });
   }
 
@@ -146,6 +148,99 @@ class _DailyQualityCompositeFractionationInputPageState
                     Text(DateFormat('yyyy-MM-dd').format(DateTime.now())),
                   ],
                 ),
+                const SizedBox(height: 8),
+
+                Consumer<ValueProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isWorkCenterFractLoading) {
+                      // Return a disabled dropdown with a loading indicator or message
+                      return DropdownButtonFormField<String>(
+                        value: null,
+                        items: [],
+                        onChanged: null, // Disable the dropdown
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Loading Work Center...',
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                    if (provider.workCenterFractLists.isEmpty) {
+                      return TextFormField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFF0ECE9),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'Work Center tidak ditemukan.',
+                          prefixIcon: const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Icon(Icons.warning_amber_rounded),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () {
+                              context
+                                  .read<ValueProvider>()
+                                  .fetchWorkCenterFractLists();
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                    return DropdownButtonFormField<String>(
+                      value: selectedWorkCenter,
+                      items:
+                          provider.workCenterFractLists.map((machine) {
+                            return DropdownMenuItem<String>(
+                              value: machine.code,
+                              child: Text(
+                                "${machine.code} | ${machine.name}",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedWorkCenter = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF0ECE9),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        hintText: 'Pilih Work Center',
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: SvgPicture.asset(
+                            'assets/icons/oil-refinery-tanks.svg',
+                            height: 24,
+                            width: 24,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 const SizedBox(height: 8),
 
                 InkWell(
@@ -272,17 +367,30 @@ class _DailyQualityCompositeFractionationInputPageState
                 const SizedBox(height: 24),
                 _buildFormSection(),
                 const SizedBox(height: 24),
-                CustomSaveButton(
-                  onPressed: () async {
-                    final bool isSuccess;
-                    isSuccess =
-                        await _insertDailyQualityCompositeFractionationReport();
-                    if (isSuccess) {
-                      showSnackBar("Berhasil menyimpan data", context);
-                      Navigator.of(context).pop();
-                    } else {
-                      showSnackBar("Gagal meyimpan data", context);
-                    }
+                Consumer<DailyQualityCompositeFractionationProvider>(
+                  builder: (
+                    BuildContext context,
+                    DailyQualityCompositeFractionationProvider provider,
+                    Widget? child,
+                  ) {
+                    return (provider.isLoadingInput)
+                        ? Center(child: CircularProgressIndicator())
+                        : CustomSaveButton(
+                          onPressed: () async {
+                            final bool isSuccess;
+                            isSuccess =
+                                await _insertDailyQualityCompositeFractionationReport();
+                            if (isSuccess) {
+                              showSnackBar(
+                                "Berhasil menyimpan data",
+                                this.context,
+                              );
+                              Navigator.of(this.context).pop();
+                            } else {
+                              showSnackBar("Gagal meyimpan data", this.context);
+                            }
+                          },
+                        );
                   },
                 ),
               ],
@@ -804,6 +912,7 @@ class _DailyQualityCompositeFractionationInputPageState
                 ? TimeOfDay(hour: selectedHour!, minute: 0)
                 : null,
         crystalizer: selectedTankSource,
+        workCenter: selectedWorkCenter,
         rmMni: parseDouble(rmMniController.text),
         rmIv: parseDouble(rmIvController.text),
         rmColorR: parseDouble(rmColorRController.text),

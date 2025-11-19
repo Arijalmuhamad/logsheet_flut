@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/data/remote/maintenance/change_product_checklist/maintenance_change_product_checklist_report_entity.dart';
 import 'package:logsheet_app/data/remote/master/user_entity.dart';
 import 'package:logsheet_app/data/remote/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_entity.dart';
@@ -104,6 +105,14 @@ class _DailyQualityCompositeFractionationReportListDetailPageState
                             _formatDateString(
                               reportItem?.transactionDate?.toIso8601String(),
                             ),
+                          ),
+                          _buildInfoCard(
+                            'Time',
+                            formatTimeOfDay(
+                                  reportItem?.time,
+                                  showSecond: false,
+                                ) ??
+                                '',
                           ),
                         ],
                       ),

@@ -105,10 +105,15 @@ class _DailyQualityCompositeFractionationListPageState
                               return _cardItem(
                                 id: item.id ?? '',
                                 date: item.transactionDate?.toString() ?? '',
-                                time: formatTimeOfDay(item.time).toString(),
+                                time:
+                                    formatTimeOfDay(
+                                      item.time,
+                                      showSecond: false,
+                                    ).toString(),
                                 entryBy: item.entryBy ?? '',
                                 tank: item.crystalizer,
                                 role: role,
+                                workCenter: item.workCenter,
                               );
                             },
                           );
@@ -170,7 +175,8 @@ class _DailyQualityCompositeFractionationListPageState
   Widget _cardItem({
     required String id,
     required String date,
-    required String time,
+    required String? time,
+    required String? workCenter,
     required String? tank,
     required String? entryBy,
     required String? role,
@@ -233,8 +239,14 @@ class _DailyQualityCompositeFractionationListPageState
                     "${_formatDateString(date)}",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
-                  SizedBox(width: 16),
-
+                  SizedBox(width: 8),
+                  const Icon(Icons.av_timer, size: 18, color: Colors.grey),
+                  SizedBox(width: 8),
+                  Text(
+                    "$time",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(width: 8),
                   const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
                   Text(
@@ -247,23 +259,24 @@ class _DailyQualityCompositeFractionationListPageState
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(
-                    Icons.home_work_rounded,
-                    size: 18,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(width: 8),
                   const Icon(Icons.person, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(
                     'Entried by: $entryBy',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
-
-                  const Icon(Icons.av_timer, size: 18, color: Colors.grey),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.home_work_rounded,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
                   SizedBox(width: 8),
                   Text(
-                    "$time",
+                    'Work Center: $workCenter',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

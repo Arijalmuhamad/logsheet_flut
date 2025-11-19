@@ -542,14 +542,14 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "Version 1.0.18",
+                            "Version 1.0.19",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
                             ),
                           ),
                           Text(
-                            "Build 2025-11-17",
+                            "Build 2025-11-18",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],

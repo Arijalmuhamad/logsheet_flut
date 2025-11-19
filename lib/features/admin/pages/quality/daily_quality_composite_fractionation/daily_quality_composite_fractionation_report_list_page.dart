@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logsheet_app/core/utils/parser_utils.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_detail_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
@@ -39,7 +40,10 @@ class _DailyQualityCompositeFractionationReportListPageState
         context
             .read<DataFormNoProvider>()
             .dataFormNoList
-            .where((form) => form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt")
+            .where(
+              (form) =>
+                  form.isMenu == "Daily_Quality_Composite_Fractionation_500_mt",
+            )
             .first;
     return AppBar(title: Text("Report List (${formData!.code})"), actions: [
         
@@ -74,12 +78,17 @@ class _DailyQualityCompositeFractionationReportListPageState
                               return _cardItem(
                                 id: item.id ?? '',
                                 date: item.transactionDate?.toString() ?? '',
+                                time: formatTimeOfDay(
+                                  item.time,
+                                  showSecond: false,
+                                ),
                                 entryBy: item.entryBy ?? '',
                                 oilType: '',
                                 tank: item.crystalizer ?? '',
                                 role: role,
                                 approvedStatus: item.checkedStatus ?? '',
                                 preparedStatus: item.preparedStatus ?? '',
+                                workCenter: item.workCenter,
                               );
                             },
                           );
@@ -141,10 +150,12 @@ class _DailyQualityCompositeFractionationReportListPageState
   Widget _cardItem({
     required String id,
     required String date,
+    required String? time,
     required String? tank,
     required String? oilType,
     required String? entryBy,
     required String? role,
+    required String? workCenter,
     required String approvedStatus,
     required String preparedStatus,
     Color? badgeColor,
@@ -169,7 +180,10 @@ class _DailyQualityCompositeFractionationReportListPageState
           context,
           MaterialPageRoute(
             builder:
-                (context) => DailyQualityCompositeFractionationReportListDetailPage(id: id),
+                (context) =>
+                    DailyQualityCompositeFractionationReportListDetailPage(
+                      id: id,
+                    ),
           ),
         ).then((_) {
           // Refresh the list when returning from the detail page
@@ -232,8 +246,15 @@ class _DailyQualityCompositeFractionationReportListPageState
                     "${_formatDateString(date)}",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: 8),
 
+                  const Icon(Icons.av_timer, size: 18, color: Colors.grey),
+                  SizedBox(width: 8),
+                  Text(
+                    "$time",
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                  SizedBox(width: 8),
                   const Icon(Icons.storage, size: 18, color: Colors.grey),
                   SizedBox(width: 8),
                   Text(
@@ -246,12 +267,6 @@ class _DailyQualityCompositeFractionationReportListPageState
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(
-                    Icons.home_work_rounded,
-                    size: 18,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(width: 8),
                   Text(
                     "$oilType",
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
@@ -260,6 +275,20 @@ class _DailyQualityCompositeFractionationReportListPageState
                   const SizedBox(width: 8),
                   Text(
                     'Entried by: $entryBy',
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.home_work_rounded,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Work Center: $workCenter',
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ],

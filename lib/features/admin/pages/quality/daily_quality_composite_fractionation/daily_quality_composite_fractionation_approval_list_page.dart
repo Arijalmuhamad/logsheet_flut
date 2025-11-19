@@ -68,6 +68,7 @@ class _DailyQualityCompositeFractionationApprovalListPageState
                       checkedStatus: item.checkedStatus ?? '',
                       tankNo: item.crystalizer,
                       time: formatTimeOfDay(item.time, showSecond: false) ?? '',
+                      workCenter: item.workCenter,
                     );
                   },
                 ),
@@ -117,6 +118,7 @@ class _DailyQualityCompositeFractionationApprovalListPageState
     required String? preparedStatus,
     required String? checkedStatus,
     required String? tankNo,
+    required String? workCenter,
 
     IconData? icon,
     Color? iconColor,
@@ -194,7 +196,8 @@ class _DailyQualityCompositeFractionationApprovalListPageState
                     Text('Time: $time', style: const TextStyle(fontSize: 14)),
                     const SizedBox(height: 4),
                     Text('Tank: $tankNo', style: const TextStyle(fontSize: 14)),
-
+                     const SizedBox(height: 4),
+                    Text('Work Center: $workCenter', style: const TextStyle(fontSize: 14)),
                     const SizedBox(height: 4),
                     Text(
                       'Status: $showedStatus',

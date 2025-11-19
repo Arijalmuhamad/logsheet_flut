@@ -383,7 +383,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.18"), Text("Build 2025-11-17")],
+              children: [Text("Version 1.0.19"), Text("Build 2025-11-8")],
             ),
           ],
         ),
@@ -635,7 +635,7 @@ class _UserHomePageState extends State<UserHomePage> {
             ExpansionTile(
               leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
               title: Text(
-                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionationA?.code})',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -648,7 +648,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'List\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                      'List\n(${formDailyQualityCompositeFractionationA?.code})',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -663,7 +663,7 @@ class _UserHomePageState extends State<UserHomePage> {
                 _buildDrawerItem(
                   icon: Icons.list_alt,
                   title:
-                      'Reports\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                      'Reports\n(${formDailyQualityCompositeFractionationA?.code})',
                   onTap: () {
                     Navigator.push(
                       context,

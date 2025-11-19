@@ -865,6 +865,7 @@ class _DailyQualityCompositeFractionationEditPageState
                 ? TimeOfDay(hour: selectedHour!, minute: 0)
                 : null,
         crystalizer: selectedTankSource,
+        workCenter: selectedWorkCenter,
         rmMni: parseDouble(rmMniController.text),
         rmIv: parseDouble(rmIvController.text),
         rmColorR: parseDouble(rmColorRController.text),
