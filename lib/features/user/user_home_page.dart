@@ -31,6 +31,7 @@ import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_gl
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
@@ -687,6 +688,36 @@ class _UserHomePageState extends State<UserHomePage> {
                         builder:
                             (_) =>
                                 DailyQualityCompositeFractionationApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Analytical Result Of Incoming Material By Vessel\n(${formDailyQualityCompositeFractionationA?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(FQOC-009)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByVesselInputPage(),
                       ),
                     );
                   },
