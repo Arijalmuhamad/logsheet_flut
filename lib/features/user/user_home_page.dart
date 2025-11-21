@@ -21,9 +21,25 @@ import 'package:logsheet_app/features/admin/pages/logsheet/deodorizing_filtratio
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_apprroval_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/logsheet/pretreatment_bleaching_filtration/pretreatment_bleaching_filtration_report_lists_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_change_product/maintenance_change_product_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_approval_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_input_page.dart';
 import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_lamp_glass/maintenance_lamps_glass_report_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/maintenace/maintenance_startup_production/maintenance_startup_production_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/analytical_result_incoming_material_by_vessel/analytical_result_incoming_material_by_vessel_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_quality_composite_fractionation/daily_quality_composite_fractionation_report_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_approval_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_input_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_list_page.dart';
+import 'package:logsheet_app/features/admin/pages/quality/daily_storage_tank_analytical/daily_storage_tank_analytical_report_list_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_list_production_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_report_list_production_page.dart';
@@ -34,7 +50,7 @@ import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 import '../auth/login_page.dart';
 
@@ -56,7 +72,11 @@ class _UserHomePageState extends State<UserHomePage> {
       formDailyProductionFractionation,
       formDailyProductionRefinery,
       formDryFractionation,
-      formChecklistLampsAndGlassControl;
+      formChecklistLampsAndGlassControl,
+      formChangeProductChecklist,
+      formStartupProductChecklist,
+      formDailyStorageTankAnalytical,
+      formDailyQualityCompositeFractionationA;
 
   Future<void> _logout() async {
     final shouldLogout = await showDialog<bool>(
@@ -250,6 +270,50 @@ class _UserHomePageState extends State<UserHomePage> {
                   form.isActive == "T",
             )
             .first;
+    formChangeProductChecklist =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Change_Product_Checklist" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formStartupProductChecklist =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Start_Up_Produksi_Checklist" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formDailyStorageTankAnalytical =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu == "Daily_Storage_Tank_Analytical" &&
+                  form.isActive == "T",
+            )
+            .first;
+
+    formDailyQualityCompositeFractionationA =
+        context
+            .read<DataFormNoProvider>()
+            .dataFormNoList
+            .where(
+              (form) =>
+                  form.isMenu ==
+                      "Daily_Quality_Composite_Fractionation_500_mt" &&
+                  form.isActive == "T",
+            )
+            .first;
 
     // Daily_Production_Refinery_Fractination
     final userRole = widget.userEntity.role;
@@ -320,7 +384,7 @@ class _UserHomePageState extends State<UserHomePage> {
             SizedBox(height: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: [Text("Version 1.0.13"), Text("Build 2025-10-9")],
+              children: [Text("Version 1.0.19"), Text("Build 2025-11-8")],
             ),
           ],
         ),
@@ -453,12 +517,67 @@ class _UserHomePageState extends State<UserHomePage> {
           if (AppRoles.qualityControlAccess.contains(userRole)) ...[
             _buildDrawerSubheader("Quality Control"),
             ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Daily Storage Tank Analytical\n(${formDailyStorageTankAnalytical?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DailyStorageTankAnalyticalListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Report\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'Approval\n(${formDailyStorageTankAnalytical?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyStorageTankAnalyticalApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
               leading: const Icon(
                 Icons.factory_outlined,
                 color: Color(0xFF655F5B),
               ),
               title: Text(
-                '${formQualityRefineryQC?.treeMenu} \n${formQualityRefineryQC?.name} ',
+                '${formQualityRefineryQC?.treeMenu} \n(${formQualityRefineryQC?.name}) ',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -507,6 +626,98 @@ class _UserHomePageState extends State<UserHomePage> {
                               userName: user.username,
                               role: user.role,
                             ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Daily Quality Composite Fractionation\n(${formDailyQualityCompositeFractionationA?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'List\n(${formDailyQualityCompositeFractionationA?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyQualityCompositeFractionationListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Reports\n(${formDailyQualityCompositeFractionationA?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                DailyQualityCompositeFractionationReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title:
+                      'Approval\n(${formDailyQualityCompositeFractionationA?.code})(A)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                DailyQualityCompositeFractionationApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            ExpansionTile(
+              leading: const Icon(Icons.analytics, color: Color(0xFF655F5B)),
+              title: Text(
+                'Analytical Result Of Incoming Material By Vessel\n(${formDailyQualityCompositeFractionationA?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List\n(FQOC-009)',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                AnalyticalResultIncomingMaterialByVesselInputPage(),
                       ),
                     );
                   },
@@ -715,145 +926,6 @@ class _UserHomePageState extends State<UserHomePage> {
               ],
             ),
           ],
-
-          // Daily Productions
-          if (AppRoles.logsheetAccess.contains(userRole)) ...[
-            _buildDrawerSubheader("Daily Production"),
-            ExpansionTile(
-              leading: const Icon(
-                Icons.article_rounded,
-                color: Color(0xFF655F5B),
-              ),
-              title: const Text(
-                'Refinery',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                // Manager-only Approval item
-                _buildDrawerItem(
-                  icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionRefinery?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyProductionRefineryListPage(
-                              dataForm: formDailyProductionRefinery!,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
-                  _buildDrawerItem(
-                    icon: Icons.check_circle_outline,
-                    title: 'Approval (${formDailyProductionRefinery?.name})',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => DailyProductionRefineryApprovalListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                _buildDrawerItem(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDailyProductionRefinery?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyProductionRefineryReportListPage(
-                              userName: user.username,
-                              role: userRole,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            ExpansionTile(
-              leading: const Icon(
-                Icons.article_rounded,
-                color: Color(0xFF655F5B),
-              ),
-              title: const Text(
-                'Fractionation',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              childrenPadding: const EdgeInsets.only(left: 20.0),
-              iconColor: const Color(0xFFAB2F2B),
-              collapsedIconColor: Colors.grey,
-              children: [
-                // Manager-only Approval item
-                _buildDrawerItem(
-                  icon: Icons.list_alt_outlined,
-                  title: 'List (${formDailyProductionFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyProductionFractionationListPage(
-                              formData: formDailyProductionFractionation!,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
-                  _buildDrawerItem(
-                    icon: Icons.check_circle_outline,
-                    title:
-                        'Approval (${formDailyProductionFractionation?.name})',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) =>
-                                  DailyProductionFractionationApprovalListPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-                _buildDrawerItem(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Reports (${formDailyProductionFractionation?.name})',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => DailyProductionFractionationReportListPage(
-                              userName: user.username,
-                              role: userRole,
-                            ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-
-          // Dry Fractionation
           if (AppRoles.logsheetAccess.contains(userRole)) ...[
             ExpansionTile(
               leading: const Icon(
@@ -918,7 +990,143 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
           ],
 
-          // Show Maintenance section for all roles (as per your original code)
+          // Daily Productions
+          if (AppRoles.logsheetAccess.contains(userRole)) ...[
+            _buildDrawerSubheader("Daily Production"),
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: Text(
+                'Refinery\n(${formDailyProductionRefinery?.name})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List (${formDailyProductionRefinery?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionRefineryListPage(
+                              dataForm: formDailyProductionRefinery!,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formDailyProductionRefinery?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => DailyProductionRefineryApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDailyProductionRefinery?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionRefineryReportListPage(
+                              userName: user.username,
+                              role: userRole,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              leading: const Icon(
+                Icons.article_rounded,
+                color: Color(0xFF655F5B),
+              ),
+              title: Text(
+                'Fractionation\n(${formDailyProductionFractionation?.name})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Manager-only Approval item
+                _buildDrawerItem(
+                  icon: Icons.list_alt_outlined,
+                  title: 'List (${formDailyProductionFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionFractionationListPage(
+                              formData: formDailyProductionFractionation!,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.productionManagerApproval.contains(userRole)) ...[
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title:
+                        'Approval (${formDailyProductionFractionation?.name})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  DailyProductionFractionationApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Reports (${formDailyProductionFractionation?.name})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => DailyProductionFractionationReportListPage(
+                              userName: user.username,
+                              role: userRole,
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+          // Show Maintenance section for all roles
           _buildDrawerSubheader("Maintenance"),
           ExpansionTile(
             leading: const Icon(
@@ -980,6 +1188,128 @@ class _UserHomePageState extends State<UserHomePage> {
               ),
             ],
           ),
+          if (AppRoles.productionQualityAccess.contains(userRole)) ...[
+            ExpansionTile(
+              leading: const Icon(
+                Icons.change_circle_outlined,
+                color: Color(0xFF655F5B),
+              ),
+              title: Text(
+                'Change Product Checklist\n(${formChangeProductChecklist?.code})',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              childrenPadding: const EdgeInsets.only(left: 20.0),
+              iconColor: const Color(0xFFAB2F2B),
+              collapsedIconColor: Colors.grey,
+              children: [
+                // Show Approval only to Managers and Leads (you can adjust roles here)
+                _buildDrawerItem(
+                  icon: Icons.list_alt,
+                  title: 'List (${formChangeProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaintenanceChangeProductListPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Report (${formChangeProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => MaintenanceChangeProductReportListPage(),
+                      ),
+                    );
+                  },
+                ),
+                if (AppRoles.managerProd.contains(userRole))
+                  _buildDrawerItem(
+                    icon: Icons.check_circle_outline,
+                    title: 'Approval (${formChangeProductChecklist?.code})',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => MaintenanceChangeProductApprovalListPage(),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ],
+
+          ExpansionTile(
+            leading: const Icon(
+              Icons.arrow_circle_up_rounded,
+              color: Color(0xFF655F5B),
+            ),
+            title: Text(
+              'StartUp Product Checklist\n(${formStartupProductChecklist?.code})',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            childrenPadding: const EdgeInsets.only(left: 20.0),
+            iconColor: const Color(0xFFAB2F2B),
+            collapsedIconColor: Colors.grey,
+            children: [
+              _buildDrawerItem(
+                icon: Icons.list_alt,
+                title: 'List\n(${formStartupProductChecklist?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MaintenanceStartupProductionListPage(),
+                    ),
+                  );
+                },
+              ),
+
+              _buildDrawerItem(
+                icon: Icons.receipt_long_outlined,
+                title: 'Report\n(${formStartupProductChecklist?.code})',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => MaintenanceStartupProductionReportListPage(),
+                    ),
+                  );
+                },
+              ),
+              if (AppRoles.managerProd.contains(userRole))
+                _buildDrawerItem(
+                  icon: Icons.check_circle_outline,
+                  title: 'Approval\n(${formStartupProductChecklist?.code})',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) =>
+                                MaintenanceStartupProductionApprovalListPage(),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFFAB2F2B)),

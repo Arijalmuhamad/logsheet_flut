@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/production/quality_approval_detail_production_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_production_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityApprovalListProductionPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _QualityApprovalListProductionPageState
     final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
 
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context
+      (_) async => await context
           .read<QualityReportProductionProvider>()
           .fetchReportsForManager(plantCode),
     );
@@ -84,11 +84,11 @@ class _QualityApprovalListProductionPageState
               children: [
                 Text('Error: ${provider.errorMessage}'),
                 OutlinedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final plantCode =
                         context.read<PlantProvider>().currentPlant?.code ?? "";
 
-                    provider.fetchReportsForManager(plantCode);
+                    await provider.fetchReportsForManager(plantCode);
                   },
                   child: const Text("Refresh"),
                 ),

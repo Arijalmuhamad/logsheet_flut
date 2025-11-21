@@ -1,16 +1,52 @@
-# logsheet_app
+# Logsheet Automation Flutter Mobile Application
 
-A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Logsheet Application adalah aplikasi pencatatan hasil dari pengolahan minyak dari pabrik Downstream dan pembuatan reporting.
 
-A few resources to get you started if this is your first Flutter project:
+## Requirements
+* Flutter SDK : >=3.32.0
+* Dart SDK: >=3.8.0 <4.0.0
+* Android Studio / VS Code
+* Git CLI / GitHub Desktop
+* Android Emulator / Physical Device
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Langkah Instalasi Project
+### 1. GitHub Clone Repository
+```
+git clone https://github.com/AlvinHartono/logsheet_flut.git
+cd logsheet_flut
+flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 2. Konfigurasi Environment
+Tambah/Paste ```.env``` file di root project ```/logsheet_flut```
+```
+DB_HOST=HOST_NAME
+DB_PORT=PORT_NUMBER
+DB_NAME=DATABASE_NAME
+DB_USER=DATANASE_USER
+DB_PASSWORD=DATABASE_PASSWORD
+```
+
+### 3. Menjalankan Project
+Untuk menjalankan aplikasi dapat menggunakan command
+```
+flutter run
+```
+atau dengan shortcut ```fn + f5``` di VSCode.
+> Pastikan bahwa file key.properties telah dimasukkan ke dalam project dan terletak di logsheet_flut/android/
+
+### 4. Build untuk Production
+Android:
+```
+flutter build apk --release
+```
+> Pastikan bahwa file upload-keystore.jks telah dimasukkan ke dalam project dan terletak di logsheet_flut/android/app/
+
+>File .env, key.properties, dan upload-keystore.jks berisi kredensial sensitif.
+Jika Anda belum memiliki file tersebut, silakan hubungi developer untuk mendapatkan file tersebut dan panduan konfigurasi lebih lanjut melalui kontak resmi proyek atau tim pengembang.
+
+
+### Untuk Dokumentasi lebih lanjut: [Technical Documentation](https://doc.clickup.com/90181965755/p/h/2kzm75xv-758/38480a8c88eaa69/2kzm75xv-758)

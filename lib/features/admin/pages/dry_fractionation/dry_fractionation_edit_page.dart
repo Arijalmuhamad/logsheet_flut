@@ -13,6 +13,7 @@ import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
 import 'package:logsheet_app/providers/dry_fractionation/dry_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -65,7 +66,7 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
     // Dropdowns & Time Pickers
     selectedShift = entity.shift;
     selectedWorkCenter = entity.workCenter;
-    selectedOilType = entity.oilType;
+    selectedOilType = entity.oilTypeId;
     selectedInitialTank = entity.initialTank;
     fillingStartTime = entity.fillingStartTime;
 
@@ -229,21 +230,21 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Consumer<ValueProvider>(
+            child: Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   return _buildLoadingDropdown('Loading Oil Types...');
                 }
-                if (provider.oilTypeLists.isEmpty) {
+                if (provider.productFractionationList.isEmpty) {
                   return _buildEmptyDropdown('Oil Types tidak ditemukan.');
                 }
                 return DropdownButtonFormField<String>(
                   value: selectedOilType,
                   items:
-                      provider.oilTypeLists.map((oil) {
+                      provider.productFractionationList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name),
+                          value: oil.id,
+                          child: Text("${oil.rawMaterial}"),
                         );
                       }).toList(),
                   onChanged: (value) {
@@ -524,7 +525,7 @@ class _DryFractionationEditPageState extends State<DryFractionationEditPage> {
     try {
       final updatedEntity = widget.entity.copyWith(
         shift: selectedShift,
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         crystalizier: crystalizierController.text,
         fillingStartTime: fillingStartTime,
         fillingEndTime: fillingEndTime,

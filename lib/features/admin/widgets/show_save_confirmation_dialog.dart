@@ -8,15 +8,13 @@ Future<void> showSaveConfirmationDialog<T>(
   String title = "Konfirmasi Input",
   String content = "Apakah Anda Yakin?",
 }) async {
-  final provider = Provider.of<T>(context, listen: false);
-  bool isLoading = providerSelector(provider);
-
   await showDialog(
     context: context,
     barrierDismissible: false,
     builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
+      return Consumer<T>(
+        builder: (context, provider, _) {
+          final isLoading = providerSelector(provider);
           return AlertDialog(
             title: Text(title),
             content: Text(content),
@@ -30,19 +28,20 @@ Future<void> showSaveConfirmationDialog<T>(
                         },
                 child: const Text("Cancel"),
               ),
-              isLoading
-                  ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                  : TextButton(
-                    onPressed: () async {
-                      await onConfirm();
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
-                    child: const Text("Yes"),
-                  ),
+              TextButton(
+                onPressed: () async {
+                  await onConfirm();
+                  if (context.mounted) Navigator.of(context).pop();
+                },
+                child:
+                    isLoading
+                        ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Text("Yes"),
+              ),
             ],
           );
         },

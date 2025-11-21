@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/core/database/mysql/mysql_client.dart';
 import 'package:logsheet_app/core/utils/app_roles.dart';
@@ -88,57 +89,282 @@ class DeodorizingFiltrationMySQLService {
       final Map<String, dynamic> params = {};
 
       switch (role) {
-        case 'LEAD' || 'LEAD_PROD':
+      
           // Query untuk Shift Leader: Hanya bisa melihat logsheet dari shift yang dipegangnya.
-          baseQuery = """
-            SELECT
-              t.*
-            FROM
-              t_deodorizing_filtration t
-            JOIN
-              m_roles_shift_prepared rs ON t.shift = rs.shift_code
-            WHERE
-              rs.username = :username AND rs.isactive = :is_active AND t.plant = :plantCode AND t.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (t.flag IS NULL OR t.flag = 'T')
-          """;
-
           // baseQuery = """
-          // SELECT * FROM t_deodorizing_filtration WHERE isactive = :is_active AND plant = :plantCode AND posting_date >= CURRENT_DATE - INTERVAL '7' DAY
+          //   SELECT 
+          //       a.id,
+          //       a.company,
+          //       a.plant,
+          //       a.transaction_date,
+          //       a.posting_date,
+          //       a.refinery_machine,
+          //       a.time,
+          //       a.oil_type AS oil_type_id,
+          //       b.raw_material AS oil_type,
+          //       a.shift,
+          //       a.fit701_bpo,
+          //       a.d701_vacum,
+          //       a.d701_td701,
+          //       a.e702,
+          //       a.thermopac_inlet,
+          //       a.thermopac_outlet,
+          //       a.d702_inlet,
+          //       a.d702_outlet,
+          //       a.d702_vacum,
+          //       a.sparging_a,
+          //       a.sparging_b,
+          //       a.e730_inlet,
+          //       a.steam_inlet,
+          //       a.pish_706,
+          //       a.tiwh_706,
+          //       a.f702_a,
+          //       a.f702_b,
+          //       a.f702_c,
+          //       a.oil_type_fg AS oil_type_fg_id,
+          //       b.finish_good AS oil_type_fg,
+          //       a.fit704_rpo,
+          //       a.e704,
+          //       a.oil_type_bp AS oil_type_bp_id,
+          //       b.by_product AS oil_type_bp,
+          //       a.fit_705_pfad,
+          //       a.e705,
+          //       a.clarity,
+          //       a.remarks,
+          //       a.flag,
+          //       a.entry_by,
+          //       a.entry_date,
+          //       a.prepared_by,
+          //       a.prepared_date,
+          //       a.prepared_status,
+          //       a.prepared_status_remarks,
+          //       a.checked_by,
+          //       a.checked_date,
+          //       a.checked_status,
+          //       a.checked_status_remarks,
+          //       a.updated_by,
+          //       a.updated_date,
+          //       a.form_no,
+          //       a.date_issued,
+          //       a.revision_no,
+          //       a.revision_date
+          //   FROM 
+          //       t_deodorizing_filtration AS a
+          //   JOIN 
+          //       m_product AS b ON a.oil_type = b.id
+          //   WHERE
+          //      a.plant = :plantCode AND a.posting_date >= CURRENT_DATE - INTERVAL '7' DAY AND (a.flag IS NULL OR a.flag = 'T')
           // """;
-          params["username"] = username;
-          params["is_active"] = "T";
-          params["plantCode"] = plantCode;
-          break;
 
-        case 'OPR' || 'OPR_PROD':
+          // // baseQuery = """
+          // // SELECT * FROM t_deodorizing_filtration WHERE isactive = :is_active AND plant = :plantCode AND posting_date >= CURRENT_DATE - INTERVAL '7' DAY
+          // // """;
+          // params["plantCode"] = plantCode;
+          // break;
+
+        case 'OPR' || 'OPR_PROD' ||'LEAD' || 'LEAD_PROD' || 'MGR' || 'MGR_PROD' || 'ADM':
           // Query untuk Operator: Dapat melihat semua logsheet di plant-nya.
           baseQuery = """
-          SELECT
-            *
-          FROM
-            t_deodorizing_filtration
-          WHERE plant = :plantCode
+          SELECT 
+                a.id,
+                a.company,
+                a.plant,
+                a.transaction_date,
+                a.posting_date,
+                a.refinery_machine,
+                a.time,
+                a.oil_type AS oil_type_id,
+                b.raw_material AS oil_type,
+                a.shift,
+                a.fit701_bpo,
+                a.d701_vacum,
+                a.d701_td701,
+                a.e702,
+                a.thermopac_inlet,
+                a.thermopac_outlet,
+                a.d702_inlet,
+                a.d702_outlet,
+                a.d702_vacum,
+                a.sparging_a,
+                a.sparging_b,
+                a.e730_inlet,
+                a.steam_inlet,
+                a.pish_706,
+                a.tiwh_706,
+                a.f702_a,
+                a.f702_b,
+                a.f702_c,
+                a.oil_type_fg AS oil_type_fg_id,
+                b.finish_good AS oil_type_fg,
+                a.fit704_rpo,
+                a.e704,
+                a.oil_type_bp AS oil_type_bp_id,
+                b.by_product AS oil_type_bp,
+                a.fit_705_pfad,
+                a.e705,
+                a.clarity,
+                a.remarks,
+                a.flag,
+                a.entry_by,
+                a.entry_date,
+                a.prepared_by,
+                a.prepared_date,
+                a.prepared_status,
+                a.prepared_status_remarks,
+                a.checked_by,
+                a.checked_date,
+                a.checked_status,
+                a.checked_status_remarks,
+                a.updated_by,
+                a.updated_date,
+                a.form_no,
+                a.date_issued,
+                a.revision_no,
+                a.revision_date
+            FROM 
+                t_deodorizing_filtration AS a
+            JOIN 
+                m_product AS b ON a.oil_type = b.id
+            WHERE a.plant = :plantCode
         """;
           params["plantCode"] = plantCode;
           break;
-        case 'MGR' || 'MGR_PROD':
-          // Query untuk Manager: Hanya bisa melihat logsheet yang statusnya sudah 'Approved' oleh Shift Leader.
-          baseQuery = """
-          SELECT
-            *
-          FROM
-            t_deodorizing_filtration
-          WHERE
-            prepared_status = :status AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
-        """;
-          params["status"] = "Approved";
-          params["plantCode"] = plantCode;
-          break;
-        case 'ADM':
-          // Query untuk Admin: Dapat melihat semua logsheet di plant-nya.
-          baseQuery =
-              "SELECT * FROM t_deodorizing_filtration WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
-          params["plantCode"] = plantCode;
-          break;
+        // case :
+        //   // Query untuk Manager: Hanya bisa melihat logsheet yang statusnya sudah 'Approved' oleh Shift Leader.
+        //   baseQuery = """
+        //     SELECT 
+        //         a.id,
+        //         a.company,
+        //         a.plant,
+        //         a.transaction_date,
+        //         a.posting_date,
+        //         a.refinery_machine,
+        //         a.time,
+        //         a.oil_type AS oil_type_id,
+        //         b.raw_material AS oil_type,
+        //         a.shift,
+        //         a.fit701_bpo,
+        //         a.d701_vacum,
+        //         a.d701_td701,
+        //         a.e702,
+        //         a.thermopac_inlet,
+        //         a.thermopac_outlet,
+        //         a.d702_inlet,
+        //         a.d702_outlet,
+        //         a.d702_vacum,
+        //         a.sparging_a,
+        //         a.sparging_b,
+        //         a.e730_inlet,
+        //         a.steam_inlet,
+        //         a.pish_706,
+        //         a.tiwh_706,
+        //         a.f702_a,
+        //         a.f702_b,
+        //         a.f702_c,
+        //         a.oil_type_fg AS oil_type_fg_id,
+        //         b.finish_good AS oil_type_fg,
+        //         a.fit704_rpo,
+        //         a.e704,
+        //         a.oil_type_bp AS oil_type_bp_id,
+        //         b.by_product AS oil_type_bp,
+        //         a.fit_705_pfad,
+        //         a.e705,
+        //         a.clarity,
+        //         a.remarks,
+        //         a.flag,
+        //         a.entry_by,
+        //         a.entry_date,
+        //         a.prepared_by,
+        //         a.prepared_date,
+        //         a.prepared_status,
+        //         a.prepared_status_remarks,
+        //         a.checked_by,
+        //         a.checked_date,
+        //         a.checked_status,
+        //         a.checked_status_remarks,
+        //         a.updated_by,
+        //         a.updated_date,
+        //         a.form_no,
+        //         a.date_issued,
+        //         a.revision_no,
+        //         a.revision_date
+        //     FROM 
+        //         t_deodorizing_filtration AS a
+        //     JOIN 
+        //         m_product AS b ON a.oil_type = b.id
+        //     WHERE
+        //         a.prepared_status = :status AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
+        // """;
+        //   params["status"] = "Approved";
+        //   params["plantCode"] = plantCode;
+        //   break;
+        // case :
+        //   // Query untuk Admin: Dapat melihat semua logsheet di plant-nya.
+        //   baseQuery = """
+        //       SELECT 
+        //           a.id,
+        //           a.company,
+        //           a.plant,
+        //           a.transaction_date,
+        //           a.posting_date,
+        //           a.refinery_machine,
+        //           a.time,
+        //           a.oil_type AS oil_type_id,
+        //           b.raw_material AS oil_type,
+        //           a.shift,
+        //           a.fit701_bpo,
+        //           a.d701_vacum,
+        //           a.d701_td701,
+        //           a.e702,
+        //           a.thermopac_inlet,
+        //           a.thermopac_outlet,
+        //           a.d702_inlet,
+        //           a.d702_outlet,
+        //           a.d702_vacum,
+        //           a.sparging_a,
+        //           a.sparging_b,
+        //           a.e730_inlet,
+        //           a.steam_inlet,
+        //           a.pish_706,
+        //           a.tiwh_706,
+        //           a.f702_a,
+        //           a.f702_b,
+        //           a.f702_c,
+        //           a.oil_type_fg AS oil_type_fg_id,
+        //           b.finish_good AS oil_type_fg,
+        //           a.fit704_rpo,
+        //           a.e704,
+        //           a.oil_type_bp AS oil_type_bp_id,
+        //           b.by_product AS oil_type_bp,
+        //           a.fit_705_pfad,
+        //           a.e705,
+        //           a.clarity,
+        //           a.remarks,
+        //           a.flag,
+        //           a.entry_by,
+        //           a.entry_date,
+        //           a.prepared_by,
+        //           a.prepared_date,
+        //           a.prepared_status,
+        //           a.prepared_status_remarks,
+        //           a.checked_by,
+        //           a.checked_date,
+        //           a.checked_status,
+        //           a.checked_status_remarks,
+        //           a.updated_by,
+        //           a.updated_date,
+        //           a.form_no,
+        //           a.date_issued,
+        //           a.revision_no,
+        //           a.revision_date
+        //       FROM 
+        //           t_deodorizing_filtration AS a
+        //       JOIN 
+        //           m_product AS b ON a.oil_type = b.id 
+              
+        //       WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')""";
+        //   params["plantCode"] = plantCode;
+        //   break;
 
         default:
           log(
@@ -150,19 +376,19 @@ class DeodorizingFiltrationMySQLService {
       // 2. Add date and time filters dynamically
       if (dateFilter != null) {
         // Menggunakan DATE() untuk membandingkan hanya bagian tanggal dari kolom transaction_date
-        baseQuery += " AND DATE(t.transaction_date) = :transactionDate";
+        baseQuery += " AND DATE(a.transaction_date) = :transactionDate";
         params["transactionDate"] = DateFormat('yyyy-MM-dd').format(dateFilter);
       }
       if (time != null) {
-        baseQuery += " AND t.time = :time";
+        baseQuery += " AND a.time = :time";
         params["time"] = time;
       }
 
       // 3. Add the ORDER BY clause for consistent sorting
       if (role == 'LEAD') {
-        baseQuery += " ORDER BY t.transaction_date DESC, t.time ASC";
+        baseQuery += " ORDER BY a.transaction_date DESC, a.time ASC";
       } else {
-        baseQuery += " ORDER BY transaction_date DESC, time ASC";
+        baseQuery += " ORDER BY a.transaction_date DESC, a.time ASC";
       }
 
       final IResultSet result = await connection!.execute(baseQuery, params);
@@ -397,9 +623,70 @@ class DeodorizingFiltrationMySQLService {
       }
       connection = connResult.connection;
       const sql = """
-        SELECT * FROM t_deodorizing_filtration 
-        WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
-        ORDER BY posting_date DESC
+        SELECT 
+                a.id,
+                a.company,
+                a.plant,
+                a.transaction_date,
+                a.posting_date,
+                a.refinery_machine,
+                a.time,
+                a.oil_type AS oil_type_id,
+                b.raw_material AS oil_type,
+                a.shift,
+                a.fit701_bpo,
+                a.d701_vacum,
+                a.d701_td701,
+                a.e702,
+                a.thermopac_inlet,
+                a.thermopac_outlet,
+                a.d702_inlet,
+                a.d702_outlet,
+                a.d702_vacum,
+                a.sparging_a,
+                a.sparging_b,
+                a.e730_inlet,
+                a.steam_inlet,
+                a.pish_706,
+                a.tiwh_706,
+                a.f702_a,
+                a.f702_b,
+                a.f702_c,
+                a.oil_type_fg AS oil_type_fg_id,
+                b.finish_good AS oil_type_fg,
+                a.fit704_rpo,
+                a.e704,
+                a.oil_type_bp AS oil_type_bp_id,
+                b.by_product AS oil_type_bp,
+                a.fit_705_pfad,
+                a.e705,
+                a.clarity,
+                a.remarks,
+                a.flag,
+                a.entry_by,
+                a.entry_date,
+                a.prepared_by,
+                a.prepared_date,
+                a.prepared_status,
+                a.prepared_status_remarks,
+                a.checked_by,
+                a.checked_date,
+                a.checked_status,
+                a.checked_status_remarks,
+                a.updated_by,
+                a.updated_date,
+                a.form_no,
+                a.date_issued,
+                a.revision_no,
+                a.revision_date
+            FROM 
+                t_deodorizing_filtration AS a
+            JOIN 
+                m_product AS b ON a.oil_type = b.id 
+            WHERE 
+                a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
+            ORDER BY 
+                a.posting_date DESC
       """;
       final result = await connection!.execute(sql, {"plantCode": plantCode});
       log(
@@ -474,8 +761,69 @@ class DeodorizingFiltrationMySQLService {
         return [];
       }
       connection = connResult.connection;
-      String query =
-          "SELECT * FROM t_deodorizing_filtration WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+      String query = """
+          SELECT 
+              a.id,
+              a.company,
+              a.plant,
+              a.transaction_date,
+              a.posting_date,
+              a.refinery_machine,
+              a.time,
+              a.oil_type AS oil_type_id,
+              b.raw_material AS oil_type,
+              a.shift,
+              a.fit701_bpo,
+              a.d701_vacum,
+              a.d701_td701,
+              a.e702,
+              a.thermopac_inlet,
+              a.thermopac_outlet,
+              a.d702_inlet,
+              a.d702_outlet,
+              a.d702_vacum,
+              a.sparging_a,
+              a.sparging_b,
+              a.e730_inlet,
+              a.steam_inlet,
+              a.pish_706,
+              a.tiwh_706,
+              a.f702_a,
+              a.f702_b,
+              a.f702_c,
+              a.oil_type_fg AS oil_type_fg_id,
+              b.finish_good AS oil_type_fg,
+              a.fit704_rpo,
+              a.e704,
+              a.oil_type_bp AS oil_type_bp_id,
+              b.by_product AS oil_type_bp,
+              a.fit_705_pfad,
+              a.e705,
+              a.clarity,
+              a.remarks,
+              a.flag,
+              a.entry_by,
+              a.entry_date,
+              a.prepared_by,
+              a.prepared_date,
+              a.prepared_status,
+              a.prepared_status_remarks,
+              a.checked_by,
+              a.checked_date,
+              a.checked_status,
+              a.checked_status_remarks,
+              a.updated_by,
+              a.updated_date,
+              a.form_no,
+              a.date_issued,
+              a.revision_no,
+              a.revision_date
+          FROM 
+              t_deodorizing_filtration AS a
+          JOIN 
+              m_product AS b ON a.oil_type = b.id 
+          WHERE 
+              DATE(posting_date) = :dateFilter AND plant = :plantCode""";
 
       dateFilter ??= DateTime.now();
 
@@ -497,9 +845,59 @@ class DeodorizingFiltrationMySQLService {
       return result.rows.map((row) => row.assoc()).toList();
     } catch (e) {
       log(
-        "(DEODORIZING FILTRATION MySQL) Error getting all pretreatment bleaching filtration tickets: $e",
+        "(DEODORIZING FILTRATION MySQL) Error getting all Deodorizing filtration tickets: $e",
       );
       return [];
+    } finally {
+      if (connection != null) {
+        await connection.close();
+        log(
+          '(DEODORIZING FILTRATION MySQL) MySQL connection closed for getTickets.',
+        );
+      }
+    }
+  }
+
+  Future<bool?> isDataExist({
+    required DateTime date,
+    required TimeOfDay time,
+    required String company,
+    required String plant,
+    required String workCenter,
+  }) async {
+    MySQLConnection? connection;
+
+    try {
+      final connResult = await getMySQLConnection();
+      if (connResult.connection == null) {
+        log(
+          '(DEODORIZING FILTRATION MySQL) Failed to get MySQL connection for isDataExist.',
+        );
+        return null;
+      }
+      connection = connResult.connection!;
+      final result = await connection.execute(
+        "SELECT COUNT(id) as count FROM t_deodorizing_filtration WHERE DATE(posting_date) = :date AND company = :company AND plant = :plant AND refinery_machine = :work_center AND time = :time",
+        {
+          'date': DateFormat('yyyy-MM-dd').format(date),
+          'company': company,
+          'plant': plant,
+          'work_center': workCenter,
+          'time': time,
+        },
+      );
+
+      if (result.rows.isNotEmpty) {
+        final count = int.parse(result.rows.first.assoc()['count']!);
+        return count > 0;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      log(
+        "(DEODORIZING FILTRATION MySQL) Error validating Deodorizing filtration tickets: $e",
+      );
+      return null;
     } finally {
       if (connection != null) {
         await connection.close();

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
-import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_text_field.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -52,45 +52,37 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Consumer<ValueProvider>(
+        child: Consumer<ProductProvider>(
           builder: (context, provider, child) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const CustomSectionTitle(title: 'STEARIN/PMF/HARD STEARIN'),
-                DropdownButtonFormField<MasterValueEntity>(
-                  value:
-                      selectedOil != null &&
-                              provider.oilTypeLists.any(
-                                (oil) => oil.code == selectedOil,
-                              )
-                          ? provider.oilTypeLists.firstWhere(
-                            (oil) => oil.code == selectedOil,
-                          )
-                          : null,
-                  items:
-                      provider.oilTypeLists.map((oil) {
-                        return DropdownMenuItem<MasterValueEntity>(
-                          value: oil,
-                          child: Text(oil.name),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      onOilFgChanged(value.code); // simpan code-nya saja
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Pilih Oil Type',
-                    filled: true,
-                    fillColor: const Color(0xFFF0ECE9),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    prefixIcon: const Icon(Icons.category),
-                  ),
-                ),
+                // DropdownButtonFormField<String>(
+                //   value: selectedOil,
+                //   items:
+                //       provider.productFractionationList.map((oil) {
+                //         return DropdownMenuItem<String>(
+                //           value: oil.id,
+                //           child: Text("${oil.byProduct}"),
+                //         );
+                //       }).toList(),
+                //   onChanged: (value) {
+                //     if (value != null) {
+                //       onOilFgChanged(value); // simpan code-nya saja
+                //     }
+                //   },
+                //   decoration: InputDecoration(
+                //     hintText: 'Pilih Oil Type',
+                //     filled: true,
+                //     fillColor: const Color(0xFFF0ECE9),
+                //     border: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(12),
+                //       borderSide: BorderSide.none,
+                //     ),
+                //     prefixIcon: const Icon(Icons.category),
+                //   ),
+                // ),
                 const SizedBox(height: 12),
                 CustomTextField(
                   controller: noController,
@@ -104,6 +96,7 @@ class FraSectionStearinPmfHstrearin extends StatelessWidget {
                   builder: (context, provider, child) {
                     if (provider.isLoading) {
                       return DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: null,
                         items: [],
                         onChanged: null, // Disable the dropdown

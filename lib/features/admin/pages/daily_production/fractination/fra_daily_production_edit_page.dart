@@ -6,6 +6,7 @@ import 'package:intl/intl.dart'; // Added DateFormat import
 
 import 'package:logsheet_app/data/remote/daily_production/daily_production_fractionation_entity.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
+import 'package:logsheet_app/data/remote/master/product_entity.dart';
 import 'package:logsheet_app/data/remote/master/tank_entity.dart';
 import 'package:logsheet_app/data/remote/master/value_entity.dart';
 import 'package:logsheet_app/features/admin/pages/daily_production/fractination/fra_section_olein_solein_sstearin.dart';
@@ -14,7 +15,6 @@ import 'package:logsheet_app/features/admin/pages/daily_production/fractination/
 import 'package:logsheet_app/features/admin/widgets/custom_app_bar.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_hour_minute_picker.dart';
 
-import 'package:logsheet_app/features/admin/widgets/custom_hour_picker.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_remark_field.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_save_button.dart';
 import 'package:logsheet_app/features/admin/widgets/custom_section_title.dart'; // Added CustomSectionTitle import
@@ -23,6 +23,7 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_fractionation_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -320,9 +321,56 @@ class _FraDailyProductionEditPageState
             // === Dropdown: Work Center (Machine) ===
             Consumer<ValueProvider>(
               builder: (context, provider, child) {
-                // Simplified loading/empty state for brevity in this edit page.
-                // It should mirror the input page's logic closely.
-                // Assuming data is loaded in initState or will load.
+                if (provider.isWorkCenterFractLoading) {
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Work Center...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                if (provider.workCenterFractLists.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Fract. Machine tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () async {
+                          await context
+                              .read<ValueProvider>()
+                              .fetchWorkCenterLists();
+                        },
+                      ),
+                    ),
+                  );
+                }
 
                 // Use the loaded list or an empty list if null/loading
                 final List<MasterValueEntity> workCenterList =
@@ -394,23 +442,86 @@ class _FraDailyProductionEditPageState
             const SizedBox(height: 8),
 
             // === Oil Type Dropdown (RM) ===
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                final List<MasterValueEntity> oilTypeLists =
-                    provider.oilTypeLists;
+                if (provider.isLoading) {
+                  // Return a disabled dropdown with a loading indicator or message
+                  return DropdownButtonFormField<String>(
+                    value: null,
+                    items: [],
+                    onChanged: null, // Disable the dropdown
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Loading Oil Types...',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (provider.productFractionationList.isEmpty) {
+                  return TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF0ECE9),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Oil Types tidak ditemukan.',
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Icon(Icons.warning_amber_rounded),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () {
+                          context.read<ValueProvider>().fetchOilTypes();
+                        },
+                      ),
+                    ),
+                  );
+                }
+                final List<ProductEntity> oilTypeLists =
+                    provider.productFractionationList;
 
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
                       oilTypeLists.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                          value: oil.id,
+                          child: Text(
+                            "${oil.rawMaterial}",
+                            style: TextStyle(fontSize: 14),
+                          ),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilBp =
+                          provider.productFractionationList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
                     });
                   },
                   decoration: InputDecoration(
@@ -666,10 +777,10 @@ class _FraDailyProductionEditPageState
 
     // Set dropdown and simple state values
     selectedMachine = entity.workCenter?.trim();
-    selectedOilRm = entity.oilTypeRm?.trim();
-    selectedOilFg = entity.oilTypeFgs?.trim(); // Added
-    selectedOilBp = entity.oilTypeFgh?.trim(); // Added
-    selectedTransactionDate = entity.transactionDate ?? DateTime.now(); // Added
+    selectedOilRm = entity.oilTypeRmId;
+    selectedOilFg = entity.oilTypeFgsId;
+    selectedOilBp = entity.oilTypeFghId;
+    selectedTransactionDate = entity.transactionDate ?? DateTime.now();
 
     // --- Section 1: RBDPO/ROL/RPS Data ---
     // Note: cpoTank is missing in the entity for Section 1, using oilTypeRmFromTank
@@ -911,7 +1022,7 @@ class _FraDailyProductionEditPageState
         shift: _getShiftBasedOnTimeAndDate(postingDate).toString(),
 
         // Section 1: RBDPO/ROL/RPS
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmNo: _parseInt(no1Controller.text),
         oilTypeRmCr: _parseInt(cr1Controller.text),
         oilTypeRmFromTank: selected1Tank,
@@ -922,7 +1033,7 @@ class _FraDailyProductionEditPageState
         oilTypeRmTotal: _parseInt(flowmeter1TotalController.text),
 
         // Section 2: OLEIN/SUPER OLEIN/SOFT STEARIN
-        oilTypeFgs: selectedOilFg,
+        oilTypeFgsId: selectedOilFg,
         oilTypeFgsNo: _parseInt(no2Controller.text),
         oilTypeFgsCr: _parseInt(cr2Controller.text),
         oilTypeFgsAwalJam: selectedTime2Awal,
@@ -933,7 +1044,7 @@ class _FraDailyProductionEditPageState
         oilTypeFgsToTank: selected2Tank,
 
         // Section 3: STEARIN/PMF/HARD STEARIN
-        oilTypeFgh: selectedOilBp,
+        oilTypeFghId: selectedOilBp,
         oilTypeFghNo: _parseInt(no3Controller.text),
         oilTypeFghAwalJam: selectedTime3Awal,
         oilTypeFghAwalFlowmeter: _parseDouble(flowmeter3AwalController),

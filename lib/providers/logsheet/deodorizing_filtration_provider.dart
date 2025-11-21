@@ -29,6 +29,9 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
   bool _isLoadingDelete = false;
   bool get isLoadingDelete => _isLoadingDelete;
 
+  bool _isLoadingValidate = false;
+  bool get isLoadingValidate => _isLoadingValidate;
+
   List<DeodorizingFiltrationEntity> _deodorizingList = [];
   List<DeodorizingFiltrationEntity> get deodorizingList => _deodorizingList;
   List<DeodorizingFiltrationEntity> _filteredTickets = [];
@@ -59,6 +62,11 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
 
   void _setLoadingTicket(bool value) {
     _isLoadingTicket = value;
+    notifyListeners();
+  }
+
+  void _setLoadingValidate(bool value) {
+    _isLoadingValidate = value;
     notifyListeners();
   }
 
@@ -324,6 +332,34 @@ class DeodorizingFiltrationProvider extends ChangeNotifier {
         '(Deodorizing Filtration Provider) Failed fetch filtered PBE ticket: $e',
       );
       _setLoading(false);
+    }
+  }
+
+  Future<bool?> isDataExist({
+    required DateTime date,
+    required TimeOfDay time,
+    required String company,
+    required String plant,
+    required String workCenter,
+  }) async {
+    _setLoadingValidate(true);
+    _setErrorMessage(null);
+    try {
+      final result = await _repository.isDataExist(
+        date: date,
+        time: time,
+        company: company,
+        plant: plant,
+        workCenter: workCenter,
+      );
+      // false => data does not exist, true => data exist. data exist cannot input.
+      return result;
+    } catch (e) {
+      _setErrorMessage(
+        '(Deodorizing Filtration Provider) Failed validate ticket: $e',
+      );
+    } finally {
+      _setLoadingValidate(false);
     }
   }
 }

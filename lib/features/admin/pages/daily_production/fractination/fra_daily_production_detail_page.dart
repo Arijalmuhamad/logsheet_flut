@@ -302,10 +302,10 @@ class _DailyProductionFractionationDetailPageState
             ]),
 
             _buildSection('By-Product (BP)', [
-              _buildDataRow(
-                'Oil Type',
-                _displayValue(_currentReport.oilTypeFgh),
-              ),
+              // _buildDataRow(
+              //   'Oil Type',
+              //   _displayValue(_currentReport.oilTypeFgh),
+              // ),
               _buildDataRow('No', _displayValue(_currentReport.oilTypeFghNo)),
               _buildDataRow(
                 'Awal Jam',

@@ -84,27 +84,154 @@ class DailyProductionFractionationMySQLService {
         case 'LEAD' || 'LEAD_PROD':
           baseQuery = """
           SELECT
-            t_daily_production_fractionation.*
+              a.id,
+              a.company,
+              a.plant,
+              a.transaction_date,
+              a.posting_date,
+              a.work_center,
+              a.shift,
+              a.oil_type_rm AS oil_type_rm_id,
+              b.raw_material AS oil_type_rm,
+              a.oil_type_rm_no,
+              a.oil_type_rm_cr,
+              a.oil_type_rm_from_tank,
+              a.oil_type_rm_awal_jam,
+              a.oil_type_rm_awal_flowmeter,
+              a.oil_type_rm_akhir_jam,
+              a.oil_type_rm_akhir_flowmeter,
+              a.oil_type_rm_total,
+              a.oil_type_fgs AS oil_type_fgs_id,
+              b.finish_good AS oil_type_fgs,
+              a.oil_type_fgs_no,
+              a.oil_type_fgs_cr,
+              a.oil_type_fgs_awal_jam,
+              a.oil_type_fgs_awal_flowmeter,
+              a.oil_type_fgs_akhir_jam,
+              a.oil_type_fgs_akhir_flowmeter,
+              a.oil_type_fgs_total,
+              a.oil_type_fgs_to_tank,
+              a.oil_type_fgh AS oil_type_fgh_id,
+              b.by_product AS oil_type_bp,
+              a.oil_type_fgh_no,
+              a.oil_type_fgh_awal_jam,
+              a.oil_type_fgh_awal_flowmeter,
+              a.oil_type_fgh_akhir_jam,
+              a.oil_type_fgh_akhir_flowmeter,
+              a.oil_type_fgh_total,
+              a.oil_type_fgh_to_tank,
+              a.remarks,
+              a.flag,
+              a.uu_item,
+              a.uu_budget_ref_qty,
+              a.uu_flowmeter_before,
+              a.uu_flowmeter_after,
+              a.uu_flowmeter_total,
+              a.uu_yield_percent,
+              a.uu_listrik,
+              a.uu_air,
+              a.entry_by,
+              a.entry_date,
+              a.prepared_by,
+              a.prepared_date,
+              a.prepared_status,
+              a.prepared_status_remarks,
+              a.verified_by,
+              a.verified_date,
+              a.verified_status,
+              a.verified_status_remarks,
+              a.checked_by,
+              a.checked_date,
+              a.checked_status,
+              a.checked_status_remarks,
+              a.form_no,
+              a.date_issued,
+              a.revision_no,
+              a.revision_date
           FROM
-            t_daily_production_fractionation
-          JOIN
-            m_roles_shift_prepared ON t_daily_production_fractionation.shift = m_roles_shift_prepared.shift_code
+              t_daily_production_fractionation AS a
+          JOIN 
+              m_product AS b
+          ON a.oil_type_rm = b.id
           WHERE
-            m_roles_shift_prepared.username = :username AND m_roles_shift_prepared.isactive = :is_active AND t_daily_production_fractionation.plant = :plantCode AND (t_daily_production_fractionation.flag IS NULL OR t_daily_production_fractionation.flag = 'T')
-  
+             a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
           """;
-          params["username"] = username;
-          params["is_active"] = "T";
           params["plantCode"] = plantCode;
           break;
         case 'OPR' || 'OPR_PROD':
           baseQuery = """
-        SELECT 
-          *
-        FROM 
-          t_daily_production_fractionation
+        SELECT
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.shift,
+            a.oil_type_rm AS oil_type_rm_id,
+            b.raw_material AS oil_type_rm,
+            a.oil_type_rm_no,
+            a.oil_type_rm_cr,
+            a.oil_type_rm_from_tank,
+            a.oil_type_rm_awal_jam,
+            a.oil_type_rm_awal_flowmeter,
+            a.oil_type_rm_akhir_jam,
+            a.oil_type_rm_akhir_flowmeter,
+            a.oil_type_rm_total,
+            a.oil_type_fgs AS oil_type_fgs_id,
+            b.finish_good AS oil_type_fgs,
+            a.oil_type_fgs_no,
+            a.oil_type_fgs_cr,
+            a.oil_type_fgs_awal_jam,
+            a.oil_type_fgs_awal_flowmeter,
+            a.oil_type_fgs_akhir_jam,
+            a.oil_type_fgs_akhir_flowmeter,
+            a.oil_type_fgs_total,
+            a.oil_type_fgs_to_tank,
+            a.oil_type_fgh AS oil_type_fgh_id,
+            b.by_product AS oil_type_bp,
+            a.oil_type_fgh_no,
+            a.oil_type_fgh_awal_jam,
+            a.oil_type_fgh_awal_flowmeter,
+            a.oil_type_fgh_akhir_jam,
+            a.oil_type_fgh_akhir_flowmeter,
+            a.oil_type_fgh_total,
+            a.oil_type_fgh_to_tank,
+            a.remarks,
+            a.flag,
+            a.uu_item,
+            a.uu_budget_ref_qty,
+            a.uu_flowmeter_before,
+            a.uu_flowmeter_after,
+            a.uu_flowmeter_total,
+            a.uu_yield_percent,
+            a.uu_listrik,
+            a.uu_air,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.verified_by,
+            a.verified_date,
+            a.verified_status,
+            a.verified_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+        FROM
+            t_daily_production_fractionation AS a
+        JOIN 
+            m_product AS b
+        ON a.oil_type_rm = b.id
         WHERE
-          plant = :plantCode AND (t_daily_production_fractionation.flag IS NULL OR t_daily_production_fractionation.flag = 'T') 
+          a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') 
 
         """;
           params["plantCode"] = plantCode;
@@ -112,18 +239,154 @@ class DailyProductionFractionationMySQLService {
         case 'MGR' || 'MGR_PROD':
           baseQuery = """
           SELECT
-            *
+              a.id,
+              a.company,
+              a.plant,
+              a.transaction_date,
+              a.posting_date,
+              a.work_center,
+              a.shift,
+              a.oil_type_rm AS oil_type_rm_id,
+              b.raw_material AS oil_type_rm,
+              a.oil_type_rm_no,
+              a.oil_type_rm_cr,
+              a.oil_type_rm_from_tank,
+              a.oil_type_rm_awal_jam,
+              a.oil_type_rm_awal_flowmeter,
+              a.oil_type_rm_akhir_jam,
+              a.oil_type_rm_akhir_flowmeter,
+              a.oil_type_rm_total,
+              a.oil_type_fgs AS oil_type_fgs_id,
+              b.finish_good AS oil_type_fgs,
+              a.oil_type_fgs_no,
+              a.oil_type_fgs_cr,
+              a.oil_type_fgs_awal_jam,
+              a.oil_type_fgs_awal_flowmeter,
+              a.oil_type_fgs_akhir_jam,
+              a.oil_type_fgs_akhir_flowmeter,
+              a.oil_type_fgs_total,
+              a.oil_type_fgs_to_tank,
+              a.oil_type_fgh AS oil_type_fgh_id,
+              b.by_product AS oil_type_fgh,
+              a.oil_type_fgh_no,
+              a.oil_type_fgh_awal_jam,
+              a.oil_type_fgh_awal_flowmeter,
+              a.oil_type_fgh_akhir_jam,
+              a.oil_type_fgh_akhir_flowmeter,
+              a.oil_type_fgh_total,
+              a.oil_type_fgh_to_tank,
+              a.remarks,
+              a.flag,
+              a.uu_item,
+              a.uu_budget_ref_qty,
+              a.uu_flowmeter_before,
+              a.uu_flowmeter_after,
+              a.uu_flowmeter_total,
+              a.uu_yield_percent,
+              a.uu_listrik,
+              a.uu_air,
+              a.entry_by,
+              a.entry_date,
+              a.prepared_by,
+              a.prepared_date,
+              a.prepared_status,
+              a.prepared_status_remarks,
+              a.verified_by,
+              a.verified_date,
+              a.verified_status,
+              a.verified_status_remarks,
+              a.checked_by,
+              a.checked_date,
+              a.checked_status,
+              a.checked_status_remarks,
+              a.form_no,
+              a.date_issued,
+              a.revision_no,
+              a.revision_date
           FROM
-            t_daily_production_fractionation
+              t_daily_production_fractionation AS a
+          JOIN 
+              m_product AS b
+          ON a.oil_type_rm = b.id
           WHERE
-           plant = :plantCode AND (flag IS NULL OR flag = 'T') 
+           a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T') 
           """;
           params["plantCode"] = plantCode;
           break;
         case 'ADM':
           // Query for Admin: Can see all reports.
-          baseQuery =
-              "SELECT * FROM t_daily_production_fractionation WHERE plant = :plantCode AND (flag IS NULL OR flag = 'T')";
+          baseQuery = """
+             SELECT
+                a.id,
+                a.company,
+                a.plant,
+                a.transaction_date,
+                a.posting_date,
+                a.work_center,
+                a.shift,
+                a.oil_type_rm AS oil_type_rm_id,
+                b.raw_material AS oil_type_rm,
+                a.oil_type_rm_no,
+                a.oil_type_rm_cr,
+                a.oil_type_rm_from_tank,
+                a.oil_type_rm_awal_jam,
+                a.oil_type_rm_awal_flowmeter,
+                a.oil_type_rm_akhir_jam,
+                a.oil_type_rm_akhir_flowmeter,
+                a.oil_type_rm_total,
+                a.oil_type_fgs AS oil_type_fgs_id,
+                b.finish_good AS oil_type_fgs
+                a.oil_type_fgs_no,
+                a.oil_type_fgs_cr,
+                a.oil_type_fgs_awal_jam,
+                a.oil_type_fgs_awal_flowmeter,
+                a.oil_type_fgs_akhir_jam,
+                a.oil_type_fgs_akhir_flowmeter,
+                a.oil_type_fgs_total,
+                a.oil_type_fgs_to_tank,
+                a.oil_type_fgh AS oil_type_fgh_id,
+                b.by_product AS oil_type_bp,
+                a.oil_type_fgh_no,
+                a.oil_type_fgh_awal_jam,
+                a.oil_type_fgh_awal_flowmeter,
+                a.oil_type_fgh_akhir_jam,
+                a.oil_type_fgh_akhir_flowmeter,
+                a.oil_type_fgh_total,
+                a.oil_type_fgh_to_tank,
+                a.remarks,
+                a.flag,
+                a.uu_item,
+                a.uu_budget_ref_qty,
+                a.uu_flowmeter_before,
+                a.uu_flowmeter_after,
+                a.uu_flowmeter_total,
+                a.uu_yield_percent,
+                a.uu_listrik,
+                a.uu_air,
+                a.entry_by,
+                a.entry_date,
+                a.prepared_by,
+                a.prepared_date,
+                a.prepared_status,
+                a.prepared_status_remarks,
+                a.verified_by,
+                a.verified_date,
+                a.verified_status,
+                a.verified_status_remarks,
+                a.checked_by,
+                a.checked_date,
+                a.checked_status,
+                a.checked_status_remarks,
+                a.form_no,
+                a.date_issued,
+                a.revision_no,
+                a.revision_date
+            FROM
+                t_daily_production_fractionation AS a
+            JOIN 
+                m_product AS b
+            ON a.oil_type_rm = b.id 
+            WHERE a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')""";
           params["plantCode"] = plantCode;
           break;
         default:
@@ -133,22 +396,22 @@ class DailyProductionFractionationMySQLService {
       // Add date and time filters to the query for all roles
       if (dateFilter != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND report_date = :reportDate";
+          baseQuery += " AND a.transaction_date = :reportDate";
         } else {
-          baseQuery += " WHERE report_date = :reportDate";
+          baseQuery += " WHERE a.transaction_date = :reportDate";
         }
         params["reportDate"] = dateFilter;
       }
       if (time != null) {
         if (baseQuery.contains("WHERE")) {
-          baseQuery += " AND time = :time";
+          baseQuery += " AND a.time = :time";
         } else {
-          baseQuery += " WHERE time = :time";
+          baseQuery += " WHERE a.time = :time";
         }
         params["time"] = time;
       }
 
-      baseQuery += " ORDER BY transaction_date DESC";
+      baseQuery += " ORDER BY a.transaction_date DESC";
 
       final IResultSet result = await connection!.execute(baseQuery, params);
       log(
@@ -359,8 +622,77 @@ class DailyProductionFractionationMySQLService {
       }
       connection = connResult.connection;
       const sql = """
-        SELECT * FROM t_daily_production_fractionation 
-        WHERE prepared_status = 'Approved' AND plant = :plantCode AND (flag IS NULL OR flag = 'T')
+        SELECT
+            a.id,
+            a.company,
+            a.plant,
+            a.transaction_date,
+            a.posting_date,
+            a.work_center,
+            a.shift,
+            a.oil_type_rm AS oil_type_rm_id,
+            b.raw_material AS oil_type_rm,
+            a.oil_type_rm_no,
+            a.oil_type_rm_cr,
+            a.oil_type_rm_from_tank,
+            a.oil_type_rm_awal_jam,
+            a.oil_type_rm_awal_flowmeter,
+            a.oil_type_rm_akhir_jam,
+            a.oil_type_rm_akhir_flowmeter,
+            a.oil_type_rm_total,
+            a.oil_type_fgs AS oil_type_fgs_id,
+            b.finish_good AS oil_type_fgs,
+            a.oil_type_fgs_no,
+            a.oil_type_fgs_cr,
+            a.oil_type_fgs_awal_jam,
+            a.oil_type_fgs_awal_flowmeter,
+            a.oil_type_fgs_akhir_jam,
+            a.oil_type_fgs_akhir_flowmeter,
+            a.oil_type_fgs_total,
+            a.oil_type_fgs_to_tank,
+            a.oil_type_fgh AS oil_type_fgh_id,
+            b.by_product AS oil_type_bp,
+            a.oil_type_fgh_no,
+            a.oil_type_fgh_awal_jam,
+            a.oil_type_fgh_awal_flowmeter,
+            a.oil_type_fgh_akhir_jam,
+            a.oil_type_fgh_akhir_flowmeter,
+            a.oil_type_fgh_total,
+            a.oil_type_fgh_to_tank,
+            a.remarks,
+            a.flag,
+            a.uu_item,
+            a.uu_budget_ref_qty,
+            a.uu_flowmeter_before,
+            a.uu_flowmeter_after,
+            a.uu_flowmeter_total,
+            a.uu_yield_percent,
+            a.uu_listrik,
+            a.uu_air,
+            a.entry_by,
+            a.entry_date,
+            a.prepared_by,
+            a.prepared_date,
+            a.prepared_status,
+            a.prepared_status_remarks,
+            a.verified_by,
+            a.verified_date,
+            a.verified_status,
+            a.verified_status_remarks,
+            a.checked_by,
+            a.checked_date,
+            a.checked_status,
+            a.checked_status_remarks,
+            a.form_no,
+            a.date_issued,
+            a.revision_no,
+            a.revision_date
+        FROM
+            t_daily_production_fractionation AS a
+        JOIN 
+            m_product AS b
+        ON a.oil_type_rm = b.id 
+        WHERE a.prepared_status = 'Approved' AND a.plant = :plantCode AND (a.flag IS NULL OR a.flag = 'T')
         ORDER BY posting_date DESC
       """;
       final result = await connection!.execute(sql, {"plantCode": plantCode});
@@ -423,7 +755,7 @@ class DailyProductionFractionationMySQLService {
       String baseQuery = "";
 
       baseQuery =
-          "SELECT * FROM t_daily_production_fractionation AND (flag IS NULL OR flag = 'T')";
+          """SELECT * FROM t_daily_production_fractionation AND (flag IS NULL OR flag = 'T')""";
 
       final result = await connection!.execute(baseQuery);
       log("Fetched ${result.rows.length} reports for Daily Production.");
@@ -454,8 +786,78 @@ class DailyProductionFractionationMySQLService {
         return [];
       }
       connection = connResult.connection;
-      String query =
-          "SELECT * FROM t_daily_production_fractionation WHERE DATE(posting_date) = :dateFilter AND plant = :plantCode";
+      String query = """
+          SELECT
+              a.id,
+              a.company,
+              a.plant,
+              a.transaction_date,
+              a.posting_date,
+              a.work_center,
+              a.shift,
+              a.oil_type_rm AS oil_type_rm_id,
+              b.raw_material AS oil_type_rm,
+              a.oil_type_rm_no,
+              a.oil_type_rm_cr,
+              a.oil_type_rm_from_tank,
+              a.oil_type_rm_awal_jam,
+              a.oil_type_rm_awal_flowmeter,
+              a.oil_type_rm_akhir_jam,
+              a.oil_type_rm_akhir_flowmeter,
+              a.oil_type_rm_total,
+              a.oil_type_fgs AS oil_type_fgs_id,
+              b.finish_good AS oil_type_fgs,
+              a.oil_type_fgs_no,
+              a.oil_type_fgs_cr,
+              a.oil_type_fgs_awal_jam,
+              a.oil_type_fgs_awal_flowmeter,
+              a.oil_type_fgs_akhir_jam,
+              a.oil_type_fgs_akhir_flowmeter,
+              a.oil_type_fgs_total,
+              a.oil_type_fgs_to_tank,
+              a.oil_type_fgh AS oil_type_fgh_id,
+              b.by_product AS oil_type_bp,
+              a.oil_type_fgh_no,
+              a.oil_type_fgh_awal_jam,
+              a.oil_type_fgh_awal_flowmeter,
+              a.oil_type_fgh_akhir_jam,
+              a.oil_type_fgh_akhir_flowmeter,
+              a.oil_type_fgh_total,
+              a.oil_type_fgh_to_tank,
+              a.remarks,
+              a.flag,
+              a.uu_item,
+              a.uu_budget_ref_qty,
+              a.uu_flowmeter_before,
+              a.uu_flowmeter_after,
+              a.uu_flowmeter_total,
+              a.uu_yield_percent,
+              a.uu_listrik,
+              a.uu_air,
+              a.entry_by,
+              a.entry_date,
+              a.prepared_by,
+              a.prepared_date,
+              a.prepared_status,
+              a.prepared_status_remarks,
+              a.verified_by,
+              a.verified_date,
+              a.verified_status,
+              a.verified_status_remarks,
+              a.checked_by,
+              a.checked_date,
+              a.checked_status,
+              a.checked_status_remarks,
+              a.form_no,
+              a.date_issued,
+              a.revision_no,
+              a.revision_date
+          FROM
+              t_daily_production_fractionation AS a
+          JOIN 
+              m_product AS b
+          ON a.oil_type_rm = b.id
+          WHERE DATE(a.posting_date) = :dateFilter AND a.plant = :plantCode""";
 
       dateFilter ??= DateTime.now();
 
@@ -466,7 +868,7 @@ class DailyProductionFractionationMySQLService {
       log("Params: $params");
 
       if (shift != null && shift != "All") {
-        query += " AND shift = :shift";
+        query += " AND a.shift = :shift";
         params['shift'] = shift;
       }
       log("Query: $query");

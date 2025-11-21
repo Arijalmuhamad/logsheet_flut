@@ -11,6 +11,8 @@ import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_exit_app/flutter_exit_app.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 
 import '../../providers/master/user_provider.dart';
 
@@ -22,6 +24,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _updater = ShorebirdUpdater();
+  var _currentTrack = UpdateTrack.stable;
+  bool _isCheckingForUpdates = false;
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -47,6 +53,10 @@ class _LoginPageState extends State<LoginPage> {
         final businessUnitProvider = context.read<BusinessUnitProvider>();
 
         await businessUnitProvider.fetchAllBusinessUnits();
+        await _checkForUpdates();
+        if (!mounted) {
+          return;
+        }
       } catch (e) {
         setState(() {
           _errorMessage = "Failed to load initial data.";
@@ -532,14 +542,14 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "Version 1.0.13",
+                            "Version 1.0.19",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
                             ),
                           ),
                           Text(
-                            "Build 2025-10-9",
+                            "Build 2025-11-18",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
@@ -558,19 +568,90 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _saveToStorageService({
-    required UserEntity user,
-    required PlantEntity plant,
-    required BusinessUnitEntity bu,
-    required String password,
-  }) async {
-    log("LOGIN PAGE saveToStorageService: ${user.username}, $password");
+  // Future<void> _saveToStorageService({
+  //   required UserEntity user,
+  //   required PlantEntity plant,
+  //   required BusinessUnitEntity bu,
+  //   required String password,
+  // }) async {
+  //   log("LOGIN PAGE saveToStorageService: ${user.username}, $password");
 
-    final storage = StorageService();
+  //   final storage = StorageService();
 
-    await storage.saveUsername(user.username);
-    await storage.savePassword(password);
-    await storage.saveBusinessUnit(bu.buCode);
-    await storage.savePlant(plant.code);
+  //   await storage.saveUsername(user.username);
+  //   await storage.savePassword(password);\]
+  //   await storage.saveBusinessUnit(bu.buCode);
+  //   await storage.savePlant(plant.code);
+  // }
+
+  Future<void> _checkForUpdates() async {
+    if (_isCheckingForUpdates) return;
+
+    try {
+      setState(() {
+        _isCheckingForUpdates = true;
+      });
+      final status = await _updater.checkForUpdate(track: _currentTrack);
+      log("log: $status");
+      if (!mounted) return;
+      switch (status) {
+        case UpdateStatus.upToDate:
+          // tampilan widget no update atau tidak display apapun
+          // contoh: _showNoUpdateAvaliable();
+          //  return _showRestartAppAlert('upToDate');
+          return;
+        case UpdateStatus.outdated:
+          // tampilan widget Dialog update available
+          //contoh: _showRestartAppAlert();
+          return _showRestartAppAlert();
+        case UpdateStatus.restartRequired:
+          // fungsi lainnya
+          // _showRestartAppAlert();
+          return _showRestartAppAlert();
+        case UpdateStatus.unavailable:
+          // Do nothing, there is already a warning displayed at the top of the
+          // screen.
+          return;
+          // return _showRestartAppAlert('unavailable');
+      }
+    } on Exception catch (error) {
+      log('Error checking for update: $error');
+    } finally {
+      setState(() {
+        _isCheckingForUpdates = false;
+      });
+    }
+  }
+
+  void _showRestartAppAlert() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button.
+      builder: (BuildContext context) {
+        return PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: Text("Perlu Restart!"),
+            content: const SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Update Baru Telah Hadir! Silahkan Restart Aplikasi!'),
+                  Text('Apakah Anda Ingin Restart Sekarang?'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Restart'),
+                onPressed: () async {
+                  // SystemNavigator.pop();
+                  await FlutterExitApp.exitApp();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

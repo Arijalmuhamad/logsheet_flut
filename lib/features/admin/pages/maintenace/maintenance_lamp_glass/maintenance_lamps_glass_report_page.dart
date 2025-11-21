@@ -42,186 +42,184 @@ class _MaintenanceLampsGlassReportPageState
               _buildFilterSection(context),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Expanded(
-                  child: Consumer<MaintenanceLampsAndGlassProvider>(
-                    builder: (context, provider, child) {
-                      if (provider.reportList.isEmpty) {
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: const Text("No Data"),
-                            ),
-                          ],
-                        );
-                      }
-                      if (provider.isLoading) {
-                        return Center(child: const CircularProgressIndicator());
-                      }
-
-                      final report = provider.reportList[0];
-                      return Card(
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Spacer(),
-                                PopupMenuButton(
-                                  icon: Icon(Icons.more_vert_rounded),
-                                  onSelected: (value) {
-                                    if (value == "edit") {
-                                      // handle edit
-                                      // showSnackBar(value, context);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  MaintenanceLampsGlassEditPage(
-                                                    lampsAndGlassList:
-                                                        provider.reportList,
-                                                  ),
-                                        ),
-                                      );
-                                    }
-
-                                    if (value == "delete") {
-                                      // handle delete
-                                      DialogUtil.showAlert(
-                                        context: context,
-                                        title: "Delete ${report.entryDate}",
-                                        message: "Apakah anda yakin?",
-                                        onCancel: () => Navigator.pop(context),
-                                        onConfirm: () async {
-                                          final result = await context
-                                              .read<
-                                                MaintenanceLampsAndGlassProvider
-                                              >()
-                                              .deleteLampsAndGlass(report.id);
-
-                                          if (result) {
-                                            if (!context.mounted) return;
-                                            showSnackBar(
-                                              "Delete berhasil",
-                                              context,
-                                            );
-                                          }
-                                        },
-                                      );
-                                    }
-                                  },
-                                  itemBuilder:
-                                      (context) => [
-                                        const PopupMenuItem(
-                                          value: "edit",
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.edit, size: 18),
-                                              SizedBox(width: 8),
-                                              Text("Edit"),
-                                            ],
-                                          ),
-                                        ),
-                                        const PopupMenuItem(
-                                          value: "delete",
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.delete,
-                                                size: 18,
-                                                color: Colors.red,
-                                              ),
-                                              SizedBox(width: 8),
-                                              Text("Delete"),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                ),
-                              ],
-                            ),
-                            // const Divider(indent: 12, endIndent: 12),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.article,
-                              label: "ID",
-                              value: report.id,
-                            ),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.business_outlined,
-                              label: "Company",
-                              value: report.company,
-                            ),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.factory_outlined,
-                              label: "Plant",
-                              value: report.plant,
-                            ),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.precision_manufacturing_outlined,
-                              label: "Work Center",
-                              value: report.workCenter,
-                            ),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.calendar_today_outlined,
-                              label: "Check Date",
-                              // Formatting the date nicely!
-                              value: DateFormat(
-                                'd MMMM yyyy',
-                              ).format(report.checkDate!),
-                            ),
-                            _buildInfoRow(
-                              context,
-                              icon: Icons.person_outline,
-                              label: "Entry By",
-                              value: report.entryBy,
-                            ),
-                            const SizedBox(height: 4),
-                            const Divider(
-                              indent: 18,
-                              endIndent: 18,
-                              thickness: 0.7,
-                            ),
-
-                            ListView.builder(
-                              itemCount: provider.reportList.length,
-                              scrollDirection: Axis.vertical,
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                log("ItemBuilder Index: $index");
-                                // return Text("$index");
-                                return CheckboxListTile(
-                                  enabled: false,
-                                  value:
-                                      provider.reportList[index].statusItem ==
-                                      "T",
-                                  title: Text(
-                                    provider.reportList[index].checkItem,
-                                  ),
-                                  onChanged: (value) {},
-                                  controlAffinity:
-                                      ListTileControlAffinity.leading,
-                                );
-                              },
-                            ),
-                            _buildTextField(
-                              controller: _remarksController,
-                              label: 'Remarks',
-                              icon: Icons.note_rounded,
-                              hintText: 'Remarks',
-                              lines: 5,
-                            ),
-                          ],
-                        ),
+                child: Consumer<MaintenanceLampsAndGlassProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.reportList.isEmpty) {
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: const Text("No Data"),
+                          ),
+                        ],
                       );
-                    },
-                  ),
+                    }
+                    if (provider.isLoading) {
+                      return Center(child: const CircularProgressIndicator());
+                    }
+                
+                    final report = provider.reportList[0];
+                    return Card(
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Spacer(),
+                              PopupMenuButton(
+                                icon: Icon(Icons.more_vert_rounded),
+                                onSelected: (value) {
+                                  if (value == "edit") {
+                                    // handle edit
+                                    // showSnackBar(value, context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                MaintenanceLampsGlassEditPage(
+                                                  lampsAndGlassList:
+                                                      provider.reportList,
+                                                ),
+                                      ),
+                                    );
+                                  }
+                
+                                  if (value == "delete") {
+                                    // handle delete
+                                    DialogUtil.showAlert(
+                                      context: context,
+                                      title: "Delete ${report.entryDate}",
+                                      message: "Apakah anda yakin?",
+                                      onCancel: () => Navigator.pop(context),
+                                      onConfirm: () async {
+                                        final result = await context
+                                            .read<
+                                              MaintenanceLampsAndGlassProvider
+                                            >()
+                                            .deleteLampsAndGlass(report.id);
+                
+                                        if (result) {
+                                          if (!context.mounted) return;
+                                          showSnackBar(
+                                            "Delete berhasil",
+                                            context,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  }
+                                },
+                                itemBuilder:
+                                    (context) => [
+                                      const PopupMenuItem(
+                                        value: "edit",
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit, size: 18),
+                                            SizedBox(width: 8),
+                                            Text("Edit"),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: "delete",
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete,
+                                              size: 18,
+                                              color: Colors.red,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text("Delete"),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                              ),
+                            ],
+                          ),
+                          // const Divider(indent: 12, endIndent: 12),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.article,
+                            label: "ID",
+                            value: report.id,
+                          ),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.business_outlined,
+                            label: "Company",
+                            value: report.company,
+                          ),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.factory_outlined,
+                            label: "Plant",
+                            value: report.plant,
+                          ),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.precision_manufacturing_outlined,
+                            label: "Work Center",
+                            value: report.workCenter,
+                          ),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.calendar_today_outlined,
+                            label: "Check Date",
+                            // Formatting the date nicely!
+                            value: DateFormat(
+                              'd MMMM yyyy',
+                            ).format(report.checkDate!),
+                          ),
+                          _buildInfoRow(
+                            context,
+                            icon: Icons.person_outline,
+                            label: "Entry By",
+                            value: report.entryBy,
+                          ),
+                          const SizedBox(height: 4),
+                          const Divider(
+                            indent: 18,
+                            endIndent: 18,
+                            thickness: 0.7,
+                          ),
+                
+                          ListView.builder(
+                            itemCount: provider.reportList.length,
+                            scrollDirection: Axis.vertical,
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              log("ItemBuilder Index: $index");
+                              // return Text("$index");
+                              return CheckboxListTile(
+                                enabled: false,
+                                value:
+                                    provider.reportList[index].statusItem ==
+                                    "T",
+                                title: Text(
+                                  provider.reportList[index].checkItem,
+                                ),
+                                onChanged: (value) {},
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                              );
+                            },
+                          ),
+                          _buildTextField(
+                            controller: _remarksController,
+                            label: 'Remarks',
+                            icon: Icons.note_rounded,
+                            hintText: 'Remarks',
+                            lines: 5,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

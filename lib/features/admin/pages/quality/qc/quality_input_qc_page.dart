@@ -7,13 +7,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_production_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_production_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -195,6 +196,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
     remarkController.clear();
 
     await context.read<ValueProvider>().fetchAllInitialData();
+
+    if (!mounted) return;
+    await context.read<ProductProvider>().fetchProducts();
   }
 
   @override
@@ -602,7 +606,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
         flag: "T",
         entryBy: currentUser?.username,
         entryDate: DateTime.now(),
-        oilType: selectedOilType,
+        oilTypeId: selectedOilType,
         fgTankTo: selectedToTankGroup,
 
         fgPV: parseDouble(fgPVController),
@@ -803,11 +807,11 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
       case 2:
         final finishedGoods =
             context
-                .read<ValueProvider>()
-                .oilTypeLists
-                .where((element) => element.code == selectedOilType)
+                .read<ProductProvider>()
+                .productRefineryList
+                .where((element) => element.id == selectedOilType)
                 .toList();
-        return 'Finished Goods (${finishedGoods[0].outputOilType})';
+        return 'Finished Goods (${finishedGoods[0].finishGood})';
 
       case 3:
         return 'By Product';
@@ -982,13 +986,16 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
               isNumeric: true,
               hintText: 'Masukkan nilai Moisture',
             ),
-            _buildTextField(
-              controller: fgImpurities,
-              label: 'Impurities',
-              icon: Icons.science,
-              isNumeric: true,
-              hintText: 'Masukkan nilai Impurities',
-            ),
+            if (selectedWorkCenter != "REF-01") ...[
+              _buildTextField(
+                controller: fgImpurities,
+                label: 'Impurities',
+                icon: Icons.science,
+                isNumeric: true,
+                hintText: 'Masukkan nilai Impurities',
+              ),
+            ],
+
             _buildTextField(
               controller: fgColorRController,
               label: 'Color R',
@@ -1350,9 +1357,9 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                   const SizedBox(height: 8),
 
                   // Oil Type Dropdown
-                  Consumer<ValueProvider>(
+                  Consumer<ProductProvider>(
                     builder: (context, provider, child) {
-                      if (provider.isOilTypeLoading) {
+                      if (provider.isLoading) {
                         // Return a disabled dropdown with a loading indicator or message
                         return DropdownButtonFormField<String>(
                           value: null,
@@ -1380,7 +1387,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                         );
                       }
 
-                      if (provider.oilTypeLists.isEmpty) {
+                      if (provider.productRefineryList.isEmpty) {
                         return TextFormField(
                           readOnly: true,
                           decoration: InputDecoration(
@@ -1398,7 +1405,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.refresh),
                               onPressed: () {
-                                context.read<ValueProvider>().fetchOilTypes();
+                                context.read<ProductProvider>().fetchProducts();
                               },
                             ),
                           ),
@@ -1407,11 +1414,11 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                       return DropdownButtonFormField<String>(
                         value: selectedOilType,
                         items:
-                            provider.oilTypeLists.map((oil) {
+                            provider.productRefineryList.map((oil) {
                               return DropdownMenuItem<String>(
-                                value: oil.code,
+                                value: oil.id,
                                 child: Text(
-                                  oil.code,
+                                  oil.rawMaterial ?? "",
                                   style: TextStyle(fontSize: 14),
                                 ),
                               );
@@ -1420,6 +1427,7 @@ class _QualityReportInputQCPageState extends State<QualityReportInputQCPage> {
                           setState(() {
                             selectedOilType = value;
                           });
+                          log("$selectedOilType");
                         },
                         decoration: InputDecoration(
                           filled: true,

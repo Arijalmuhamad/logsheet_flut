@@ -3,13 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_input_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -38,11 +39,10 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
       );
       if (!mounted) return;
       await context.read<ValueProvider>().fetchAllInitialData();
-    });
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) async => context.read<ValueProvider>().fetchOilTypes(),
-    // );
+      if (!mounted) return;
+      await context.read<ProductProvider>().fetchProducts();
+    });
     super.initState();
   }
 
@@ -171,7 +171,13 @@ class _QualityReportQCListState extends State<QualityReportQCList> {
                     onPressed: () async {
                       final plantCode = plantprovider.currentPlant?.code ?? "";
 
-                      await qualityProvider.fetchReportsForManager(plantCode);
+                      await qualityProvider.fetchAllTickets(
+                        null,
+                        null,
+                        userProvider.currentUser?.username ?? "",
+                        userProvider.currentUser?.role ?? "",
+                        plantCode,
+                      );
                     },
                     child: const Text("Refresh"),
                   ),

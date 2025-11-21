@@ -75,7 +75,7 @@ class DailyProductionRefineryProvider with ChangeNotifier {
   }
 
   Future<String?> fetchLatestId(String plantCode) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
     try {
       _latestId = await _repository.getLatestTicketId(plantCode);
@@ -89,11 +89,11 @@ class DailyProductionRefineryProvider with ChangeNotifier {
   }
 
   Future<bool> insertTicket(DailyProductionRefineryEntity entity) async {
-    _setLoading(false);
+    _setLoading(true);
     _setErrorMessage(null);
 
     try {
-      _setLoading(true);
+      // _setLoading(true);
       _setErrorMessage(null);
       final result = await _repository.insert(entity);
       notifyListeners();

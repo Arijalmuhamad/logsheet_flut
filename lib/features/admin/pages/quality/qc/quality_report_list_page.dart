@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logsheet_app/core/utils/app_roles.dart';
 import 'package:logsheet_app/data/remote/master/data_form_no_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_production_entity.dart';
-import 'package:logsheet_app/data/remote/quality_refinery/quality_report_qc_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_production_entity.dart';
+import 'package:logsheet_app/data/remote/quality/quality_refinery/quality_report_qc_entity.dart';
 import 'package:logsheet_app/features/admin/pages/quality/qc/quality_detail_qc_page.dart';
-import 'package:logsheet_app/features/admin/pages/quality/qc/quality_edit_qc_page.dart';
 import 'package:logsheet_app/providers/master/data_form_no_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
-import 'package:logsheet_app/providers/transaction/quality_report_qc_provider.dart';
+import 'package:logsheet_app/providers/quality/quality_report/quality_report_qc_provider.dart';
 import 'package:provider/provider.dart';
 
 class QualityReportListPage extends StatefulWidget {
@@ -93,11 +91,14 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-        // _fetchReports();
-      });
+      final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
+      _selectedDate = picked;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+        _selectedDate,
+        plantCode,
+        _tempSelectedShift,
+      );
     }
   }
 
@@ -145,8 +146,13 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
     if (confirm == true) {
       // Assuming you have a delete method in your provider
       // await Provider.of<QualityReportRefineryProvider>(context, listen: false).delete(id);
+      final plantCode = context.read<PlantProvider>().currentPlant?.code ?? "";
       _showSnackbar('🗑️ Data berhasil dihapus');
-      // _fetchReports();
+      await context.read<QualityReportQCProvider>().fetchFilteredTickets(
+        _selectedDate,
+        plantCode,
+        _tempSelectedShift,
+      );
     }
   }
 
@@ -455,8 +461,16 @@ class _QualityReportListPageState extends State<QualityReportListPage> {
         const SizedBox(width: 10),
         ElevatedButton.icon(
           onPressed: () {
-            setState(() {
-              // _fetchReports();
+            setState(() async {
+              final plantCode =
+                  context.read<PlantProvider>().currentPlant?.code ?? "";
+              await context
+                  .read<QualityReportQCProvider>()
+                  .fetchFilteredTickets(
+                    _selectedDate,
+                    plantCode,
+                    _tempSelectedShift,
+                  );
             });
           },
           icon: const Icon(Icons.search),

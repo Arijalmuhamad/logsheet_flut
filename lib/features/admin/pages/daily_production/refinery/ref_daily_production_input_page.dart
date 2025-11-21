@@ -18,6 +18,7 @@ import 'package:logsheet_app/features/admin/widgets/section_card.dart';
 import 'package:logsheet_app/providers/daily_production/daily_production_refinery_provider.dart';
 import 'package:logsheet_app/providers/master/business_unit_provider.dart';
 import 'package:logsheet_app/providers/master/plant_provider.dart';
+import 'package:logsheet_app/providers/master/product_provider.dart';
 import 'package:logsheet_app/providers/master/user_provider.dart';
 import 'package:logsheet_app/providers/master/value_provider.dart';
 import 'package:provider/provider.dart';
@@ -68,6 +69,9 @@ class _DailyProductionPageState
   String? selectedOilRm;
   String? selectedOilFg;
   String? selectedOilBp;
+  String? selectedOilNameRm;
+  String? selectedOilNameFg;
+  String? selectedOilNameBp;
   String? selectedRefineryMachine;
   String? budgetValue;
   String? paValue;
@@ -241,10 +245,13 @@ class _DailyProductionPageState
     super.initState();
 
     final valueProvider = context.read<ValueProvider>();
+    final productProvider = context.read<ProductProvider>();
     if (valueProvider.tankSourceList.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
         await context.read<ValueProvider>().fetchAllInitialData();
-        oilTypeLists = valueProvider.oilTypeListsDailyProduction;
+        if (productProvider.productList.isEmpty) {
+          await productProvider.fetchProducts();
+        }
       });
     }
 
@@ -272,13 +279,13 @@ class _DailyProductionPageState
 
     if (awal1Text != '' && akhir1Text != '') {
       // Coba parse nilai ke integer
-      final int awal = int.parse(awal1Text);
-      final int akhir = int.parse(akhir1Text);
+      final double awal = double.parse(awal1Text);
+      final double akhir = double.parse(akhir1Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter1TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -286,14 +293,14 @@ class _DailyProductionPageState
     }
 
     if (awal2Text != '' && akhir2Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal2Text);
-      final int akhir = int.parse(akhir2Text);
+      // Coba parse nilai ke doubleeger
+      final double awal = double.parse(awal2Text);
+      final double akhir = double.parse(akhir2Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter2TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -301,14 +308,14 @@ class _DailyProductionPageState
     }
 
     if (awal3Text != '' && akhir3Text != '') {
-      // Coba parse nilai ke integer
-      final int awal = int.parse(awal3Text);
-      final int akhir = int.parse(akhir3Text);
+      // Coba parse nilai ke doubleeger
+      final double awal = double.parse(awal3Text);
+      final double akhir = double.parse(akhir3Text);
 
       log("AWAL $awal AKHIR $akhir");
 
       // Hitung total: Akhir - Awal
-      final int total = akhir - awal;
+      final double total = akhir - awal;
       flowmeter3TotalController.text = total.toString();
     } else {
       // Kosongkan total jika ada input yang tidak valid
@@ -320,16 +327,13 @@ class _DailyProductionPageState
     BuildContext context, {
     required Future<void> Function() onConfirm,
   }) async {
-    bool isLoading =
-        Provider.of<DailyProductionRefineryProvider>(
-          context,
-          listen: false,
-        ).isLoading;
-
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
+        bool isLoading =
+            context.watch<DailyProductionRefineryProvider>().isLoading;
+
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
@@ -345,19 +349,23 @@ class _DailyProductionPageState
                           },
                   child: const Text("Cancel"),
                 ),
-                isLoading
-                    ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : TextButton(
-                      onPressed: () async {
-                        await onConfirm();
-                        if (context.mounted) Navigator.of(context).pop();
-                      },
-                      child: const Text("Yes"),
-                    ),
+                TextButton(
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            await onConfirm();
+                            if (context.mounted) Navigator.of(context).pop();
+                          },
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text("Yes"),
+                ),
               ],
             );
           },
@@ -526,19 +534,10 @@ class _DailyProductionPageState
             ),
             const SizedBox(height: 8),
 
-            // === Dropdown: Part ===
-            // CustomDropdown.fromStringItems(
-            //   hint: 'Pilih Oil Type',
-            //   prefixIcon: PrefixIconHelper.get('category-svgrepo-com'),
-            //   stringItems: oilTypeRm,
-            //   value: selectedOilRm,
-            //   onChanged: (value) => setState(() => selectedOilRm = value),
-            // ),
-
             // Oil Type Dropdown
-            Consumer<ValueProvider>(
+            Consumer<ProductProvider>(
               builder: (context, provider, child) {
-                if (provider.isOilTypeLoading) {
+                if (provider.isLoading) {
                   // Return a disabled dropdown with a loading indicator or message
                   return DropdownButtonFormField<String>(
                     value: null,
@@ -564,7 +563,7 @@ class _DailyProductionPageState
                   );
                 }
 
-                if (provider.oilTypeListsDailyProduction.isEmpty) {
+                if (provider.productRefineryList.isEmpty) {
                   return TextFormField(
                     readOnly: true,
                     decoration: InputDecoration(
@@ -582,9 +581,7 @@ class _DailyProductionPageState
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.refresh),
                         onPressed: () async {
-                          await context
-                              .read<ValueProvider>()
-                              .fetchOilTypesDailyProd();
+                          await context.read<ProductProvider>().fetchProducts();
                         },
                       ),
                     ),
@@ -593,15 +590,38 @@ class _DailyProductionPageState
                 return DropdownButtonFormField<String>(
                   value: selectedOilRm,
                   items:
-                      provider.oilTypeListsDailyProduction.map((oil) {
+                      provider.productRefineryList.map((oil) {
                         return DropdownMenuItem<String>(
-                          value: oil.code,
-                          child: Text(oil.name, style: TextStyle(fontSize: 14)),
+                          value: oil.id,
+                          child: Text(
+                            oil.rawMaterial!,
+                            style: TextStyle(fontSize: 14),
+                          ),
                         );
                       }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedOilRm = value;
+
+                      selectedOilFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameFg =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .finishGood;
+
+                      selectedOilBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .id;
+
+                      selectedOilNameBp =
+                          provider.productRefineryList
+                              .firstWhere((item) => item.id == selectedOilRm)
+                              .byProduct;
                     });
                   },
                   decoration: InputDecoration(
@@ -634,6 +654,7 @@ class _DailyProductionPageState
               SectionCpoRpaRps(
                 selectedTimeAwal: selectedTime1Awal,
                 selectedTimeAkhir: selectedTime1Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime1Awal,
@@ -662,6 +683,7 @@ class _DailyProductionPageState
               SectionRbdpoRrbdpoRps(
                 selectedTimeAwal: selectedTime2Awal,
                 selectedTimeAkhir: selectedTime2Akhir,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime2Awal,
@@ -695,6 +717,7 @@ class _DailyProductionPageState
                 selectedTimeAwal: selectedTime3Awal,
                 selectedTimeAkhir: selectedTime3Akhir,
                 selectedOil: selectedOilBp,
+                selectedWorkCenter: selectedRefineryMachine,
                 onTimeTapAwal:
                     () => _showHourPickerAndUpdateState(
                       selectedTime3Awal,
@@ -902,7 +925,7 @@ class _DailyProductionPageState
     final currentPlant = context.read<PlantProvider>().currentPlant;
     final plantCode = currentPlant!.code;
     final companyName =
-        context.read<BusinessUnitProvider>().currentBusinessUnit?.buName;
+        context.read<BusinessUnitProvider>().currentBusinessUnit?.buCode;
     DateTime getTransactionDate() {
       final DateTime now = DateTime.now();
       return DateTime(
@@ -994,12 +1017,12 @@ class _DailyProductionPageState
     final dataForm = widget.dataForm;
     final oilTypeFg =
         context
-            .read<ValueProvider>()
-            .oilTypeListsDailyProduction
-            .where((oil) => oil.code == selectedOilRm)
+            .read<ProductProvider>()
+            .productRefineryList
+            .where((oil) => oil.id == selectedOilRm)
             .first;
 
-    oilTypefgController.text = oilTypeFg.outputOilType!;
+    oilTypefgController.text = oilTypeFg.finishGood!;
 
     final ticketId = await buildTicketNumber();
 
@@ -1007,6 +1030,29 @@ class _DailyProductionPageState
       return;
     }
 
+    double? flow1Awal, flow1Akhir, flow2Awal, flow2Akhir, flow3Awal, flow3Akhir;
+
+    if (selectedRefineryMachine == "REF-01") {
+      flow1Awal = parseInt(flowmeter1AwalController.text)! / 1000;
+      flow1Akhir = parseInt(flowmeter1AkhirController.text)! / 1000;
+
+      flow2Awal = parseInt(flowmeter2AwalController.text)! / 1000;
+      flow2Akhir = parseInt(flowmeter2AkhirController.text)! / 1000;
+
+      flow3Awal = parseInt(flowmeter3AwalController.text)! / 1000;
+      flow3Akhir = parseInt(flowmeter3AkhirController.text)! / 1000;
+    } else {
+      flow1Awal = parseDouble(flowmeter1AwalController);
+      flow1Akhir = parseDouble(flowmeter1AkhirController);
+
+      flow2Awal = parseDouble(flowmeter2AwalController);
+      flow2Akhir = parseDouble(flowmeter2AkhirController);
+
+      flow3Awal = parseDouble(flowmeter3AwalController);
+      flow3Akhir = parseDouble(flowmeter3AkhirController);
+    }
+
+    log("$flow1Awal $flow1Akhir $flow2Awal $flow2Akhir $flow3Awal $flow3Akhir");
     try {
       final entity = DailyProductionRefineryEntity(
         id: ticketId,
@@ -1019,36 +1065,31 @@ class _DailyProductionPageState
             selectedShiftBleaching ??
             getShiftBasedOnTimeAndDate(postingDate).toString(),
         cpoTank: selected1Tank,
-        oilTypeRm: selectedOilRm,
+        oilTypeRmId: selectedOilRm,
         oilTypeRmAwalJam: selectedTime1Awal,
-        oilTypeRmAwalFlowmeter: parseInt(flowmeter1AwalController.text),
+        oilTypeRmAwalFlowmeter: flow1Awal,
         oilTypeRmAkhirJam: selectedTime1Akhir,
-        oilTypeRmAkhirFlowmeter: parseInt(flowmeter1AkhirController.text),
-        oilTypeRmTotal:
-            (parseInt(flowmeter1AkhirController.text) ?? 0) -
-            (parseInt(flowmeter1AwalController.text) ?? 0),
-        oilTypeFg: selectedOilFg,
+        oilTypeRmAkhirFlowmeter: flow1Akhir,
+        oilTypeRmTotal: (flow1Akhir ?? 0.0) - (flow1Awal ?? 0.0),
+        oilTypeFgId: selectedOilFg,
         oilTypeFgAwalJam: selectedTime2Awal,
-        oilTypeFgAwalFlowmeter: parseInt(flowmeter2AwalController.text),
+        oilTypeFgAwalFlowmeter: flow2Awal,
         oilTypeFgAkhirJam: selectedTime2Akhir,
-        oilTypeFgAkhirFlowmeter: parseInt(flowmeter2AkhirController.text),
-        oilTypeFgTotal:
-            (parseInt(flowmeter2AkhirController.text) ?? 0) -
-            (parseInt(flowmeter2AwalController.text) ?? 0),
+        oilTypeFgAkhirFlowmeter: flow2Akhir,
+        oilTypeFgTotal: (flow2Akhir ?? 0.0) - (flow2Awal ?? 0.0),
         oilTypeFgToTank: selected2Tank,
+        oilTypeBpId: selectedOilBp,
         bpAwalJam: selectedTime3Awal,
-        bpAwalFlowmeter: parseInt(flowmeter3AwalController.text),
+        bpAwalFlowmeter: flow3Awal,
         bpAkhirJam: selectedTime3Akhir,
-        bpAkhirFlowmeter: parseInt(flowmeter3AkhirController.text),
-        bpTotal:
-            (parseInt(flowmeter3AkhirController.text) ?? 0) -
-            (parseInt(flowmeter3AwalController.text) ?? 0),
+        bpAkhirFlowmeter: flow3Akhir,
+        bpTotal: (flow3Akhir ?? 0.0) - (flow3Awal ?? 0.0),
         bpToTank: selected3Tank,
         beRefTank: selectedRefineryMachine,
         beRefQty: "1 Bag (1000 Kg)",
         beTotalBag: bleachingBagController.text,
         beTotalJenis: bleachingTypeController.text,
-        beLotBatchNumber: parseInt(bleachingBagController.text),
+        beLotBatchNumber: parseInt(bleachingBatchController.text),
         beYieldPercent: parseDouble(yieldPercentController),
         paRefTank: selectedRefineryMachine,
         paRefQty: paValue,
